@@ -13,7 +13,7 @@ export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [isSimulating, setIsSimulating] = useState(false);
-  const [activeModal, setActiveModal] = useState<'asan' | 'sima' | 'mygov' | null>(null);
+  const [activeModal, setActiveModal] = useState<'sima' | 'mygov' | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Mail, Lock, User, Fingerprint, Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { Mail, Lock, User, Fingerprint, Eye, EyeOff } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '../ui/Button';
 
 export interface AuthFormProps {
@@ -9,6 +10,7 @@ export interface AuthFormProps {
 }
 
 export const AuthForm: React.FC<AuthFormProps> = ({ mode, onSubmit, isSimulating }) => {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -19,61 +21,63 @@ export const AuthForm: React.FC<AuthFormProps> = ({ mode, onSubmit, isSimulating
   return (
     <form onSubmit={onSubmit} className="space-y-4">
       {mode === 'register' && (
-        <>
-          <div>
-            <label className="block text-xs font-bold text-on-surface-variant mb-1.5 uppercase tracking-wider">
-              Ad, Soyad
-            </label>
-            <div className="relative">
-              <User className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant/70" />
-              <input
-                type="text"
-                required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Samir Əliyev"
-                className="w-full pl-11 pr-4 py-3 rounded-2xl bg-surface-container border border-outline-variant/80 text-sm text-on-surface focus:outline-none focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 transition-all"
-              />
-            </div>
+        <div>
+          <label className="block text-xs font-bold text-on-surface-variant mb-1.5 uppercase tracking-wider">
+            Ad, Soyad
+          </label>
+          <div className="relative">
+            <User className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant/70" />
+            <input
+              type="text"
+              required
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Samir Əliyev"
+              className="w-full pl-11 pr-4 py-3 rounded-2xl bg-surface-container border border-outline-variant/80 text-sm text-on-surface focus:outline-none focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 transition-all"
+            />
           </div>
-
-          <div>
-            <label className="block text-xs font-bold text-on-surface-variant mb-1.5 uppercase tracking-wider">
-              FİN Kod (Şəxsiyyət Vəsiqəsi)
-            </label>
-            <div className="relative">
-              <Fingerprint className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant/70" />
-              <input
-                type="text"
-                required
-                maxLength={7}
-                value={fin}
-                onChange={(e) => setFin(e.target.value.toUpperCase())}
-                placeholder="7AB1234"
-                className="w-full pl-11 pr-4 py-3 rounded-2xl bg-surface-container border border-outline-variant/80 text-sm text-on-surface font-mono uppercase focus:outline-none focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 transition-all"
-              />
-            </div>
-          </div>
-        </>
+        </div>
       )}
 
+      {/* FIN Kod Field (Primary Login Field) */}
       <div>
         <label className="block text-xs font-bold text-on-surface-variant mb-1.5 uppercase tracking-wider">
-          E-poçt və ya FİN
+          FİN Kod (Şəxsiyyət Vəsiqəsi)
         </label>
         <div className="relative">
-          <Mail className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant/70" />
+          <Fingerprint className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-blue" />
           <input
-            type="email"
+            type="text"
             required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="e.mammadov@soc.gov.az"
-            className="w-full pl-11 pr-4 py-3 rounded-2xl bg-surface-container border border-outline-variant/80 text-sm text-on-surface focus:outline-none focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 transition-all"
+            maxLength={7}
+            value={fin}
+            onChange={(e) => setFin(e.target.value.toUpperCase())}
+            placeholder="7AB1234"
+            className="w-full pl-11 pr-4 py-3 rounded-2xl bg-surface-container border border-outline-variant/80 text-sm text-on-surface font-mono uppercase tracking-widest focus:outline-none focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 transition-all font-bold"
           />
         </div>
       </div>
 
+      {mode === 'register' && (
+        <div>
+          <label className="block text-xs font-bold text-on-surface-variant mb-1.5 uppercase tracking-wider">
+            E-poçt Adresi
+          </label>
+          <div className="relative">
+            <Mail className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant/70" />
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="e.mammadov@soc.gov.az"
+              className="w-full pl-11 pr-4 py-3 rounded-2xl bg-surface-container border border-outline-variant/80 text-sm text-on-surface focus:outline-none focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 transition-all"
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Password Field */}
       <div>
         <label className="block text-xs font-bold text-on-surface-variant mb-1.5 uppercase tracking-wider">
           Şifrə
@@ -115,26 +119,34 @@ export const AuthForm: React.FC<AuthFormProps> = ({ mode, onSubmit, isSimulating
         </div>
       )}
 
-      {/* Submit Button */}
+      {/* Clean Submit Button (No right arrow icon!) */}
       <Button
         type="submit"
         variant="primary"
         size="lg"
         disabled={isSimulating}
-        className="w-full py-3.5 rounded-2xl font-bold text-sm shadow-md !bg-brand-blue hover:!bg-brand-blue-hover transition-all flex items-center justify-center gap-2 mt-2 cursor-pointer"
+        className="w-full py-3.5 rounded-2xl font-bold text-sm shadow-md !bg-brand-blue hover:!bg-brand-blue-hover transition-all text-center justify-center mt-2 cursor-pointer"
       >
         {isSimulating ? (
-          <span className="flex items-center gap-2">
+          <span className="flex items-center justify-center gap-2">
             <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
             Yoxlanılır...
           </span>
         ) : (
-          <>
-            <span>{mode === 'login' ? 'Daxil ol' : 'Hesab Yarat'}</span>
-            <ArrowRight className="w-4 h-4" />
-          </>
+          <span>{mode === 'login' ? 'Daxil ol' : 'Hesab Yarat'}</span>
         )}
       </Button>
+
+      {/* Guest Mode Option for Testers */}
+      <div className="pt-2 text-center">
+        <button
+          type="button"
+          onClick={() => navigate('/')}
+          className="text-xs font-semibold text-on-surface-variant hover:text-brand-blue hover:underline transition-colors cursor-pointer"
+        >
+          Qonaq (Guest) kimi davam et ➔
+        </button>
+      </div>
     </form>
   );
 };
