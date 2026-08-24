@@ -68,84 +68,108 @@ export const DashboardPage: React.FC = () => {
   return (
     <div className="flex flex-col gap-10 w-full pb-8">
       {/* Top Row: Upload & AI Panel */}
-      <div className="flex flex-col lg:flex-row gap-10 w-full items-stretch">
+      <div className="flex flex-col lg:flex-row gap-8 w-full items-start">
         
         {/* Left: Upload Card */}
-        <div className="flex-1 min-w-0 flex flex-col">
-          <Card padding="lg" className="flex flex-col gap-6 shadow-l1 h-full">
+        <div className="flex-1 min-w-0 w-full">
+          <Card padding="lg" className="flex flex-col gap-6 shadow-l1">
             <div>
               <h2 className="text-headline-lg-mobile md:text-headline-lg font-bold text-on-surface mb-2">{t('uploadTitle')}</h2>
               <p className="text-body-md text-on-surface-variant">{t('uploadSubtitle')}</p>
             </div>
           
-          <label
-            htmlFor="file-upload"
-            className="border-2 border-dashed border-outline-variant rounded-2xl bg-surface-bright flex flex-col items-center justify-center py-16 px-6 text-center hover:border-brand-blue hover:bg-surface-variant/20 transition-all cursor-pointer group"
-          >
-            <input id="file-upload" type="file" className="hidden" accept=".pdf,.docx,.txt" onChange={handleFileUpload} />
-            <div className="w-16 h-16 rounded-full bg-surface-container-high flex items-center justify-center text-outline mb-4 group-hover:text-brand-blue group-hover:bg-primary-container transition-colors">
-              <UploadCloud className="w-8 h-8" />
-            </div>
-            <p className="text-title-lg font-medium text-on-surface mb-1">{t('dragDropText')}</p>
-            <p className="text-body-md text-on-surface-variant mb-6">{t('maxSize')}</p>
-            <Button variant="primary" size="md" className="shadow-sm pointer-events-none">
-              {t('selectFile')}
-            </Button>
-          </label>
-        </Card>
+            <label
+              htmlFor="file-upload"
+              className="border-2 border-dashed border-outline-variant rounded-2xl bg-surface-bright flex flex-col items-center justify-center py-14 px-6 text-center hover:border-brand-blue hover:bg-surface-variant/20 transition-all cursor-pointer group"
+            >
+              <input id="file-upload" type="file" className="hidden" accept=".pdf,.docx,.txt" onChange={handleFileUpload} />
+              <div className="w-16 h-16 rounded-full bg-surface-container-high flex items-center justify-center text-outline mb-4 group-hover:text-brand-blue group-hover:bg-primary-container transition-colors">
+                <UploadCloud className="w-8 h-8" />
+              </div>
+              <p className="text-title-lg font-medium text-on-surface mb-1">{t('dragDropText')}</p>
+              <p className="text-body-md text-on-surface-variant mb-6">{t('maxSize')}</p>
+              <Button variant="primary" size="md" className="shadow-sm pointer-events-none">
+                {t('selectFile')}
+              </Button>
+            </label>
+          </Card>
         </div>
 
-        {/* Right: Interactive AI Panel */}
-        <div className="hidden lg:flex w-[420px] flex-shrink-0">
-          <aside className="w-full h-full bg-surface-container-lowest rounded-3xl border border-outline-variant/60 shadow-[0_8px_32px_rgba(0,102,255,0.08)] flex flex-col overflow-hidden">
-            <div className="p-6 flex flex-col h-full">
-              <div className="flex items-center gap-3 mb-6 pb-4 border-b border-outline-variant/50 shrink-0">
-                <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-brand-blue shadow-sm shrink-0">
-                  <Sparkles className="w-6 h-6" />
+        {/* Right: Fixed-Height AI Panel with Internal Scrollbar */}
+        <div className="w-full lg:w-[420px] shrink-0 h-[490px]">
+          <aside className="w-full h-full bg-surface-container-lowest rounded-3xl border border-outline-variant/60 shadow-[0_8px_32px_rgba(0,102,255,0.08)] flex flex-col overflow-hidden p-5">
+            {/* AI Widget Header */}
+            <div className="flex items-center justify-between pb-3 border-b border-outline-variant/50 shrink-0 mb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-full bg-blue-50 flex items-center justify-center text-brand-blue shadow-sm shrink-0">
+                  <Sparkles className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-title-lg font-bold text-on-surface">MyGuard AI</h3>
-                  <p className="text-label-sm text-on-surface-variant">Real-time analysis</p>
+                  <h3 className="text-title-md font-bold text-on-surface">MyGuard AI</h3>
+                  <p className="text-[11px] text-on-surface-variant font-medium">Real-time analysis</p>
                 </div>
               </div>
-              
-              <div className="flex-1 overflow-y-auto mb-4 pr-2 custom-scrollbar flex flex-col gap-3">
-                {messages.length === 0 ? (
-                  <div className="flex-1 flex flex-wrap items-center justify-center gap-2 content-center">
+              <button
+                type="button"
+                onClick={() => navigate('/assistant')}
+                className="text-xs font-bold text-brand-blue hover:underline cursor-pointer"
+              >
+                Tam ekran ➔
+              </button>
+            </div>
+            
+            {/* Scrollable Internal Message Body */}
+            <div className="flex-1 overflow-y-auto pr-1 space-y-3 custom-scrollbar">
+              {messages.length === 0 ? (
+                <div className="h-full flex flex-col justify-center items-center gap-2 text-center p-2">
+                  <p className="text-xs font-semibold text-on-surface-variant mb-2">Tez-tez soruşulan suallar:</p>
+                  <div className="flex flex-wrap items-center justify-center gap-2">
                     {suggestedQuestions.map((q) => (
                       <button
                         key={q}
+                        type="button"
                         onClick={() => handleAiChatSubmit(q)}
-                        className="px-4 py-2 rounded-full bg-surface border border-outline-variant text-on-surface-variant hover:text-brand-blue text-sm font-semibold hover:bg-blue-50/50 hover:border-brand-blue/30 transition-all cursor-pointer shadow-sm hover:shadow-md active:scale-95 text-center"
+                        className="px-3.5 py-1.5 rounded-full bg-surface-container-low border border-outline-variant/70 text-on-surface-variant hover:text-brand-blue text-xs font-semibold hover:bg-blue-50/50 hover:border-brand-blue/40 transition-all cursor-pointer shadow-2xs text-center"
                       >
                         {q}
                       </button>
                     ))}
                   </div>
-                ) : (
-                  messages.map((msg, idx) => (
-                    <div key={idx} className={`p-3 rounded-xl text-label-md leading-relaxed ${
-                      msg.sender === 'user' ? 'bg-brand-blue text-white ml-6 font-medium' : 'bg-white text-on-surface border border-purple-100 shadow-xs'
-                    }`}>
-                      {msg.sender === 'user' ? (msg.blocks?.[0]?.content || msg.text || '') : <AiMessageRenderer message={msg} />}
-                    </div>
-                  ))
-                )}
-              </div>
-              
-              <form onSubmit={(e) => { e.preventDefault(); handleAiChatSubmit(); }} className="relative mt-auto shrink-0">
-                <input 
-                  type="text" 
-                  value={aiInput}
-                  onChange={(e) => setAiInput(e.target.value)}
-                  className="w-full bg-surface-container border border-outline-variant rounded-full py-3 px-4 pr-12 text-body-md text-on-surface focus:outline-none focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 transition-all shadow-inner" 
-                  placeholder={t('askPlaceholder')}
-                />
-                <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-brand-blue hover:bg-surface-variant rounded-full transition-colors cursor-pointer">
-                  <Send className="w-5 h-5" />
-                </button>
-              </form>
+                </div>
+              ) : (
+                messages.map((msg, idx) => (
+                  <div key={idx} className="flex flex-col gap-1 w-full">
+                    {msg.sender === 'user' ? (
+                      <div className="bg-brand-blue text-white p-3 rounded-2xl text-xs font-semibold self-end max-w-[85%] shadow-xs">
+                        {msg.blocks?.[0]?.content || msg.text || ''}
+                      </div>
+                    ) : (
+                      <div className="bg-surface-container-low border border-outline-variant/60 text-on-surface p-3.5 rounded-2xl text-xs leading-relaxed space-y-1.5 max-w-[95%] shadow-2xs self-start">
+                        <div className="flex items-center gap-1.5 text-brand-purple font-bold text-[11px]">
+                          <Sparkles className="w-3.5 h-3.5 shrink-0" />
+                          <span>MyGuard AI Xülasə</span>
+                        </div>
+                        <p className="whitespace-pre-line text-on-surface-variant font-normal">{msg.blocks?.[0]?.content || msg.text || ''}</p>
+                      </div>
+                    )}
+                  </div>
+                ))
+              )}
             </div>
+            
+            {/* Input Bar Form */}
+            <form onSubmit={(e) => { e.preventDefault(); handleAiChatSubmit(); }} className="relative mt-3 shrink-0">
+              <input 
+                type="text" 
+                value={aiInput}
+                onChange={(e) => setAiInput(e.target.value)}
+                className="w-full bg-surface-container border border-outline-variant/80 rounded-full py-2.5 px-4 pr-10 text-xs text-on-surface focus:outline-none focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 transition-all shadow-inner" 
+                placeholder={t('askPlaceholder')}
+              />
+              <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 flex items-center justify-center text-brand-blue hover:bg-surface-variant rounded-full transition-colors cursor-pointer">
+                <Send className="w-4 h-4" />
+              </button>
+            </form>
           </aside>
         </div>
       </div>
