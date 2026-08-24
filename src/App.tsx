@@ -13,7 +13,7 @@ import RiskReportsPage from './pages/RiskReportsPage';
 import AssistantPage from './pages/AssistantPage';
 import ModelManagementPage from './pages/ModelManagementPage';
 import SettingsPage from './pages/SettingsPage';
-// import ActionSecurityPage from './pages/ActionSecurityPage';
+import LoginPage from './pages/LoginPage';
 
 export const App: React.FC = () => {
   return (
@@ -22,6 +22,9 @@ export const App: React.FC = () => {
         <Router>
           <PageShell>
             <Routes>
+              {/* Auth Route */}
+              <Route path="/login" element={<LoginPage />} />
+
               {/* 5 Primary Sections (In Bottom Nav) */}
               <Route path="/" element={<DashboardPage />} />
               <Route path="/documents" element={<DocumentsPage />} />

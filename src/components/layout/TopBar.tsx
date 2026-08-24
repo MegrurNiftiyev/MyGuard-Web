@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { ShieldAlert, User, Settings, ShieldCheck, Shield, ChevronDown, Check } from 'lucide-react';
+import { ShieldAlert, User, Settings, ShieldCheck, Shield, ChevronDown, Check, LogIn } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../context/LanguageContext';
 import { useUserRole } from '../../context/UserRoleContext';
@@ -56,6 +55,16 @@ export const TopBar: React.FC = () => {
               EN
             </button>
           </div>
+
+          {/* Login / Auth Button */}
+          <button
+            onClick={() => navigate('/login')}
+            className="px-3.5 py-1.5 rounded-full bg-brand-blue/10 hover:bg-brand-blue/20 text-brand-blue font-bold text-xs border border-brand-blue/30 transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs hover:scale-105"
+            title="Daxil ol / Qeydiyyat"
+          >
+            <LogIn className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Daxil ol</span>
+          </button>
 
           {/* Clean Profile/Settings Icon Button */}
           <button
