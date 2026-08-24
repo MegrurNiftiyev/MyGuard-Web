@@ -38,7 +38,7 @@ export const DigitalAuthModal: React.FC<DigitalAuthModalProps> = ({
 
         {provider === 'asan' && (
           <div className="space-y-4">
-            <div className="flex items-center gap-3 text-emerald-700 dark:text-emerald-400">
+            <div className="flex items-center gap-3 text-success">
               <Smartphone className="w-6 h-6" />
               <h3 className="text-title-lg font-bold">Asan İmza ilə Giriş</h3>
             </div>
@@ -72,7 +72,7 @@ export const DigitalAuthModal: React.FC<DigitalAuthModalProps> = ({
             <Button
               onClick={handleConfirm}
               disabled={isSimulating}
-              className="w-full py-3 !bg-emerald-600 hover:!bg-emerald-700 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 cursor-pointer shadow-md"
+              className="w-full py-3 !bg-success text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 cursor-pointer shadow-md"
             >
               {isSimulating ? 'Sorğu göndərilir...' : 'Təsdiqlə və Daxil Ol'}
             </Button>
@@ -89,14 +89,14 @@ export const DigitalAuthModal: React.FC<DigitalAuthModalProps> = ({
               SİMA mobil tətbiqi ilə aşağıdakı QR kodu skan edin və biometrik təsdiq verin.
             </p>
 
-            <div className="w-44 h-44 mx-auto border-2 border-dashed border-brand-purple/40 rounded-2xl bg-purple-50/50 dark:bg-purple-950/30 flex items-center justify-center p-3">
+            <div className="w-44 h-44 mx-auto border-2 border-dashed border-brand-purple/40 rounded-2xl bg-secondary-container/30 flex items-center justify-center p-3">
               <QrCode className="w-36 h-36 text-brand-purple animate-pulse" />
             </div>
 
             <Button
               onClick={handleConfirm}
               disabled={isSimulating}
-              className="w-full py-3 !bg-brand-purple hover:!bg-purple-700 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 cursor-pointer shadow-md"
+              className="w-full py-3 !bg-brand-purple text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 cursor-pointer shadow-md"
             >
               {isSimulating ? 'QR Təsdiqlənir...' : 'QR Skanını Təsdiqlə (Simulyasiya)'}
             </Button>
@@ -105,7 +105,7 @@ export const DigitalAuthModal: React.FC<DigitalAuthModalProps> = ({
 
         {provider === 'mygov' && (
           <div className="space-y-4 text-center">
-            <div className="w-12 h-12 rounded-2xl bg-blue-600 text-white mx-auto flex items-center justify-center font-bold text-lg shadow-md">
+            <div className="w-12 h-12 rounded-2xl bg-brand-blue text-white mx-auto flex items-center justify-center font-bold text-lg shadow-md">
               my
             </div>
             <h3 className="text-title-lg font-bold text-on-surface">myGov Vahid Giriş Systemi</h3>
@@ -116,7 +116,7 @@ export const DigitalAuthModal: React.FC<DigitalAuthModalProps> = ({
             <Button
               onClick={handleConfirm}
               disabled={isSimulating}
-              className="w-full py-3 !bg-blue-600 hover:!bg-blue-700 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 cursor-pointer shadow-md"
+              className="w-full py-3 !bg-brand-blue text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 cursor-pointer shadow-md"
             >
               {isSimulating ? 'myGov İdentifikasiyası...' : 'myGov Portalı İlə Daxil Ol'}
             </Button>
