@@ -83,8 +83,8 @@ export const DashboardPage: React.FC = () => {
               className="border-2 border-dashed border-outline-variant rounded-2xl bg-surface-bright flex flex-col items-center justify-center py-14 px-6 text-center hover:border-brand-blue hover:bg-surface-variant/20 transition-all cursor-pointer group"
             >
               <input id="file-upload" type="file" className="hidden" accept=".pdf,.docx,.txt" onChange={handleFileUpload} />
-              <div className="w-16 h-16 rounded-full bg-surface-container-high flex items-center justify-center text-outline mb-4 group-hover:text-brand-blue group-hover:bg-primary-container transition-colors">
-                <UploadCloud className="w-8 h-8" />
+              <div className="w-16 h-16 rounded-full bg-blue-50 border border-brand-blue/30 flex items-center justify-center text-brand-blue shadow-md mb-4 group-hover:scale-110 group-hover:bg-blue-100 group-hover:border-brand-blue group-hover:animate-pulse transition-all duration-300">
+                <UploadCloud className="w-8 h-8 text-brand-blue" />
               </div>
               <p className="text-title-lg font-medium text-on-surface mb-1">{t('dragDropText')}</p>
               <p className="text-body-md text-on-surface-variant mb-6">{t('maxSize')}</p>
