@@ -230,3 +230,42 @@ body {
 .animate-page-fade {
   animation: pageFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+@keyframes beamGlide1 {
+  0%, 100% {
+    transform: translate(0px, 0px) rotate(-45deg);
+  }
+  50% {
+    transform: translate(24px, 32px) rotate(-45deg);
+  }
+}
+
+@keyframes beamGlide2 {
+  0%, 100% {
+    transform: translate(0px, 0px) rotate(-45deg);
+  }
+  50% {
+    transform: translate(-28px, -36px) rotate(-45deg);
+  }
+}
+
+@keyframes beamGlide3 {
+  0%, 100% {
+    transform: translate(0px, 0px) rotate(-45deg);
+  }
+  50% {
+    transform: translate(20px, -26px) rotate(-45deg);
+  }
+}
+
+.animate-beam-glide-1 {
+  animation: beamGlide1 8s ease-in-out infinite;
+}
+
+.animate-beam-glide-2 {
+  animation: beamGlide2 11s ease-in-out infinite;
+}
+
+.animate-beam-glide-3 {
+  animation: beamGlide3 14s ease-in-out infinite;
+}

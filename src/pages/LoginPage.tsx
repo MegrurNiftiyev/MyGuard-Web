@@ -6,7 +6,8 @@ import {
   AuthTabSwitcher, 
   AuthForm, 
   NationalAuthProviders, 
-  DigitalAuthModal 
+  DigitalAuthModal,
+  AuthFloatingOrbsBackground
 } from '../components/auth';
 
 export const LoginPage: React.FC = () => {
@@ -38,8 +39,11 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="w-full min-h-[calc(100vh-180px)] flex items-center justify-center py-6 px-4 animate-in fade-in zoom-in-95 duration-500">
-      <div className="w-full max-w-md space-y-6">
+    <div className="w-full min-h-[calc(100vh-180px)] flex items-center justify-center py-6 px-4 animate-in fade-in zoom-in-95 duration-500 relative">
+      {/* Floating 3D Diagonal Shooting Comet Spheres Background */}
+      <AuthFloatingOrbsBackground />
+
+      <div className="w-full max-w-md space-y-6 relative z-10">
         {/* Brand Header */}
         <div className="flex flex-col items-center justify-center text-center space-y-2">
           <div className="w-14 h-14 rounded-2xl bg-white border border-outline-variant/80 flex items-center justify-center shadow-md">
@@ -54,7 +58,7 @@ export const LoginPage: React.FC = () => {
         </div>
 
         {/* Auth Glass Container */}
-        <Card padding="lg" className="border-outline-variant/80 shadow-xl bg-surface-container-lowest/90 backdrop-blur-xl rounded-3xl p-6 sm:p-8 relative overflow-hidden">
+        <Card padding="lg" className="border-outline-variant/80 shadow-2xl bg-surface-container-lowest/85 backdrop-blur-2xl rounded-3xl p-6 sm:p-8 relative overflow-hidden">
           <AuthTabSwitcher mode={mode} onModeChange={setMode} />
           
           <AuthForm mode={mode} onSubmit={handleSubmit} isSimulating={isSimulating} />
