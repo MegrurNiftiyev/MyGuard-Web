@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Mail, Lock, User, Fingerprint, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, User, Fingerprint, Eye, EyeOff, Smartphone } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../ui/Button';
 
@@ -13,6 +13,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ mode, onSubmit, isSimulating
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [fin, setFin] = useState('');
@@ -21,22 +22,41 @@ export const AuthForm: React.FC<AuthFormProps> = ({ mode, onSubmit, isSimulating
   return (
     <form onSubmit={onSubmit} className="space-y-4">
       {mode === 'register' && (
-        <div>
-          <label className="block text-xs font-bold text-on-surface-variant mb-1.5 uppercase tracking-wider">
-            Ad, Soyad
-          </label>
-          <div className="relative">
-            <User className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant/70" />
-            <input
-              type="text"
-              required
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Samir Əliyev"
-              className="w-full pl-11 pr-4 py-3 rounded-2xl bg-surface-container border border-outline-variant/80 text-sm text-on-surface focus:outline-none focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 transition-all"
-            />
+        <>
+          <div>
+            <label className="block text-xs font-bold text-on-surface-variant mb-1.5 uppercase tracking-wider">
+              Ad, Soyad
+            </label>
+            <div className="relative">
+              <User className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant/70" />
+              <input
+                type="text"
+                required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Samir Əliyev"
+                className="w-full pl-11 pr-4 py-3 rounded-2xl bg-surface-container border border-outline-variant/80 text-sm text-on-surface focus:outline-none focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 transition-all"
+              />
+            </div>
           </div>
-        </div>
+
+          <div>
+            <label className="block text-xs font-bold text-on-surface-variant mb-1.5 uppercase tracking-wider">
+              Mobil Nömrə
+            </label>
+            <div className="relative">
+              <Smartphone className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant/70" />
+              <input
+                type="tel"
+                required
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="+994 (50) 123-45-67"
+                className="w-full pl-11 pr-4 py-3 rounded-2xl bg-surface-container border border-outline-variant/80 text-sm text-on-surface focus:outline-none focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 transition-all font-mono"
+              />
+            </div>
+          </div>
+        </>
       )}
 
       {/* FIN Kod Field (Primary Login Field) */}
@@ -119,7 +139,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ mode, onSubmit, isSimulating
         </div>
       )}
 
-      {/* Clean Submit Button (No right arrow icon!) */}
+      {/* Clean Submit Button */}
       <Button
         type="submit"
         variant="primary"
