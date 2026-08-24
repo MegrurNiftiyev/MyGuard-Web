@@ -195,7 +195,6 @@ export const AssistantPage: React.FC = () => {
 
     const userBlocks: MessageBlock[] = [];
     
-    // Add attached files as file blocks in user message if any
     if (attachedFiles.length > 0) {
       attachedFiles.forEach((file) => {
         userBlocks.push({
@@ -224,16 +223,64 @@ export const AssistantPage: React.FC = () => {
     setIsThinking(true);
 
     setTimeout(() => {
+      scrollToBottom();
+    }, 100);
+
+    if (streamIntervalRef.current) {
+      clearInterval(streamIntervalRef.current);
+      streamIntervalRef.current = null;
+    }
+
+    setTimeout(() => {
       const mockResponse = mockAiMessages.find((m) => m.sender === 'assistant');
-      const aiResponse: AiMessage = {
-        ...mockResponse!,
-        id: `msg-${Date.now() + 1}`,
+      const allBlocks = mockResponse?.blocks || [];
+
+      if (allBlocks.length === 0) {
+        setIsThinking(false);
+        return;
+      }
+
+      const aiMessageId = `msg-${Date.now() + 1}`;
+      
+      const initialAiMsg: AiMessage = {
+        id: aiMessageId,
+        sender: 'assistant',
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        blocks: [allBlocks[0]]
       };
 
-      setMessages((prev) => [...prev, aiResponse]);
-      setIsThinking(false);
-    }, 1500);
+      setMessages((prev) => [...prev, initialAiMsg]);
+      scrollToBottom();
+
+      let currentBlockIndex = 0;
+
+      streamIntervalRef.current = setInterval(() => {
+        currentBlockIndex++;
+
+        if (currentBlockIndex < allBlocks.length) {
+          setMessages((prev) => {
+            const updated = [...prev];
+            const targetIdx = updated.findIndex((m) => m.id === aiMessageId);
+            if (targetIdx !== -1) {
+              updated[targetIdx] = {
+                ...updated[targetIdx],
+                blocks: allBlocks.slice(0, currentBlockIndex + 1)
+              };
+            }
+            return updated;
+          });
+
+          scrollToBottom();
+        } else {
+          if (streamIntervalRef.current) {
+            clearInterval(streamIntervalRef.current);
+            streamIntervalRef.current = null;
+          }
+          setIsThinking(false);
+          scrollToBottom();
+        }
+      }, 950);
+    }, 1100);
   };
 
   return (
@@ -244,11 +291,9 @@ export const AssistantPage: React.FC = () => {
       onDrop={handleDrop}
       className="relative max-w-4xl mx-auto space-y-6 min-h-[80vh]"
     >
-      {/* Full-Screen Drag & Drop Overlay */}
       {isDragging && (
         <div className="fixed inset-0 z-50 bg-surface-container-lowest/85 backdrop-blur-md flex flex-col items-center justify-center p-6 transition-all duration-300 animate-in fade-in zoom-in-95 pointer-events-none">
           <div className="w-full max-w-xl p-10 border-2 border-dashed border-brand-blue/70 rounded-3xl bg-surface/95 flex flex-col items-center justify-center text-center space-y-5 shadow-2xl">
-            {/* Stacked floating icons */}
             <div className="relative flex items-center justify-center mb-2">
               <div className="w-16 h-16 rounded-2xl bg-brand-blue/15 text-brand-blue flex items-center justify-center rotate-[-12deg] shadow-md">
                 <FileCode className="w-8 h-8" />
@@ -257,28 +302,21 @@ export const AssistantPage: React.FC = () => {
                 <FileText className="w-8 h-8" />
               </div>
             </div>
-
             {attachedFiles.length > 0 && (
               <span className="text-label-sm font-semibold text-brand-blue bg-blue-50 px-3 py-1 rounded-full border border-brand-blue/30">
                 {attachedFiles.length} fayl əlavə edilib
               </span>
             )}
-
             <div className="space-y-1">
               <h3 className="text-title-lg font-bold text-on-surface tracking-tight">Add anything</h3>
               <p className="text-body-md text-on-surface-variant">
                 Drop any file here to add it to the conversation
               </p>
             </div>
-
-            <div className="pt-2">
-              <span className="text-xs text-on-surface-variant/70 font-mono">PDF, DOCX, HTML, TXT, PNG, JPG...</span>
-            </div>
           </div>
         </div>
       )}
 
-      {/* Hidden File Input */}
       <input
         type="file"
         ref={fileInputRef}
@@ -287,9 +325,8 @@ export const AssistantPage: React.FC = () => {
         className="hidden"
       />
 
-      {/* Empty State / Chat Stream */}
       {messages.length === 0 ? (
-        <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-8 animate-in fade-in zoom-in-95 duration-300">
+        <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-8 animate-in fade-in zoom-in-95 duration-300 pb-36">
           <div className="w-20 h-20 rounded-3xl bg-blue-100 text-brand-blue flex items-center justify-center shadow-sm">
             <Sparkles className="w-10 h-10" />
           </div>
@@ -309,7 +346,7 @@ export const AssistantPage: React.FC = () => {
           </div>
         </div>
       ) : (
-        <div className="space-y-6 min-h-[420px] pb-36">
+        <div className="space-y-6 min-h-[420px] pb-48 sm:pb-56">
           {messages.map((msg) => (
             <div key={msg.id} className="space-y-2">
               {msg.sender === 'user' ? (
@@ -329,7 +366,6 @@ export const AssistantPage: React.FC = () => {
                         {block.type === 'text' && <p>{block.content}</p>}
                       </div>
                     ))}
-                    {!msg.blocks && <p>{msg.text}</p>}
                   </div>
                 </div>
               ) : (
@@ -339,35 +375,42 @@ export const AssistantPage: React.FC = () => {
               )}
             </div>
           ))}
-          <div ref={messagesEndRef} className="h-4" />
+
+          {isThinking && (
+            <div className="flex items-center gap-3 p-4 rounded-2xl bg-surface-container-low border border-outline-variant/60 max-w-md animate-pulse shadow-xs">
+              <div className="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center text-brand-blue shrink-0">
+                <Sparkles className="w-4 h-4 animate-spin" />
+              </div>
+              <span className="text-xs font-semibold text-on-surface-variant">
+                MyGuard AI analiz edir və hesabat hazırlayır...
+              </span>
+            </div>
+          )}
+
+          <div ref={messagesEndRef} />
         </div>
       )}
 
-      {/* Standalone Input Box Wrapper */}
-      <div className="fixed bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 w-full max-w-[850px] px-4 z-40 flex flex-col items-center">
+      <div className="fixed bottom-6 left-0 right-0 z-40 px-4 pointer-events-none flex justify-center">
         <form
           onSubmit={(e) => {
             e.preventDefault();
             handleSend();
           }}
-          className={`w-full flex-shrink-0 bg-surface-container-lowest/85 backdrop-blur-xl border transition-all shadow-md rounded-[28px] p-2.5 ${
-            isThinking ? 'animate-breathe border-brand-blue/50' : 'border-outline-variant/70'
-          }`}
+          className="w-full max-w-4xl pointer-events-auto bg-surface-container-lowest/90 backdrop-blur-2xl border border-outline-variant/80 rounded-3xl p-2.5 shadow-[0_12px_40px_rgba(0,102,255,0.12)] space-y-2 transition-all"
         >
-          {/* Attached Files Carousel/Row */}
           {attachedFiles.length > 0 && (
-            <div className="flex items-center gap-2 overflow-x-auto px-2 pt-1 pb-2 mb-1 border-b border-outline-variant/30 scrollbar-none">
+            <div className="flex flex-wrap gap-2 px-2 pt-1 border-b border-outline-variant/50 pb-2">
               {attachedFiles.map((file) => (
                 <div
                   key={file.id}
-                  className="relative group flex items-center gap-3 px-3 py-2 rounded-2xl border border-outline-variant/60 bg-surface-container/60 hover:bg-surface-container-high/60 transition-all shrink-0 min-w-[160px]"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-container-low border border-outline-variant text-xs shadow-2xs group relative"
                 >
-                  {/* Progress Spinner / Status Icon */}
                   {file.status === 'uploading' ? (
-                    <div className="relative w-6 h-6 flex items-center justify-center shrink-0">
-                      <svg className="w-5 h-5 animate-spin text-brand-blue" viewBox="0 0 24 24">
+                    <div className="w-5 h-5 flex items-center justify-center text-brand-blue shrink-0">
+                      <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24">
                         <circle
-                          className="opacity-20"
+                          className="opacity-25"
                           cx="12"
                           cy="12"
                           r="10"
@@ -376,55 +419,49 @@ export const AssistantPage: React.FC = () => {
                           fill="none"
                         />
                         <path
-                          className="opacity-90"
+                          className="opacity-75"
                           fill="currentColor"
                           d="M4 12a8 8 0 018-8v8H4z"
                         />
                       </svg>
                     </div>
                   ) : (
-                    <div className="w-6 h-6 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-200/50">
-                      <CheckCircle2 className="w-4 h-4" />
+                    <div className="w-5 h-5 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-200/50">
+                      <CheckCircle2 className="w-3.5 h-3.5" />
                     </div>
                   )}
 
-                  {/* File Meta Info */}
                   <div className="flex flex-col text-left overflow-hidden pr-1">
                     <span className="text-xs font-semibold text-on-surface truncate max-w-[120px] leading-snug">
                       {file.name}
                     </span>
-                    <span className="text-[10px] text-on-surface-variant/80 font-medium leading-none mt-0.5">
-                      {file.status === 'uploading' ? `File (${file.progress}%)` : file.typeLabel}
+                    <span className="text-[9px] text-on-surface-variant/80 font-medium leading-none mt-0.5">
+                      {file.status === 'uploading' ? `(${file.progress}%)` : file.typeLabel}
                     </span>
                   </div>
 
-                  {/* Remove Button */}
                   <button
                     type="button"
                     onClick={() => removeFile(file.id)}
                     className="ml-auto p-1 text-on-surface-variant/60 hover:text-error hover:bg-error-container/30 rounded-full transition-colors shrink-0"
                     title="Sil"
                   >
-                    <X className="w-3.5 h-3.5" />
+                    <X className="w-3 h-3" />
                   </button>
                 </div>
               ))}
             </div>
           )}
 
-          {/* Input Controls Bar */}
           <div className="flex items-center gap-2 px-2">
-            {/* Plus / Attach Button */}
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
               className="w-10 h-10 rounded-full hover:bg-surface-container-high/70 text-on-surface-variant flex items-center justify-center transition-colors shrink-0 cursor-pointer"
-              title="Fayl əlavə et"
             >
               <Plus className="w-5 h-5" />
             </button>
 
-            {/* Main Text Input */}
             <input
               type="text"
               value={input}
@@ -432,24 +469,21 @@ export const AssistantPage: React.FC = () => {
               disabled={isThinking}
               placeholder={
                 isThinking
-                  ? 'MyGov AI analiz edir...'
+                  ? 'MyGuard AI analiz edir...'
                   : attachedFiles.length > 0
-                  ? 'Ask anything about attached files...'
+                  ? 'Əlavə edilmiş fayllar haqqında soruşun...'
                   : 'Sənəd təhlükəsizliyi haqqında istənilən sualı verin...'
               }
               className="flex-1 py-3 px-2 bg-transparent text-body-md text-on-surface focus:outline-none placeholder:text-on-surface-variant/60"
             />
 
-            {/* Mic / Voice Option */}
             <button
               type="button"
               className="w-10 h-10 rounded-full hover:bg-surface-container-high/70 text-on-surface-variant flex items-center justify-center transition-colors shrink-0 cursor-pointer"
-              title="Səsli daxiletmə"
             >
               <Mic className="w-5 h-5" />
             </button>
 
-            {/* Send Button */}
             <button
               type="submit"
               disabled={isThinking || (!input.trim() && attachedFiles.length === 0)}
@@ -469,4 +503,3 @@ export const AssistantPage: React.FC = () => {
 };
 
 export default AssistantPage;
-
