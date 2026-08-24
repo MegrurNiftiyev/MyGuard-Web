@@ -24,6 +24,14 @@ export const LoginPage: React.FC = () => {
     }, 1200);
   };
 
+  const handleProviderSelect = (provider: 'sima' | 'mygov' | 'guest') => {
+    if (provider === 'guest') {
+      navigate('/');
+    } else {
+      setActiveModal(provider);
+    }
+  };
+
   const handleDigitalAuthSuccess = () => {
     setActiveModal(null);
     navigate('/');
@@ -55,17 +63,13 @@ export const LoginPage: React.FC = () => {
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-outline-variant/60" />
             </div>
-            <span className="relative bg-surface-container-lowest px-3 text-xs font-semibold text-on-surface-variant uppercase tracking-wider">
-              və ya milli rəqəmsal kimliklə
+            <span className="relative bg-surface-container-lowest px-3 text-xs font-semibold text-on-surface-variant tracking-wider">
+              və ya
             </span>
           </div>
 
-          <NationalAuthProviders onSelectProvider={setActiveModal} />
+          <NationalAuthProviders onSelectProvider={handleProviderSelect} />
         </Card>
-
-        <p className="text-center text-xs text-on-surface-variant/70">
-          Giriş etməklə təhlükəsizlik qaydalarını qəbul etmiş olursunuz.
-        </p>
       </div>
 
       {activeModal && (

@@ -17,7 +17,7 @@ interface AttachedFile {
 }
 
 export const AssistantPage: React.FC = () => {
-  const [messages, setMessages] = useState<AiMessage[]>(mockAiMessages);
+  const [messages, setMessages] = useState<AiMessage[]>([]);
   const [input, setInput] = useState('');
   const [isThinking, setIsThinking] = useState(false);
   const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([]);

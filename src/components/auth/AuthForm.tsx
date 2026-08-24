@@ -136,17 +136,6 @@ export const AuthForm: React.FC<AuthFormProps> = ({ mode, onSubmit, isSimulating
           <span>{mode === 'login' ? 'Daxil ol' : 'Hesab Yarat'}</span>
         )}
       </Button>
-
-      {/* Guest Mode Option for Testers */}
-      <div className="pt-2 text-center">
-        <button
-          type="button"
-          onClick={() => navigate('/')}
-          className="text-xs font-semibold text-on-surface-variant hover:text-brand-blue hover:underline transition-colors cursor-pointer"
-        >
-          Qonaq (Guest) kimi davam et ➔
-        </button>
-      </div>
     </form>
   );
 };
