@@ -19,7 +19,7 @@ export const PageShell: React.FC<PageShellProps> = ({ children }) => {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-h-screen w-full">
         <TopBar />
-        <main className="flex-1 w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 pb-36">
+        <main className="flex-1 w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-10 pb-36">
           {children}
         </main>
       </div>

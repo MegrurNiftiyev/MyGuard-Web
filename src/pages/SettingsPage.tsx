@@ -35,7 +35,7 @@ export const SettingsPage: React.FC = () => {
       )}
 
       {/* SECTION 1: Profil */}
-      <section className="space-y-6 mt-4">
+      <section className="space-y-6">
         <h2 className="text-title-lg font-bold text-on-surface border-b border-outline-variant/60 pb-3">
           {t('profileSection') || 'Profil'}
         </h2>
