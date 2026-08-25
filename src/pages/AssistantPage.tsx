@@ -38,6 +38,16 @@ export const AssistantPage: React.FC = () => {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const userScrolledUp = useRef<boolean>(false);
+  const streamIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Clean up streaming interval on unmount
+  useEffect(() => {
+    return () => {
+      if (streamIntervalRef.current) {
+        clearInterval(streamIntervalRef.current);
+      }
+    };
+  }, []);
 
   // Track user manual scroll up/down
   useEffect(() => {
