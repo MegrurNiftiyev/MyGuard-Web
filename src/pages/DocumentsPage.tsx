@@ -4,7 +4,7 @@ import { Search, FileText, ArrowRight } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Chip } from '../components/ui/Chip';
-import { MyGuardLoader } from '../components/ui/MyGuardLoader';
+import { TableSkeleton } from '../components/ui/Skeleton';
 import { mockDocuments } from '../data/mockData';
 import { RiskStatus } from '../types';
 import { useLanguage } from '../context/LanguageContext';
@@ -141,9 +141,7 @@ export const DocumentsPage: React.FC = () => {
         {/* Rows */}
         <div className="divide-y divide-outline-variant">
           {isLoading ? (
-            <div className="p-12 flex items-center justify-center">
-              <MyGuardLoader size="md" />
-            </div>
+            <TableSkeleton rows={5} />
           ) : (
             filteredDocs.map((doc) => (
               <div

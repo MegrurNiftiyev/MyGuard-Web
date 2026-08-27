@@ -226,6 +226,16 @@ body {
   animation: pageFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+/* Shimmer Loading Keyframe */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
 /* Shooting Diagonal Comet Glides with Smooth Tail Shadows */
 @keyframes shootingComet1 {
   0%, 100% {
