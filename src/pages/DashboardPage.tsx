@@ -78,21 +78,19 @@ export const DashboardPage: React.FC = () => {
       });
       if (liveRes && liveRes.blocks) {
         setMessages(prev => [...prev, liveRes as unknown as AiMessage]);
-        return;
+      } else {
+        throw new Error('Etibarsız cavab alındı');
       }
-    } catch (err) {
-      console.warn('Live chat response fallback on dashboard:', err);
-    }
-
-    setTimeout(() => {
-      const aiResponse: AiMessage = {
-        id: `msg-${Date.now() + 1}`,
+    } catch (err: any) {
+      console.warn('Live chat response error on dashboard:', err);
+      const errorMsg: AiMessage = {
+        id: `msg-err-${Date.now()}`,
         sender: 'assistant',
         timestamp: 'İndi',
-        blocks: [{ type: 'text', content: 'Sistemdə skan edilən sənədlər üzrə 1,248 ədəd yoxlama aparılmışdır və təhlükəsizlik qaydalarına 100% riayət edilir.' }]
+        blocks: [{ type: 'text', content: 'AI xidməti ilə əlaqə qurularkən xəta baş verdi.' }]
       };
-      setMessages(prev => [...prev, aiResponse]);
-    }, 600);
+      setMessages(prev => [...prev, errorMsg]);
+    }
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -101,11 +99,11 @@ export const DashboardPage: React.FC = () => {
       setIsUploading(true);
       try {
         const res = await documentsApi.uploadDocument(file);
-        const docId = res.document?.id || 'doc-1724750000-123';
+        const docId = res.document?.id || `doc-${Date.now()}`;
         navigate(`/scan?docId=${docId}&name=${encodeURIComponent(file.name)}`);
       } catch (err) {
-        console.warn('Live upload failed, redirecting to scan page with mock document:', err);
-        navigate(`/scan?docId=doc-1724750000-123&name=${encodeURIComponent(file.name)}`);
+        console.warn('Live upload failed:', err);
+        navigate(`/scan?name=${encodeURIComponent(file.name)}`);
       } finally {
         setIsUploading(false);
       }

@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { FileText, Send, Sparkles, Plus, X, Mic, CheckCircle2, FileCode } from 'lucide-react';
 import { AiMessageWrapper } from '../components/assistant/AiMessageWrapper';
 import { AiMessageRenderer } from '../components/assistant/AiMessageRenderer';
-import { mockAiMessages } from '../data/mockData';
 import { AiMessage, MessageBlock } from '../types';
 import { chatApi } from '../api/chatApi';
 
@@ -38,7 +37,6 @@ export const AssistantPage: React.FC = () => {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const userScrolledUp = useRef<boolean>(false);
-  const streamIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     const initChatSession = async () => {
@@ -52,18 +50,10 @@ export const AssistantPage: React.FC = () => {
           }
         }
       } catch (err) {
-        console.warn('Chat session init fallback:', err);
+        console.warn('Chat session init failed:', err);
       }
     };
     initChatSession();
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      if (streamIntervalRef.current) {
-        clearInterval(streamIntervalRef.current);
-      }
-    };
   }, []);
 
   const scrollToBottom = () => {
@@ -197,43 +187,45 @@ export const AssistantPage: React.FC = () => {
     setIsThinking(true);
 
     try {
+      // Ensure session exists or create one on demand
+      let currentSessionId = sessionId;
+      if (!currentSessionId) {
+        const newSession = await chatApi.createSession('Sənəd Təhlükəsizliyi və Risk Analizi');
+        currentSessionId = newSession.id;
+        setSessionId(newSession.id);
+      }
+
       const response = await chatApi.sendMessage({
         chatMode: 'LARGE_CHAT',
         screenDestination: 'AI_SCREEN',
         message: query,
-        sessionId
+        sessionId: currentSessionId
       });
 
       if (response && response.blocks) {
-        setIsThinking(false);
         setMessages((prev) => [...prev, response as unknown as AiMessage]);
-        return;
+      } else {
+        throw new Error('Səhv və ya boş cavab strukturu alındı.');
       }
-    } catch (err) {
-      console.warn('Live chat response failed, using dynamic local AI fallback:', err);
-    }
-
-    // Fallback streaming AI response
-    setTimeout(() => {
-      const mockResponse = mockAiMessages.find((m) => m.sender === 'assistant');
-      const allBlocks = mockResponse?.blocks || [];
-
-      if (allBlocks.length === 0) {
-        setIsThinking(false);
-        return;
-      }
-
-      const aiMessageId = `msg-${Date.now() + 1}`;
-      const initialAiMsg: AiMessage = {
-        id: aiMessageId,
+    } catch (err: any) {
+      console.warn('Live chat request failed:', err);
+      const errorMsg: AiMessage = {
+        id: `msg-err-${Date.now()}`,
         sender: 'assistant',
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        blocks: [allBlocks[0]]
+        blocks: [
+          {
+            type: 'callout',
+            title: 'Təhlükəsizlik Servisi Əlaqə Xətası',
+            content: err.message || 'AI xidməti ilə əlaqə qurularkən xəta baş verdi. Zəhmət olmasa yenidən cəhd edin.',
+            tone: 'danger'
+          }
+        ]
       };
-
-      setMessages((prev) => [...prev, initialAiMsg]);
+      setMessages((prev) => [...prev, errorMsg]);
+    } finally {
       setIsThinking(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -345,7 +337,7 @@ export const AssistantPage: React.FC = () => {
         </div>
       )}
 
-      {/* Floating Pinned AI Input Box - Fixed floating at bottom of screen above all contents */}
+      {/* Floating Pinned AI Input Box */}
       <div className="fixed bottom-6 left-4 right-4 md:left-24 md:right-8 z-50 flex justify-center pointer-events-none">
         <form
           onSubmit={(e) => {
