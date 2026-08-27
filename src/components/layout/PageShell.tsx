@@ -51,7 +51,7 @@ export const PageShell: React.FC<PageShellProps> = ({ children }) => {
       <div className="flex-1 flex flex-col min-h-screen w-full">
         <TopBar />
         <main className="flex-1 w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-10 pb-36">
-          <div key={location.pathname} className="animate-page-fade">
+          <div key={location.pathname} className="animate-page-fade w-full h-full">
             {children}
           </div>
         </main>

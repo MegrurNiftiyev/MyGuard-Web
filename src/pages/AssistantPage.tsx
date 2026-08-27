@@ -242,10 +242,10 @@ export const AssistantPage: React.FC = () => {
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
-      className="relative max-w-4xl mx-auto flex flex-col min-h-[calc(100vh-8rem)] pb-44"
+      className="max-w-4xl mx-auto flex flex-col min-h-[calc(100vh-10rem)] pb-48 relative"
     >
       {isDragging && (
-        <div className="fixed inset-0 z-50 bg-surface-container-lowest/85 backdrop-blur-md flex flex-col items-center justify-center p-6 transition-all duration-300 animate-in fade-in zoom-in-95 pointer-events-none">
+        <div className="fixed inset-0 z-[60] bg-surface-container-lowest/85 backdrop-blur-md flex flex-col items-center justify-center p-6 transition-all duration-300 animate-in fade-in zoom-in-95 pointer-events-none">
           <div className="w-full max-w-xl p-10 border-2 border-dashed border-brand-blue/70 rounded-3xl bg-surface/95 flex flex-col items-center justify-center text-center space-y-5 shadow-2xl">
             <div className="relative flex items-center justify-center mb-2">
               <div className="w-16 h-16 rounded-2xl bg-brand-blue/15 text-brand-blue flex items-center justify-center rotate-[-12deg] shadow-md">
@@ -278,6 +278,7 @@ export const AssistantPage: React.FC = () => {
         className="hidden"
       />
 
+      {/* Main Messages Body */}
       {messages.length === 0 ? (
         <div className="flex-1 flex flex-col items-center justify-center my-auto space-y-8 animate-in fade-in zoom-in-95 duration-300 py-12">
           <div className="w-20 h-20 rounded-3xl bg-blue-100 text-brand-blue flex items-center justify-center shadow-sm">
@@ -344,7 +345,7 @@ export const AssistantPage: React.FC = () => {
         </div>
       )}
 
-      {/* Floating Pinned AI Input Box - Fixed at bottom of viewport above everything */}
+      {/* Floating Pinned AI Input Box - Fixed floating at bottom of screen above all contents */}
       <div className="fixed bottom-6 left-4 right-4 md:left-24 md:right-8 z-50 flex justify-center pointer-events-none">
         <form
           onSubmit={(e) => {
