@@ -1,163 +1,180 @@
-import React from 'react';
-import { THEME_COLORS, hexToRgba } from '../../constants/themeColors';
+import React, { useEffect, useRef } from 'react';
+import { THEME_COLORS } from '../../constants/themeColors';
 
-interface ShootingCometConfig {
-  id: string;
-  size: number; // Diameter of ball in px
-  tailLength: number; // Length of the diagonal fading shadow beam in px
+interface CometParticle {
+  x: number;
+  y: number;
+  speed: number;
+  size: number;
+  tailLength: number;
+  angle: number;
   color: 'blue' | 'purple' | 'green';
-  top?: string;
-  bottom?: string;
-  left?: string;
-  right?: string;
-  animationClass: string;
-  opacity?: number;
+  opacity: number;
 }
 
-const COMET_CONFIGS: ShootingCometConfig[] = [
-  {
-    id: 'comet-1',
-    size: 130,
-    tailLength: 550,
-    color: 'purple',
-    top: '-80px',
-    left: '2%',
-    animationClass: 'animate-comet-glide-1',
-    opacity: 0.85
-  },
-  {
-    id: 'comet-2',
-    size: 140,
-    tailLength: 600,
-    color: 'blue',
-    top: '-90px',
-    right: '3%',
-    animationClass: 'animate-comet-glide-2',
-    opacity: 0.85
-  },
-  {
-    id: 'comet-3',
-    size: 90,
-    tailLength: 420,
-    color: 'green',
-    top: '4%',
-    left: '35%',
-    animationClass: 'animate-comet-glide-3',
-    opacity: 0.8
-  },
-  {
-    id: 'comet-4',
-    size: 110,
-    tailLength: 480,
-    color: 'purple',
-    top: '38%',
-    right: '-30px',
-    animationClass: 'animate-comet-glide-1',
-    opacity: 0.82
-  },
-  {
-    id: 'comet-5',
-    size: 135,
-    tailLength: 580,
-    color: 'green',
-    bottom: '-60px',
-    right: '6%',
-    animationClass: 'animate-comet-glide-2',
-    opacity: 0.85
-  },
-  {
-    id: 'comet-6',
-    size: 100,
-    tailLength: 460,
-    color: 'blue',
-    top: '46%',
-    left: '1%',
-    animationClass: 'animate-comet-glide-3',
-    opacity: 0.82
-  },
-  {
-    id: 'comet-7',
-    size: 85,
-    tailLength: 390,
-    color: 'purple',
-    bottom: '5%',
-    left: '10%',
-    animationClass: 'animate-comet-glide-1',
-    opacity: 0.78
-  },
-  {
-    id: 'comet-8',
-    size: 95,
-    tailLength: 410,
-    color: 'blue',
-    bottom: '-30px',
-    left: '40%',
-    animationClass: 'animate-comet-glide-2',
-    opacity: 0.8
-  }
-];
-
 export const AuthFloatingOrbsBackground: React.FC = () => {
-  return (
-    <div className="fixed inset-0 pointer-events-none overflow-hidden z-0 select-none">
-      {COMET_CONFIGS.map((comet) => {
-        let sphereGradient = '';
-        let tailGradient = '';
-        let glowColor = '';
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-        if (comet.color === 'purple') {
-          sphereGradient = 'linear-gradient(135deg, #E9D5FF 0%, #9333EA 45%, #581C87 100%)';
-          tailGradient = `linear-gradient(to top, ${hexToRgba(THEME_COLORS.brandPurple, 0.45)} 0%, ${hexToRgba(THEME_COLORS.brandPurple, 0.12)} 60%, transparent 100%)`;
-          glowColor = 'rgba(147, 51, 234, 0.45)';
-        } else if (comet.color === 'blue') {
-          sphereGradient = 'linear-gradient(135deg, #DBEAFE 0%, #0066FF 45%, #1E40AF 100%)';
-          tailGradient = `linear-gradient(to top, ${hexToRgba(THEME_COLORS.brandBlue, 0.45)} 0%, ${hexToRgba(THEME_COLORS.brandBlue, 0.12)} 60%, transparent 100%)`;
-          glowColor = 'rgba(0, 102, 255, 0.45)';
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let animationFrameId: number;
+    let width = (canvas.width = window.innerWidth);
+    let height = (canvas.height = window.innerHeight);
+
+    const handleResize = () => {
+      if (!canvas) return;
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    const colors: ('blue' | 'purple' | 'green')[] = ['blue', 'purple', 'green'];
+
+    const createParticle = (randomizePosition = true): CometParticle => {
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      const size = Math.random() * 20 + 12; // 12px to 32px
+      const tailLength = Math.random() * 350 + 250; // 250px to 600px
+      const speed = Math.random() * 2.5 + 1.8; // 1.8 to 4.3 speed
+      const angle = Math.PI / 4 + (Math.random() * 0.2 - 0.1); // ~45 deg diagonal angle
+
+      let x: number;
+      let y: number;
+
+      if (randomizePosition) {
+        x = Math.random() * (width + 400) - 200;
+        y = Math.random() * (height + 400) - 200;
+      } else {
+        // Spawn from top or left edge
+        if (Math.random() > 0.5) {
+          x = Math.random() * width;
+          y = -tailLength - 50;
         } else {
-          // Green / Emerald
-          sphereGradient = 'linear-gradient(135deg, #D1FAE5 0%, #10B981 45%, #064E3B 100%)';
-          tailGradient = `linear-gradient(to top, ${hexToRgba(THEME_COLORS.brandGreen, 0.45)} 0%, ${hexToRgba(THEME_COLORS.brandGreen, 0.12)} 60%, transparent 100%)`;
-          glowColor = 'rgba(16, 185, 129, 0.45)';
+          x = -tailLength - 50;
+          y = Math.random() * height;
+        }
+      }
+
+      return {
+        x,
+        y,
+        speed,
+        size,
+        tailLength,
+        angle,
+        color,
+        opacity: Math.random() * 0.25 + 0.7, // 0.7 to 0.95
+      };
+    };
+
+    // Pool of 18 active comets
+    const particleCount = 18;
+    const particles: CometParticle[] = Array.from({ length: particleCount }, () =>
+      createParticle(true)
+    );
+
+    const render = () => {
+      ctx.clearRect(0, 0, width, height);
+
+      particles.forEach((p, index) => {
+        // Update velocity
+        const vx = Math.cos(p.angle) * p.speed;
+        const vy = Math.sin(p.angle) * p.speed;
+
+        p.x += vx;
+        p.y += vy;
+
+        // Calculate tail end coordinate
+        const tailX = p.x - Math.cos(p.angle) * p.tailLength;
+        const tailY = p.y - Math.sin(p.angle) * p.tailLength;
+
+        // Color definitions
+        let mainRgb: string = '0, 102, 255';
+        let highlightColor: string = '#DBEAFE';
+        let coreColor: string = THEME_COLORS.brandBlue;
+        let deepColor: string = '#1E40AF';
+
+        if (p.color === 'purple') {
+          mainRgb = '147, 51, 234';
+          highlightColor = '#E9D5FF';
+          coreColor = THEME_COLORS.brandPurple;
+          deepColor = '#581C87';
+        } else if (p.color === 'green') {
+          mainRgb = '16, 185, 129';
+          highlightColor = '#D1FAE5';
+          coreColor = THEME_COLORS.brandGreen;
+          deepColor = '#064E3B';
         }
 
-        return (
-          <div
-            key={comet.id}
-            className={`absolute ${comet.animationClass} will-change-transform`}
-            style={{
-              top: comet.top,
-              bottom: comet.bottom,
-              left: comet.left,
-              right: comet.right,
-              width: `${comet.size}px`,
-              height: `${comet.size + comet.tailLength}px`,
-              opacity: comet.opacity ?? 0.85,
-              transformOrigin: 'center center'
-            }}
-          >
-            {/* Long Fading Diagonal Shadow / Light Beam Tail in Matching Color */}
-            <div
-              className="w-full rounded-t-full absolute top-0 left-0"
-              style={{
-                height: `${comet.tailLength + comet.size / 2}px`,
-                background: tailGradient,
-                boxShadow: `0 0 35px ${glowColor}`,
-                filter: 'blur(2px)'
-              }}
-            />
+        ctx.save();
+        ctx.globalAlpha = p.opacity;
 
-            {/* Leading 3D Comet Sphere Ball */}
-            <div
-              className="rounded-full absolute bottom-0 left-0 w-full"
-              style={{
-                height: `${comet.size}px`,
-                background: sphereGradient,
-                boxShadow: `0 10px 40px ${glowColor}, inset 0 2px 8px rgba(255, 255, 255, 0.85)`
-              }}
-            />
-          </div>
+        // 1. Draw Long Fading Diagonal Tail Beam
+        const tailGrad = ctx.createLinearGradient(p.x, p.y, tailX, tailY);
+        tailGrad.addColorStop(0, `rgba(${mainRgb}, 0.5)`);
+        tailGrad.addColorStop(0.4, `rgba(${mainRgb}, 0.18)`);
+        tailGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y);
+        ctx.lineTo(tailX, tailY);
+        ctx.strokeStyle = tailGrad;
+        ctx.lineWidth = p.size * 0.85;
+        ctx.lineCap = 'round';
+        ctx.shadowColor = `rgba(${mainRgb}, 0.4)`;
+        ctx.shadowBlur = 15;
+        ctx.stroke();
+
+        // 2. Draw 3D Glowing Sphere Head
+        const sphereGrad = ctx.createRadialGradient(
+          p.x - p.size * 0.2,
+          p.y - p.size * 0.2,
+          p.size * 0.1,
+          p.x,
+          p.y,
+          p.size
         );
-      })}
-    </div>
+        sphereGrad.addColorStop(0, highlightColor);
+        sphereGrad.addColorStop(0.4, coreColor);
+        sphereGrad.addColorStop(1, deepColor);
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = sphereGrad;
+        ctx.shadowColor = `rgba(${mainRgb}, 0.6)`;
+        ctx.shadowBlur = 25;
+        ctx.fill();
+
+        ctx.restore();
+
+        // 3. Boundary Check — Respawn if moved past screen
+        if (p.x - p.tailLength > width || p.y - p.tailLength > height) {
+          particles[index] = createParticle(false);
+        }
+      });
+
+      animationFrameId = requestAnimationFrame(render);
+    };
+
+    render();
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className="fixed inset-0 pointer-events-none z-0 select-none"
+    />
   );
 };
+
+export default AuthFloatingOrbsBackground;

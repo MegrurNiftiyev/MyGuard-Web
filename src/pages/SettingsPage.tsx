@@ -1,18 +1,19 @@
 import React, { useState } from 'react';
-import { Settings, ShieldCheck, Sliders, Lock, Bell, CheckCircle, Save, Quote, Globe, User, Shield, Building, Mail, ArrowRight, Check, X, RotateCcw } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Sliders, Lock, Bell, CheckCircle, Save, Quote, Globe, Building, Mail, LogOut, LogIn, Fingerprint } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { CustomSwitch } from '../components/ui/CustomSwitch';
 import { useLanguage } from '../context/LanguageContext';
-import { useUserRole } from '../context/UserRoleContext';
+import { useAuth } from '../context/AuthContext';
 
 export const SettingsPage: React.FC = () => {
+  const navigate = useNavigate();
   const { lang, setLang, t } = useLanguage();
-  const { role, setRole, isAdmin } = useUserRole();
+  const { user, isAuthenticated, logout } = useAuth();
 
   const [ocrThreshold, setOcrThreshold] = useState(95);
   const [sensitivity, setSensitivity] = useState<'Low' | 'Medium' | 'High'>('High');
-  const [maxFileSize, setMaxFileSize] = useState(50);
   const [autoScan, setAutoScan] = useState(true);
 
   const [allowExternalAi, setAllowExternalAi] = useState(false);
@@ -25,6 +26,11 @@ export const SettingsPage: React.FC = () => {
     setTimeout(() => setSavedNotice(false), 3000);
   };
 
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
   return (
     <div className="max-w-4xl mx-auto space-y-12 pb-12">
       {savedNotice && (
@@ -34,38 +40,68 @@ export const SettingsPage: React.FC = () => {
         </div>
       )}
 
-      {/* SECTION 1: Profil */}
+      {/* SECTION 1: Profil və Autentifikasiya Sessiyası */}
       <section className="space-y-6">
         <h2 className="text-title-lg font-bold text-on-surface border-b border-outline-variant/60 pb-3">
-          {t('profileSection') || 'Profil'}
+          {t('profileSection') || 'Profil və Hesab Sessiyası'}
         </h2>
 
         <div className="space-y-6">
-          {/* User Header */}
+          {/* User Header & Logout Card */}
           <Card padding="lg" className="border-outline-variant/60 shadow-sm">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
               <div className="flex items-center gap-6">
-                <div className="w-16 h-16 rounded-full bg-surface-container-high border border-outline-variant flex items-center justify-center text-on-surface font-bold text-title-lg shrink-0">
-                  EM
+                <div className="w-16 h-16 rounded-full bg-brand-blue/10 border border-brand-blue/30 text-brand-blue flex items-center justify-center font-bold text-headline-sm shrink-0 shadow-xs">
+                  {user?.fullName ? user.fullName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'SE'}
                 </div>
 
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <h1 className="text-headline-sm font-bold text-on-surface">Elvin Məmmədov</h1>
+                    <h1 className="text-headline-sm font-bold text-on-surface">
+                      {user?.fullName || 'Samir Əliyev'}
+                    </h1>
+                    <span className="px-2.5 py-0.5 rounded-full text-label-xs font-extrabold bg-brand-blue/10 text-brand-blue border border-brand-blue/20 uppercase tracking-wider">
+                      {user?.role || 'admin'}
+                    </span>
                   </div>
                   <p className="text-body-md text-on-surface-variant">
-                    Təhlükəsizlik Əməliyyatları Mərkəzi (SOC) • AI Təhlükəsizlik Arxitektorı
+                    {user?.department || 'Təhlükəsizlik və İnformasiya İdarəsi'}
                   </p>
-                  <div className="flex items-center gap-4 text-label-sm text-on-surface-variant/80 pt-1 flex-wrap">
-                    <span className="flex items-center gap-1.5"><Mail className="w-4 h-4" /> e.mammadov@soc.gov.az</span>
-                    <span className="flex items-center gap-1.5"><Building className="w-4 h-4" /> Dövlət AI Təhlükəsizlik Agentliyi</span>
+                  <div className="flex items-center gap-4 text-label-sm text-on-surface-variant/80 pt-1 flex-wrap font-mono">
+                    <span className="flex items-center gap-1.5"><Fingerprint className="w-4 h-4 text-brand-blue" /> FİN: {user?.finCode || '7AB1234'}</span>
+                    <span className="flex items-center gap-1.5"><Mail className="w-4 h-4 text-on-surface-variant" /> {user?.email || 'e.mammadov@soc.gov.az'}</span>
                   </div>
                 </div>
+              </div>
+
+              {/* Logout / Login Action Button */}
+              <div className="self-start sm:self-center shrink-0">
+                {isAuthenticated ? (
+                  <Button
+                    variant="danger"
+                    size="md"
+                    onClick={handleLogout}
+                    icon={<LogOut className="w-4 h-4" />}
+                    className="rounded-2xl px-6 py-2.5 font-bold shadow-sm cursor-pointer"
+                  >
+                    Çıxış Et (Log Out)
+                  </Button>
+                ) : (
+                  <Button
+                    variant="primary"
+                    size="md"
+                    onClick={() => navigate('/login')}
+                    icon={<LogIn className="w-4 h-4" />}
+                    className="rounded-2xl px-6 py-2.5 font-bold shadow-sm cursor-pointer"
+                  >
+                    Daxil Ol (Log In)
+                  </Button>
+                )}
               </div>
             </div>
           </Card>
 
-          {/* Language Preferences Tile with Sliding Background Box */}
+          {/* Language Preferences Tile */}
           <Card padding="lg" className="border-outline-variant/60 shadow-sm">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="flex items-start gap-4">
@@ -157,7 +193,7 @@ export const SettingsPage: React.FC = () => {
             {/* Injection Sensitivity Tile */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between py-5 border-b border-outline-variant/40 gap-4">
               <div className="flex items-start gap-4">
-                <ShieldCheck className="w-6 h-6 text-brand-purple mt-1" />
+                <Lock className="w-6 h-6 text-brand-purple mt-1" />
                 <div>
                   <h4 className="text-title-lg font-medium text-on-surface truncate">
                     {t('sensitivity') || 'Injection Həssaslığı'}
@@ -298,16 +334,9 @@ export const SettingsPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Floating Bottom Right Action Bar */}
+      {/* Floating Bottom Right Save Action Bar */}
       <div className="fixed bottom-8 right-8 z-50 animate-fade-in-up transition-all">
         <div className="bg-white/60 backdrop-blur-xl border border-white/40 rounded-full p-2.5 shadow-[0_8px_32px_rgba(0,0,0,0.12)] flex items-center gap-2 max-w-fit">
-          <Button variant="outline" size="sm" className="!text-on-surface-variant hover:!bg-surface-container-high hover:!text-on-surface !border-outline-variant/40 rounded-full w-10 h-10 p-0 flex items-center justify-center transition-all" title="Ləğv elə">
-            <X className="w-4 h-4" />
-          </Button>
-          <Button variant="outline" size="sm" className="!text-on-surface-variant hover:!bg-surface-container-high hover:!text-on-surface !border-outline-variant/40 rounded-full w-10 h-10 p-0 flex items-center justify-center transition-all" title="Geri al">
-            <RotateCcw className="w-4 h-4" />
-          </Button>
-          <div className="w-px h-6 bg-outline-variant/30 mx-1"></div>
           <Button variant="primary" size="md" onClick={handleSave} className="px-6 !bg-brand-blue hover:!bg-brand-blue-hover text-white shadow-md rounded-full font-bold transition-all" icon={<Save className="w-4 h-4" />}>
             {t('saveBtn') || 'Yadda Saxla'}
           </Button>
