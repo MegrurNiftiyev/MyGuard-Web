@@ -5,7 +5,7 @@ interface CometParticle {
   x: number;
   y: number;
   speed: number;
-  size: number;
+  radius: number; // Circle radius in px (diameter = radius * 2)
   tailLength: number;
   angle: number;
   color: 'blue' | 'purple' | 'green';
@@ -38,10 +38,15 @@ export const AuthFloatingOrbsBackground: React.FC = () => {
 
     const createParticle = (randomizePosition = true): CometParticle => {
       const color = colors[Math.floor(Math.random() * colors.length)];
-      const size = Math.random() * 20 + 12; // 12px to 32px
-      const tailLength = Math.random() * 350 + 250; // 250px to 600px
-      const speed = Math.random() * 2.5 + 1.8; // 1.8 to 4.3 speed
-      const angle = Math.PI / 4 + (Math.random() * 0.2 - 0.1); // ~45 deg diagonal angle
+      // Radius between 7px and 30px (diameter 14px to 60px)
+      const radius = Math.random() * 23 + 7;
+      
+      // Inverse physics speed scaling: smaller circles move faster, larger circles move slower
+      const baseSpeedFactor = 48;
+      const speed = (baseSpeedFactor / radius) * (Math.random() * 0.35 + 0.82);
+      
+      const tailLength = Math.random() * 250 + radius * 12; // Tail scales nicely with size
+      const angle = Math.PI / 4 + (Math.random() * 0.16 - 0.08); // ~45 deg diagonal glide
 
       let x: number;
       let y: number;
@@ -50,12 +55,12 @@ export const AuthFloatingOrbsBackground: React.FC = () => {
         x = Math.random() * (width + 400) - 200;
         y = Math.random() * (height + 400) - 200;
       } else {
-        // Spawn from top or left edge
+        // Spawn from top or left edge outside screen bounds
         if (Math.random() > 0.5) {
           x = Math.random() * width;
-          y = -tailLength - 50;
+          y = -tailLength - 60;
         } else {
-          x = -tailLength - 50;
+          x = -tailLength - 60;
           y = Math.random() * height;
         }
       }
@@ -64,16 +69,16 @@ export const AuthFloatingOrbsBackground: React.FC = () => {
         x,
         y,
         speed,
-        size,
+        radius,
         tailLength,
         angle,
         color,
-        opacity: Math.random() * 0.25 + 0.7, // 0.7 to 0.95
+        opacity: Math.random() * 0.25 + 0.72, // 0.72 to 0.97
       };
     };
 
-    // Pool of 18 active comets
-    const particleCount = 18;
+    // Pool of 20 active comets
+    const particleCount = 20;
     const particles: CometParticle[] = Array.from({ length: particleCount }, () =>
       createParticle(true)
     );
@@ -82,78 +87,60 @@ export const AuthFloatingOrbsBackground: React.FC = () => {
       ctx.clearRect(0, 0, width, height);
 
       particles.forEach((p, index) => {
-        // Update velocity
+        // Update position according to speed and angle
         const vx = Math.cos(p.angle) * p.speed;
         const vy = Math.sin(p.angle) * p.speed;
 
         p.x += vx;
         p.y += vy;
 
-        // Calculate tail end coordinate
+        // Tail endpoint calculation
         const tailX = p.x - Math.cos(p.angle) * p.tailLength;
         const tailY = p.y - Math.sin(p.angle) * p.tailLength;
 
-        // Color definitions
+        // Solid core color matching theme (no white highlights)
         let mainRgb: string = '0, 102, 255';
-        let highlightColor: string = '#DBEAFE';
         let coreColor: string = THEME_COLORS.brandBlue;
-        let deepColor: string = '#1E40AF';
 
         if (p.color === 'purple') {
           mainRgb = '147, 51, 234';
-          highlightColor = '#E9D5FF';
           coreColor = THEME_COLORS.brandPurple;
-          deepColor = '#581C87';
         } else if (p.color === 'green') {
           mainRgb = '16, 185, 129';
-          highlightColor = '#D1FAE5';
           coreColor = THEME_COLORS.brandGreen;
-          deepColor = '#064E3B';
         }
 
         ctx.save();
         ctx.globalAlpha = p.opacity;
 
-        // 1. Draw Long Fading Diagonal Tail Beam
+        // 1. Long Fading Shadow Tail — Width matches exact circle diameter (radius * 2)
         const tailGrad = ctx.createLinearGradient(p.x, p.y, tailX, tailY);
         tailGrad.addColorStop(0, `rgba(${mainRgb}, 0.5)`);
-        tailGrad.addColorStop(0.4, `rgba(${mainRgb}, 0.18)`);
+        tailGrad.addColorStop(0.35, `rgba(${mainRgb}, 0.18)`);
         tailGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
 
         ctx.beginPath();
         ctx.moveTo(p.x, p.y);
         ctx.lineTo(tailX, tailY);
         ctx.strokeStyle = tailGrad;
-        ctx.lineWidth = p.size * 0.85;
+        ctx.lineWidth = p.radius * 2; // Exact circle diameter width
         ctx.lineCap = 'round';
-        ctx.shadowColor = `rgba(${mainRgb}, 0.4)`;
-        ctx.shadowBlur = 15;
+        ctx.shadowColor = `rgba(${mainRgb}, 0.35)`;
+        ctx.shadowBlur = 12;
         ctx.stroke();
 
-        // 2. Draw 3D Glowing Sphere Head
-        const sphereGrad = ctx.createRadialGradient(
-          p.x - p.size * 0.2,
-          p.y - p.size * 0.2,
-          p.size * 0.1,
-          p.x,
-          p.y,
-          p.size
-        );
-        sphereGrad.addColorStop(0, highlightColor);
-        sphereGrad.addColorStop(0.4, coreColor);
-        sphereGrad.addColorStop(1, deepColor);
-
+        // 2. Pure Solid Color Circle Head (No white 3D shine spot)
         ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fillStyle = sphereGrad;
-        ctx.shadowColor = `rgba(${mainRgb}, 0.6)`;
-        ctx.shadowBlur = 25;
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fillStyle = coreColor;
+        ctx.shadowColor = `rgba(${mainRgb}, 0.55)`;
+        ctx.shadowBlur = 20;
         ctx.fill();
 
         ctx.restore();
 
-        // 3. Boundary Check — Respawn if moved past screen
-        if (p.x - p.tailLength > width || p.y - p.tailLength > height) {
+        // 3. Boundary Check — Respawn if particle moved off canvas
+        if (p.x - p.tailLength > width + 100 || p.y - p.tailLength > height + 100) {
           particles[index] = createParticle(false);
         }
       });
