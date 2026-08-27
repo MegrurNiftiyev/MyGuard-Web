@@ -10,7 +10,7 @@ export const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ childr
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-surface-bright">
-        <MyGuardLoader size="lg" text="MyGuard Təhlükəsizlik Yoxlanılır..." />
+        <MyGuardLoader size="lg" />
       </div>
     );
   }
@@ -33,7 +33,7 @@ export const PublicOnlyRoute: React.FC<{ children: React.ReactNode }> = ({ child
     );
   }
 
-  if (isAuthenticated) {
+  if (!isAuthenticated) {
     return <Navigate to="/" replace />;
   }
 

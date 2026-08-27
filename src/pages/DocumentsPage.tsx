@@ -142,7 +142,7 @@ export const DocumentsPage: React.FC = () => {
         <div className="divide-y divide-outline-variant">
           {isLoading ? (
             <div className="p-12 flex items-center justify-center">
-              <MyGuardLoader size="md" text="Sənədlər Yüklənir..." />
+              <MyGuardLoader size="md" />
             </div>
           ) : (
             filteredDocs.map((doc) => (
