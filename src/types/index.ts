@@ -1,8 +1,20 @@
 export type RiskStatus = 'safe' | 'suspicious' | 'high_risk' | 'blocked';
-export type StepStatus = 'processing' | 'completed' | 'warning' | 'failed';
+export type StepStatus = 'pending' | 'processing' | 'active' | 'completed' | 'warning' | 'failed' | 'error';
 export type ActionDecision = 'ALLOWED' | 'BLOCKED' | 'REQUIRES_CONFIRMATION';
 export type SensitivityLevel = 'Low' | 'Medium' | 'High' | 'Critical';
 export type AIModelMode = 'STANDARD AI' | 'CONFIDENTIAL AI';
+
+export interface UserProfile {
+  uid: string;
+  fullName: string;
+  finCode: string;
+  email: string;
+  phone?: string;
+  role: 'user' | 'admin' | 'auditor';
+  department?: string;
+  authProvider?: string;
+  createdAt?: string;
+}
 
 export interface DocumentItem {
   id: string;
@@ -25,6 +37,14 @@ export interface ScanStep {
   title: string;
   description: string;
   status: StepStatus;
+}
+
+export interface StepHistoryItem {
+  step: string;
+  startedAt: string;
+  finishedAt: string;
+  status: StepStatus;
+  message: string;
 }
 
 export interface ThreatItem {
@@ -82,17 +102,6 @@ export enum CodeLanguage {
   YAML = 'yaml'
 }
 
-export enum SemanticColor {
-  PRIMARY = 'primary',
-  SECONDARY = 'secondary',
-  DANGER = 'danger',
-  WARNING = 'warning',
-  SUCCESS = 'success',
-  INFO = 'info',
-  PURPLE = 'purple',
-  INDIGO = 'indigo'
-}
-
 export type SemanticTone = 'primary' | 'secondary' | 'danger' | 'warning' | 'success' | 'info' | 'purple' | 'indigo';
 
 export type MessageBlockType = 
@@ -114,9 +123,9 @@ export interface MessageBlock {
   title?: string;
   subtitle?: string;
   content?: string;
-  // Chart fields
-  chartType?: 'area' | 'line' | 'bar' | 'horizontal_bar' | 'donut';
-  chartData?: any[];
+  // Chart fields (All 6 chart types)
+  chartType?: 'area' | 'bar' | 'line' | 'pie' | 'donut' | 'horizontal_bar';
+  chartData?: Record<string, string | number>[];
   chartKeys?: { 
     nameKey?: string; 
     valueKey?: string; 
@@ -129,17 +138,17 @@ export interface MessageBlock {
   sizeLabel?: string;
   actionLabel?: string;
   actionUrl?: string;
+  description?: string;
   // Table fields
-  tableData?: { headers: string[]; rows: (string | number | React.ReactNode)[][] };
+  tableData?: { headers: string[]; rows: (string | number)[][] };
   headers?: string[];
-  rows?: (string | number | React.ReactNode)[][];
+  rows?: (string | number)[][];
   analysisData?: StructuredAiAnalysis;
   // Callout fields
-  tone?: SemanticTone | 'info' | 'warning' | 'danger' | 'success';
+  tone?: 'danger' | 'warning' | 'info' | 'success' | SemanticTone;
   // Link fields
   url?: string;
   label?: string;
-  description?: string;
   // Code block fields
   code?: string;
   language?: string;
@@ -148,7 +157,7 @@ export interface MessageBlock {
   date?: string;
   // List block fields
   items?: string[];
-  listType?: 'numbered' | 'bullet';
+  listType?: 'numbered' | 'bulleted' | 'bullet';
 }
 
 export interface ChatMessage {
@@ -159,7 +168,6 @@ export interface ChatMessage {
   structuredAnalysis?: StructuredAiAnalysis;
   blocks?: MessageBlock[];
 }
-
 
 export interface ModelConfig {
   id: string;
@@ -176,6 +184,7 @@ export interface ModelConfig {
 
 export interface AgentAction {
   id: string;
+  agent?: string;
   action: string;
   file: string;
   destination: string;
@@ -200,22 +209,30 @@ export interface Layer1Metrics {
   matchPercent: number;
   hiddenTextDetected: boolean;
   extraTextSegments?: string[];
+  status?: 'clean' | 'suspicious';
 }
 
 export interface AnalysisPipeline {
   documentId: string;
   layer1_ocrTextMatch: Layer1Metrics;
   layer2_classification: {
-    confidence: number;           // model nə qədər əmindir
+    confidence: number;
     label: 'safe' | 'suspicious' | 'injection';
-    categories: string[];         // Instruction Override, Ranking Manipulation və s.
+    categories: string[];
   };
   layer3_llmReview: {
-    used: boolean;                // yalnız uncertain hallarda true
+    used: boolean;
+    isMalicious?: boolean;
+    confidence?: number;
     explanation: string | null;
+    recommendedAction?: string;
+    attackVector?: string;
+    reasoning?: string;
+    mitigationSteps?: string[];
   };
   finalRiskScore: number;
-  finalStatus: 'safe' | 'suspicious' | 'high_risk';
+  finalStatus: 'safe' | 'suspicious' | 'high_risk' | 'blocked';
+  isContainInjection?: boolean;
 }
 
 export interface Intervention {

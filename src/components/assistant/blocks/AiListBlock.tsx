@@ -4,7 +4,7 @@ import { CheckSquare } from 'lucide-react';
 export interface AiListBlockProps {
   title?: string;
   items: string[];
-  listType?: 'numbered' | 'bullet';
+  listType?: 'numbered' | 'bullet' | 'bulleted';
 }
 
 export const AiListBlock: React.FC<AiListBlockProps> = ({

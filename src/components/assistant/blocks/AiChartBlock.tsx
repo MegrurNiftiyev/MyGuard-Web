@@ -3,14 +3,14 @@ import {
   AreaChart, Area, LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, 
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend 
 } from 'recharts';
-import { BarChart2, PieChart as PieIcon, TrendingUp, LayoutList, Layers } from 'lucide-react';
+import { BarChart2, PieChart as PieIcon, TrendingUp, LayoutList } from 'lucide-react';
 
 import { SemanticTone } from '../../../types';
 
 export interface AiChartBlockProps {
   title?: string;
   subtitle?: string;
-  chartType?: 'area' | 'line' | 'bar' | 'horizontal_bar' | 'donut';
+  chartType?: 'area' | 'line' | 'bar' | 'horizontal_bar' | 'donut' | 'pie';
   data: any[];
   chartKeys?: {
     nameKey?: string;
@@ -45,7 +45,8 @@ export const AiChartBlock: React.FC<AiChartBlockProps> = ({
   data = [],
   chartKeys
 }) => {
-  const [activeType, setActiveType] = useState<'area' | 'line' | 'bar' | 'horizontal_bar' | 'donut'>(initialType);
+  const normalizedInitialType = initialType === 'pie' ? 'donut' : initialType;
+  const [activeType, setActiveType] = useState<'area' | 'line' | 'bar' | 'horizontal_bar' | 'donut'>(normalizedInitialType);
 
   const nameKey = chartKeys?.nameKey || 'name';
   const valueKey = chartKeys?.valueKey || (data[0] && 'count' in data[0] ? 'count' : 'value');
