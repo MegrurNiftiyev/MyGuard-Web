@@ -13,10 +13,29 @@ export const PageShell: React.FC<PageShellProps> = ({ children }) => {
   const isAssistant = location.pathname.startsWith('/assistant');
   const isAuthPage = location.pathname === '/login';
 
-  if (isAuthPage) {
+  const knownRoutes = [
+    '/',
+    '/login',
+    '/documents',
+    '/risk-reports',
+    '/assistant',
+    '/settings',
+    '/scan',
+    '/models',
+    '/agent-action'
+  ];
+
+  const isKnownRoute = knownRoutes.includes(location.pathname) || 
+    location.pathname.startsWith('/analysis') || 
+    location.pathname.startsWith('/comparison');
+
+  const isNotFoundPage = !isKnownRoute;
+
+  // On Login page or 404 Not Found page, hide TopBar, BottomNav, and Floating AI Assistant
+  if (isAuthPage || isNotFoundPage) {
     return (
       <div className="min-h-screen w-full bg-dot-grid relative overflow-hidden flex items-center justify-center selection:bg-brand-blue/20 selection:text-brand-blue">
-        <div key={location.pathname} className="w-full h-full min-h-screen flex items-center justify-center animate-page-fade relative">
+        <div key={location.pathname} className="w-full h-full min-h-screen flex items-center justify-center animate-page-fade relative z-10">
           {children}
         </div>
       </div>
