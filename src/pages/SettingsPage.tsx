@@ -54,19 +54,11 @@ export const SettingsPage: React.FC = () => {
                   {user?.fullName ? user.fullName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'SƏ'}
                 </div>
 
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <h1 className="text-headline-sm font-bold text-on-surface">
-                      {user?.fullName || 'Samir Əliyev'}
-                    </h1>
-                    <span className="px-2.5 py-0.5 rounded-full text-label-xs font-extrabold bg-brand-blue/10 text-brand-blue border border-brand-blue/20 uppercase tracking-wider">
-                      {user?.role || 'admin'}
-                    </span>
-                  </div>
-                  <p className="text-body-md text-on-surface-variant">
-                    {user?.department || 'Təhlükəsizlik və İnformasiya İdarəsi'}
-                  </p>
-                  <div className="flex items-center gap-4 text-label-sm text-on-surface-variant/80 pt-1 flex-wrap font-mono">
+                <div className="space-y-1.5">
+                  <h1 className="text-headline-sm font-bold text-on-surface">
+                    {user?.fullName || 'Samir Əliyev'}
+                  </h1>
+                  <div className="flex items-center gap-4 text-label-sm text-on-surface-variant/80 pt-0.5 flex-wrap font-mono">
                     <span className="flex items-center gap-1.5"><Fingerprint className="w-4 h-4 text-brand-blue" /> FİN: {user?.finCode || '7AB1234'}</span>
                     <span className="flex items-center gap-1.5"><Mail className="w-4 h-4 text-on-surface-variant" /> {user?.email || 'e.mammadov@soc.gov.az'}</span>
                   </div>
@@ -77,13 +69,13 @@ export const SettingsPage: React.FC = () => {
               <div className="self-start sm:self-center shrink-0">
                 {isAuthenticated ? (
                   <Button
-                    variant="danger"
+                    variant="ghost"
                     size="md"
                     onClick={handleLogout}
-                    icon={<LogOut className="w-4 h-4" />}
-                    className="rounded-2xl px-6 py-2.5 font-bold shadow-sm cursor-pointer"
+                    icon={<LogOut className="w-4 h-4 text-red-500" />}
+                    className="rounded-full px-5 py-2.5 font-bold text-red-600 bg-red-50/80 hover:bg-red-100 border border-red-200/60 shadow-2xs transition-all cursor-pointer"
                   >
-                    Çıxış Et (Log Out)
+                    Çıxış Et
                   </Button>
                 ) : (
                   <Button
@@ -91,9 +83,9 @@ export const SettingsPage: React.FC = () => {
                     size="md"
                     onClick={() => navigate('/login')}
                     icon={<LogIn className="w-4 h-4" />}
-                    className="rounded-2xl px-6 py-2.5 font-bold shadow-sm cursor-pointer"
+                    className="rounded-full px-6 py-2.5 font-bold shadow-sm cursor-pointer"
                   >
-                    Daxil Ol (Log In)
+                    Daxil Ol
                   </Button>
                 )}
               </div>
