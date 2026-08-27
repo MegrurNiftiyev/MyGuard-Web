@@ -33,7 +33,7 @@ export const PublicOnlyRoute: React.FC<{ children: React.ReactNode }> = ({ child
     );
   }
 
-  if (!isAuthenticated) {
+  if (isAuthenticated) {
     return <Navigate to="/" replace />;
   }
 
