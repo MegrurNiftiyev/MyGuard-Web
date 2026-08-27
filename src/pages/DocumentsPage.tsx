@@ -5,6 +5,7 @@ import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Chip } from '../components/ui/Chip';
 import { TableSkeleton } from '../components/ui/Skeleton';
+import { EmptyState } from '../components/ui/EmptyState';
 import { mockDocuments } from '../data/mockData';
 import { RiskStatus } from '../types';
 import { useLanguage } from '../context/LanguageContext';
@@ -142,6 +143,16 @@ export const DocumentsPage: React.FC = () => {
         <div className="divide-y divide-outline-variant">
           {isLoading ? (
             <TableSkeleton rows={5} />
+          ) : filteredDocs.length === 0 ? (
+            <EmptyState
+              icon={FileText}
+              title="Axtarışa uyğun sənəd tapılmadı"
+              description="Axtarış sözünü və ya təyin etdiyiniz risk filtrlərini dəyişdirərək yenidən cəhd edin."
+              primaryActionLabel="Yeni Sənəd Skan Et"
+              onPrimaryAction={() => navigate('/scan')}
+              secondaryActionLabel="Filtrləri Sıfırla"
+              onSecondaryAction={() => { setSearchTerm(''); setActiveFilter('all'); }}
+            />
           ) : (
             filteredDocs.map((doc) => (
               <div
@@ -200,14 +211,6 @@ export const DocumentsPage: React.FC = () => {
                 </div>
               </div>
             ))
-          )}
-
-          {!isLoading && filteredDocs.length === 0 && (
-            <div className="p-12 text-center text-on-surface-variant space-y-2">
-              <FileText className="w-10 h-10 mx-auto text-outline" />
-              <div className="text-title-lg font-semibold">Heç bir sənəd tapılmadı</div>
-              <p className="text-body-md">Axtarış meyarlarını dəyişin və ya yeni sənəd skan edin.</p>
-            </div>
           )}
         </div>
       </Card>

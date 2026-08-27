@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ShieldCheck, Ban, CheckCircle, Activity, ChevronRight, FileText, ArrowRight } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { ListSkeleton } from '../components/ui/Skeleton';
+import { EmptyState } from '../components/ui/EmptyState';
 import { useLanguage } from '../context/LanguageContext';
 import { securityApi, AgentSecurityAction } from '../api/securityApi';
 
@@ -11,37 +12,17 @@ export const ActionSecurityPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const loadActions = async () => {
+    setIsLoading(true);
     try {
       const liveActions = await securityApi.getActions();
       if (liveActions && liveActions.length > 0) {
         setActions(liveActions);
       } else {
-        setActions([
-          {
-            id: 'act-101',
-            agent: 'HR Resume Classifier Agent',
-            action: 'Rank Candidate & Forward to Main LLM',
-            file: 'CV_Samir_Aliyev.pdf',
-            destination: 'Internal HR Portal',
-            sensitivity: 'High',
-            decision: 'BLOCKED',
-            timestamp: '11:45',
-            reason: 'Instruction Override injection detected in page 2'
-          },
-          {
-            id: 'act-102',
-            agent: 'Finance Auditor Agent',
-            action: 'Summarize Q3 Financial Report',
-            file: 'Q3_Report_Draft.docx',
-            destination: 'Internal SharePoint',
-            sensitivity: 'Medium',
-            decision: 'ALLOWED',
-            timestamp: '11:30'
-          }
-        ]);
+        setActions([]);
       }
     } catch (err) {
       console.warn('Security actions load fallback:', err);
+      setActions([]);
     } finally {
       setIsLoading(false);
     }
@@ -121,6 +102,14 @@ export const ActionSecurityPage: React.FC = () => {
           <div className="flex flex-col gap-4">
             {isLoading ? (
               <ListSkeleton count={4} />
+            ) : actions.length === 0 ? (
+              <EmptyState
+                icon={ShieldCheck}
+                title="Aktiv agent müdaxiləsi tapılmadı"
+                description="Hazırda heç bir autonomous AI agent tərəfindən bloka alınan və ya monitorinq olunan kritik müdaxilə qeydə alınmayıb."
+                primaryActionLabel="Yenidən Yoxla"
+                onPrimaryAction={loadActions}
+              />
             ) : (
               actions.map((act) => (
                 <div

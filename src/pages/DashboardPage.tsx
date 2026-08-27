@@ -4,7 +4,7 @@ import { UploadCloud, FileText, ArrowRight, Send, Sparkles } from 'lucide-react'
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { TableSkeleton } from '../components/ui/Skeleton';
-import { mockDocuments } from '../data/mockData';
+import { EmptyState } from '../components/ui/EmptyState';
 import { useLanguage } from '../context/LanguageContext';
 import { AiMessage, DocumentItem, RiskStatus } from '../types';
 import { Chip } from '../components/ui/Chip';
@@ -18,7 +18,7 @@ export const DashboardPage: React.FC = () => {
   const [messages, setMessages] = useState<AiMessage[]>([]);
   const [isUploading, setIsUploading] = useState(false);
 
-  const [documents, setDocuments] = useState<DocumentItem[]>(mockDocuments);
+  const [documents, setDocuments] = useState<DocumentItem[]>([]);
   const [isLoadingDocs, setIsLoadingDocs] = useState<boolean>(true);
 
   useEffect(() => {
@@ -43,9 +43,12 @@ export const DashboardPage: React.FC = () => {
             category: 'Sənəd Analizi'
           }));
           setDocuments(mapped);
+        } else {
+          setDocuments([]);
         }
       } catch (err) {
-        console.warn('Fallback to mock recent docs:', err);
+        console.warn('Live recent docs fetch error:', err);
+        setDocuments([]);
       } finally {
         setIsLoadingDocs(false);
       }
@@ -237,6 +240,14 @@ export const DashboardPage: React.FC = () => {
           
           {isLoadingDocs ? (
             <TableSkeleton rows={3} />
+          ) : documents.length === 0 ? (
+            <EmptyState
+              icon={FileText}
+              title="Hələ heç bir sənəd yoxlanılmayıb"
+              description="Sistemdə skan edilmiş sənəd tapılmadı. Yuxarıdakı paneldən yeni sənəd yükləyərək analizə başlayın."
+              primaryActionLabel="Yeni Sənəd Skan Et"
+              onPrimaryAction={() => navigate('/scan')}
+            />
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse min-w-[600px]">

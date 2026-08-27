@@ -2,10 +2,22 @@ import React from 'react';
 import { ShieldAlert, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../context/LanguageContext';
+import { useAuth } from '../../context/AuthContext';
 
 export const TopBar: React.FC = () => {
   const navigate = useNavigate();
   const { t, lang, setLang } = useLanguage();
+  const { user } = useAuth();
+
+  const getInitials = (name?: string) => {
+    if (!name) return 'SƏ';
+    return name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .substring(0, 2)
+      .toUpperCase();
+  };
 
   return (
     <header className="sticky top-4 z-40 w-full max-w-[1440px] mx-auto pr-6 sm:pr-8 pointer-events-auto">
@@ -57,12 +69,17 @@ export const TopBar: React.FC = () => {
           {/* Settings / Profile Button */}
           <button
             onClick={() => navigate('/settings')}
-            className="w-9 h-9 rounded-full bg-gradient-to-tr from-brand-blue to-brand-purple p-0.5 shadow-xs cursor-pointer hover:scale-105 transition-transform"
-            title="Parametrlər və Profil"
+            className="flex items-center gap-2 bg-surface-container-low hover:bg-surface-container-high border border-outline-variant/70 pl-1.5 pr-3 py-1 rounded-full shadow-2xs transition-all cursor-pointer group"
+            title={`${user?.fullName || 'İstifadəçi Profili'} (${user?.role || 'user'})`}
           >
-            <div className="w-full h-full rounded-full bg-white flex items-center justify-center text-on-surface">
-              <User className="w-4 h-4 text-brand-blue" />
+            <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-brand-blue to-brand-purple p-0.5 shadow-xs shrink-0 group-hover:scale-105 transition-transform">
+              <div className="w-full h-full rounded-full bg-white flex items-center justify-center text-[10px] font-bold text-brand-blue">
+                {getInitials(user?.fullName)}
+              </div>
             </div>
+            <span className="text-xs font-semibold text-on-surface truncate max-w-[100px] hidden sm:inline-block">
+              {user?.fullName?.split(' ')[0] || 'Samir'}
+            </span>
           </button>
         </div>
       </div>
