@@ -242,7 +242,7 @@ export const AssistantPage: React.FC = () => {
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
-      className="relative max-w-4xl mx-auto flex flex-col min-h-[calc(100vh-8rem)] pb-36"
+      className="relative max-w-4xl mx-auto flex flex-col min-h-[calc(100vh-8rem)] pb-44"
     >
       {isDragging && (
         <div className="fixed inset-0 z-50 bg-surface-container-lowest/85 backdrop-blur-md flex flex-col items-center justify-center p-6 transition-all duration-300 animate-in fade-in zoom-in-95 pointer-events-none">
@@ -299,7 +299,7 @@ export const AssistantPage: React.FC = () => {
           </div>
         </div>
       ) : (
-        <div className="flex-1 space-y-6 pb-40 pt-4">
+        <div className="flex-1 space-y-6 pb-48 pt-4">
           {messages.map((msg) => (
             <div key={msg.id} className="space-y-2">
               {msg.sender === 'user' ? (
@@ -344,14 +344,14 @@ export const AssistantPage: React.FC = () => {
         </div>
       )}
 
-      {/* Fixed Positioned AI Input Bar Standing 10% Above Screen Bottom */}
-      <div className="fixed bottom-[10%] left-0 right-0 z-40 px-4 md:px-8 pointer-events-none flex justify-center">
+      {/* Floating Pinned AI Input Box - Fixed at bottom of viewport above everything */}
+      <div className="fixed bottom-6 left-4 right-4 md:left-24 md:right-8 z-50 flex justify-center pointer-events-none">
         <form
           onSubmit={(e) => {
             e.preventDefault();
             handleSend();
           }}
-          className="w-full max-w-4xl pointer-events-auto bg-white/95 backdrop-blur-2xl border border-outline-variant/80 rounded-3xl p-2.5 shadow-[0_16px_48px_rgba(0,102,255,0.18)] space-y-2 transition-all"
+          className="w-full max-w-4xl pointer-events-auto bg-white/95 backdrop-blur-2xl border border-outline-variant/80 rounded-3xl p-3 shadow-[0_16px_48px_rgba(0,102,255,0.2)] space-y-2 transition-all"
         >
           {attachedFiles.length > 0 && (
             <div className="flex flex-wrap gap-2 px-2 pt-1 border-b border-outline-variant/50 pb-2">

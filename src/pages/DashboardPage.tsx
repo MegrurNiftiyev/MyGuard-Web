@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UploadCloud, FileText, ArrowRight, Send, Sparkles } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
+import { TableSkeleton } from '../components/ui/Skeleton';
 import { mockDocuments } from '../data/mockData';
 import { useLanguage } from '../context/LanguageContext';
-import { AiMessage } from '../types';
+import { AiMessage, DocumentItem, RiskStatus } from '../types';
 import { Chip } from '../components/ui/Chip';
 import { documentsApi } from '../api/documentsApi';
 import { chatApi } from '../api/chatApi';
@@ -16,6 +17,41 @@ export const DashboardPage: React.FC = () => {
   const [aiInput, setAiInput] = useState('');
   const [messages, setMessages] = useState<AiMessage[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+
+  const [documents, setDocuments] = useState<DocumentItem[]>(mockDocuments);
+  const [isLoadingDocs, setIsLoadingDocs] = useState<boolean>(true);
+
+  useEffect(() => {
+    const fetchRecentDocs = async () => {
+      setIsLoadingDocs(true);
+      try {
+        const res = await documentsApi.getDocuments();
+        if (res && res.length > 0) {
+          const mapped: DocumentItem[] = res.map((d) => ({
+            id: d.id,
+            name: d.fileName || 'Sənəd.pdf',
+            fileType: d.fileType?.toUpperCase() || 'PDF',
+            size: d.fileSizeBytes ? `${(d.fileSizeBytes / 1024).toFixed(1)} KB` : '1.2 MB',
+            uploadTime: d.uploadedAt ? new Date(d.uploadedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'İndi',
+            riskScore: d.finalRiskScore || 0,
+            status: (d.finalStatus as RiskStatus) || 'safe',
+            ocrPdfMatch: 95,
+            hiddenTextDetected: !!d.isContainInjection,
+            promptInjectionProb: d.finalRiskScore || 0,
+            department: 'Təhlükəsizlik',
+            flaggedCount: d.isContainInjection ? 1 : 0,
+            category: 'Sənəd Analizi'
+          }));
+          setDocuments(mapped);
+        }
+      } catch (err) {
+        console.warn('Fallback to mock recent docs:', err);
+      } finally {
+        setIsLoadingDocs(false);
+      }
+    };
+    fetchRecentDocs();
+  }, []);
 
   const handleAiChatSubmit = async (queryOverride?: string) => {
     const text = queryOverride || aiInput;
@@ -193,47 +229,51 @@ export const DashboardPage: React.FC = () => {
         <Card padding="lg" className="flex flex-col gap-6 shadow-l1">
           <div className="flex justify-between items-center">
             <h3 className="text-title-lg font-medium text-on-surface">{t('recentDocs')}</h3>
-            <button onClick={() => navigate('/documents')} className="text-brand-blue text-label-md hover:underline flex items-center gap-1">
+            <button onClick={() => navigate('/documents')} className="text-brand-blue text-label-md hover:underline flex items-center gap-1 cursor-pointer">
               {t('viewAll')}
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>
           
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse min-w-[600px]">
-              <thead>
-                <tr className="border-b border-outline-variant">
-                  <th className="py-3 px-4 text-label-sm text-on-surface-variant">Name</th>
-                  <th className="py-3 px-4 text-label-sm text-on-surface-variant">Time</th>
-                  <th className="py-3 px-4 text-label-sm text-on-surface-variant w-[150px]">Status</th>
-                  <th className="py-3 px-4 text-label-sm text-on-surface-variant w-[150px]">Risk Score</th>
-                </tr>
-              </thead>
-              <tbody className="text-body-md">
-                {mockDocuments.slice(0, 3).map((doc) => (
-                  <tr key={doc.id} onClick={() => navigate(`/analysis/${doc.id}`)} className="border-b border-outline-variant/50 hover:bg-surface-bright transition-colors cursor-pointer group">
-                    <td className="py-4 px-4 flex items-center gap-3">
-                      <FileText className="w-5 h-5 text-tertiary" />
-                      <span className="font-medium text-on-surface group-hover:text-brand-blue transition-colors">{doc.name}</span>
-                    </td>
-                    <td className="py-4 px-4 text-on-surface-variant text-sm">{doc.uploadTime}</td>
-                    <td className="py-4 px-4">
-                      <Chip status={doc.status} />
-                    </td>
-                    <td className="py-4 px-4">
-                      {doc.riskScore > 0 ? (
-                        <span className={`font-semibold ${doc.riskScore >= 70 ? 'text-error border-l-4 border-error pl-2' : doc.riskScore >= 40 ? 'text-warning border-l-4 border-warning pl-2' : 'text-success border-l-4 border-success pl-2'}`}>
-                          {doc.riskScore}/100
-                        </span>
-                      ) : (
-                        <span className="text-on-surface-variant font-semibold">-</span>
-                      )}
-                    </td>
+          {isLoadingDocs ? (
+            <TableSkeleton rows={3} />
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse min-w-[600px]">
+                <thead>
+                  <tr className="border-b border-outline-variant">
+                    <th className="py-3 px-4 text-label-sm text-on-surface-variant">Name</th>
+                    <th className="py-3 px-4 text-label-sm text-on-surface-variant">Time</th>
+                    <th className="py-3 px-4 text-label-sm text-on-surface-variant w-[150px]">Status</th>
+                    <th className="py-3 px-4 text-label-sm text-on-surface-variant w-[150px]">Risk Score</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="text-body-md">
+                  {documents.slice(0, 3).map((doc) => (
+                    <tr key={doc.id} onClick={() => navigate(`/analysis/${doc.id}`)} className="border-b border-outline-variant/50 hover:bg-surface-bright transition-colors cursor-pointer group">
+                      <td className="py-4 px-4 flex items-center gap-3">
+                        <FileText className="w-5 h-5 text-tertiary" />
+                        <span className="font-medium text-on-surface group-hover:text-brand-blue transition-colors">{doc.name}</span>
+                      </td>
+                      <td className="py-4 px-4 text-on-surface-variant text-sm">{doc.uploadTime}</td>
+                      <td className="py-4 px-4">
+                        <Chip status={doc.status} />
+                      </td>
+                      <td className="py-4 px-4">
+                        {doc.riskScore > 0 ? (
+                          <span className={`font-semibold ${doc.riskScore >= 70 ? 'text-error border-l-4 border-error pl-2' : doc.riskScore >= 40 ? 'text-warning border-l-4 border-warning pl-2' : 'text-success border-l-4 border-success pl-2'}`}>
+                            {doc.riskScore}/100
+                          </span>
+                        ) : (
+                          <span className="text-on-surface-variant font-semibold">-</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </Card>
       </div>
     </div>
