@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sliders, Lock, Bell, CheckCircle, Save, Quote, Globe, Building, Mail, LogOut, LogIn, Fingerprint } from 'lucide-react';
+import { Sliders, Lock, Bell, CheckCircle, Save, Quote, Globe, Mail, LogOut, LogIn, Fingerprint } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { CustomSwitch } from '../components/ui/CustomSwitch';
@@ -15,15 +15,21 @@ export const SettingsPage: React.FC = () => {
   const [ocrThreshold, setOcrThreshold] = useState(95);
   const [sensitivity, setSensitivity] = useState<'Low' | 'Medium' | 'High'>('High');
   const [autoScan, setAutoScan] = useState(true);
-
   const [allowExternalAi, setAllowExternalAi] = useState(false);
   const [confidentialMode, setConfidentialMode] = useState(true);
 
-  const [savedNotice, setSavedNotice] = useState(false);
+  // State to track if any setting has been modified
+  const [isDirty, setIsDirty] = useState(false);
+  const [savedToast, setSavedToast] = useState(false);
+
+  const markDirty = () => {
+    if (!isDirty) setIsDirty(true);
+  };
 
   const handleSave = () => {
-    setSavedNotice(true);
-    setTimeout(() => setSavedNotice(false), 3000);
+    setIsDirty(false);
+    setSavedToast(true);
+    setTimeout(() => setSavedToast(false), 3000);
   };
 
   const handleLogout = () => {
@@ -32,14 +38,7 @@ export const SettingsPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-12 pb-12">
-      {savedNotice && (
-        <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-body-md flex items-center gap-3 animate-in fade-in zoom-in-95">
-          <CheckCircle className="w-5 h-5 text-emerald-600 shrink-0" />
-          <span>{t('settingsSaved') || 'Parametrlər uğurla yadda saxlanıldı və platformaya tətbiq edildi.'}</span>
-        </div>
-      )}
-
+    <div className="max-w-4xl mx-auto space-y-12 pb-24 relative">
       {/* SECTION 1: Profil və Autentifikasiya Sessiyası */}
       <section className="space-y-6">
         <h2 className="text-title-lg font-bold text-on-surface border-b border-outline-variant/60 pb-3">
@@ -52,7 +51,7 @@ export const SettingsPage: React.FC = () => {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
               <div className="flex items-center gap-6">
                 <div className="w-16 h-16 rounded-full bg-brand-blue/10 border border-brand-blue/30 text-brand-blue flex items-center justify-center font-bold text-headline-sm shrink-0 shadow-xs">
-                  {user?.fullName ? user.fullName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'SE'}
+                  {user?.fullName ? user.fullName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'SƏ'}
                 </div>
 
                 <div className="space-y-1">
@@ -183,7 +182,7 @@ export const SettingsPage: React.FC = () => {
                   min="70"
                   max="100"
                   value={ocrThreshold}
-                  onChange={(e) => setOcrThreshold(Number(e.target.value))}
+                  onChange={(e) => { setOcrThreshold(Number(e.target.value)); markDirty(); }}
                   className="w-full h-2 bg-surface-container-high rounded-lg appearance-none cursor-pointer accent-brand-blue"
                 />
                 <span className="font-bold text-brand-blue whitespace-nowrap">{ocrThreshold}%</span>
@@ -208,7 +207,7 @@ export const SettingsPage: React.FC = () => {
                   <button
                     key={level}
                     type="button"
-                    onClick={() => setSensitivity(level)}
+                    onClick={() => { setSensitivity(level); markDirty(); }}
                     className={`px-4 py-2 rounded-lg text-label-sm font-semibold transition-all cursor-pointer ${
                       sensitivity === level
                         ? 'bg-brand-blue text-white shadow-sm'
@@ -236,7 +235,7 @@ export const SettingsPage: React.FC = () => {
                   </p>
                 </div>
               </div>
-              <CustomSwitch checked={autoScan} onChange={setAutoScan} />
+              <CustomSwitch checked={autoScan} onChange={(val) => { setAutoScan(val); markDirty(); }} />
             </div>
           </div>
         </Card>
@@ -264,7 +263,7 @@ export const SettingsPage: React.FC = () => {
                   </p>
                 </div>
               </div>
-              <CustomSwitch checked={confidentialMode} onChange={setConfidentialMode} />
+              <CustomSwitch checked={confidentialMode} onChange={(val) => { setConfidentialMode(val); markDirty(); }} />
             </div>
 
             {/* External AI Tile */}
@@ -280,7 +279,7 @@ export const SettingsPage: React.FC = () => {
                   </p>
                 </div>
               </div>
-              <CustomSwitch checked={allowExternalAi} onChange={setAllowExternalAi} />
+              <CustomSwitch checked={allowExternalAi} onChange={(val) => { setAllowExternalAi(val); markDirty(); }} />
             </div>
           </div>
         </Card>
@@ -334,14 +333,33 @@ export const SettingsPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Floating Bottom Right Save Action Bar */}
-      <div className="fixed bottom-8 right-8 z-50 animate-fade-in-up transition-all">
-        <div className="bg-white/60 backdrop-blur-xl border border-white/40 rounded-full p-2.5 shadow-[0_8px_32px_rgba(0,0,0,0.12)] flex items-center gap-2 max-w-fit">
-          <Button variant="primary" size="md" onClick={handleSave} className="px-6 !bg-brand-blue hover:!bg-brand-blue-hover text-white shadow-md rounded-full font-bold transition-all" icon={<Save className="w-4 h-4" />}>
-            {t('saveBtn') || 'Yadda Saxla'}
-          </Button>
+      {/* Floating Bottom Right Save Action Bar — Appears ONLY when isDirty is true */}
+      {isDirty && (
+        <div className="fixed bottom-24 right-8 z-50 animate-in fade-in slide-in-from-bottom-5 duration-300">
+          <div className="bg-white/90 backdrop-blur-2xl border border-brand-blue/40 rounded-full p-2.5 shadow-[0_12px_40px_rgba(0,102,255,0.25)] flex items-center gap-3">
+            <span className="text-xs font-bold text-on-surface pl-3">Dəyişikliklər edildi</span>
+            <Button
+              variant="primary"
+              size="md"
+              onClick={handleSave}
+              className="px-6 !bg-brand-blue hover:!bg-brand-blue-hover text-white shadow-md rounded-full font-bold transition-all cursor-pointer"
+              icon={<Save className="w-4 h-4" />}
+            >
+              {t('saveBtn') || 'Yadda Saxla'}
+            </Button>
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Bottom Floating Toast Notification — Appears for 3 seconds after saving */}
+      {savedToast && (
+        <div className="fixed bottom-24 right-8 z-50 animate-in fade-in slide-in-from-bottom-5 duration-300">
+          <div className="bg-emerald-600 text-white rounded-2xl px-6 py-3.5 shadow-2xl flex items-center gap-3 font-semibold text-sm border border-emerald-400">
+            <CheckCircle className="w-5 h-5 text-white shrink-0" />
+            <span>{t('settingsSaved') || 'Parametrlər uğurla yadda saxlanıldı.'}</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
