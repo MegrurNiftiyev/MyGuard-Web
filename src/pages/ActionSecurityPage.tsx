@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ShieldCheck, Ban, CheckCircle, Activity, ChevronRight, FileText, ArrowRight } from 'lucide-react';
 import { Card } from '../components/ui/Card';
+import { MyGuardLoader } from '../components/ui/MyGuardLoader';
 import { useLanguage } from '../context/LanguageContext';
 import { securityApi, AgentSecurityAction } from '../api/securityApi';
 
@@ -119,7 +120,9 @@ export const ActionSecurityPage: React.FC = () => {
 
           <div className="flex flex-col gap-4">
             {isLoading ? (
-              <div className="p-6 text-center text-on-surface-variant">Yüklənir...</div>
+              <div className="p-8 flex items-center justify-center">
+                <MyGuardLoader size="md" text="Agent Əməliyyatları Yüklənir..." />
+              </div>
             ) : (
               actions.map((act) => (
                 <div

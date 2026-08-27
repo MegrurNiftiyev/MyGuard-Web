@@ -1,6 +1,7 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { MyGuardLoader } from '../ui/MyGuardLoader';
 
 export const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -9,10 +10,7 @@ export const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ childr
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-surface-bright">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 border-4 border-brand-blue border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-body-md text-on-surface-variant font-semibold">MyGuard Təhlükəsizlik Yoxlanılır...</p>
-        </div>
+        <MyGuardLoader size="lg" text="MyGuard Təhlükəsizlik Yoxlanılır..." />
       </div>
     );
   }
@@ -30,9 +28,7 @@ export const PublicOnlyRoute: React.FC<{ children: React.ReactNode }> = ({ child
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-surface-bright">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 border-4 border-brand-blue border-t-transparent rounded-full animate-spin"></div>
-        </div>
+        <MyGuardLoader size="lg" />
       </div>
     );
   }

@@ -4,6 +4,7 @@ import { Search, FileText, ArrowRight } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Chip } from '../components/ui/Chip';
+import { MyGuardLoader } from '../components/ui/MyGuardLoader';
 import { mockDocuments } from '../data/mockData';
 import { RiskStatus } from '../types';
 import { useLanguage } from '../context/LanguageContext';
@@ -140,7 +141,9 @@ export const DocumentsPage: React.FC = () => {
         {/* Rows */}
         <div className="divide-y divide-outline-variant">
           {isLoading ? (
-            <div className="p-8 text-center text-on-surface-variant">Məlumatlar yüklənir...</div>
+            <div className="p-12 flex items-center justify-center">
+              <MyGuardLoader size="md" text="Sənədlər Yüklənir..." />
+            </div>
           ) : (
             filteredDocs.map((doc) => (
               <div
@@ -151,7 +154,7 @@ export const DocumentsPage: React.FC = () => {
                 {/* 4px Left Accent Bar */}
                 <div
                   className="absolute left-0 top-0 bottom-0 w-1"
-                  style={{ backgroundColor: getAccentColor(doc.status)} }
+                  style={{ backgroundColor: getAccentColor(doc.status) }}
                 />
 
                 {/* Column 1: Document */}
