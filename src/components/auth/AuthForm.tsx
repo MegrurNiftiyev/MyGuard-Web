@@ -1,16 +1,21 @@
 import React, { useState } from 'react';
 import { Mail, Lock, User, Fingerprint, Eye, EyeOff, Smartphone } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { Button } from '../ui/Button';
 
 export interface AuthFormProps {
   mode: 'login' | 'register';
-  onSubmit: (e: React.FormEvent) => void;
-  isSimulating: boolean;
+  onSubmitData?: (data: {
+    finCode: string;
+    password: string;
+    fullName?: string;
+    email?: string;
+    phone?: string;
+    rememberMe?: boolean;
+  }) => void;
+  isSubmitting?: boolean;
 }
 
-export const AuthForm: React.FC<AuthFormProps> = ({ mode, onSubmit, isSimulating }) => {
-  const navigate = useNavigate();
+export const AuthForm: React.FC<AuthFormProps> = ({ mode, onSubmitData, isSubmitting = false }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -19,8 +24,22 @@ export const AuthForm: React.FC<AuthFormProps> = ({ mode, onSubmit, isSimulating
   const [fin, setFin] = useState('');
   const [rememberMe, setRememberMe] = useState(true);
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (onSubmitData) {
+      onSubmitData({
+        finCode: fin || '7AB1234',
+        password,
+        fullName: name,
+        email,
+        phone,
+        rememberMe,
+      });
+    }
+  };
+
   return (
-    <form onSubmit={onSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4">
       {mode === 'register' && (
         <>
           <div>
@@ -144,10 +163,10 @@ export const AuthForm: React.FC<AuthFormProps> = ({ mode, onSubmit, isSimulating
         type="submit"
         variant="primary"
         size="lg"
-        disabled={isSimulating}
+        disabled={isSubmitting}
         className="w-full py-3.5 rounded-2xl font-bold text-sm shadow-md !bg-brand-blue hover:!bg-brand-blue-hover transition-all text-center justify-center mt-2 cursor-pointer"
       >
-        {isSimulating ? (
+        {isSubmitting ? (
           <span className="flex items-center justify-center gap-2">
             <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
             Yoxlanılır...

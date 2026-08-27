@@ -22,7 +22,7 @@
   --color-outline-variant: #e0e2ec;
   --color-inverse-surface: #2f3036;
 
-  /* Material 3 Role Tokens (Updated for Redesign) */
+  /* Material 3 Role Tokens */
   --color-primary: #0066FF;
   --color-on-primary: #ffffff;
   --color-primary-container: #E0E7FF;
@@ -114,7 +114,7 @@
   letter-spacing: 0.05em;
 }
 
-/* Dynamic Animated Geometric Dot Grid Pattern (Antigravity IDE style) */
+/* Dynamic Animated Geometric Dot Grid Pattern */
 @keyframes gridFloat {
   0% {
     background-position: 0px 0px;
@@ -192,12 +192,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #c4c6cf; /* outline color */
+  background: #c4c6cf;
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #0066FF; /* brand blue */
+  background: #0066FF;
 }
 
 * {
@@ -209,11 +209,6 @@ body {
   0% { box-shadow: 0 0 0px 2px rgba(0, 102, 255, 0.1), 0 0 10px rgba(147, 51, 234, 0.1); }
   50% { box-shadow: 0 0 0px 4px rgba(0, 102, 255, 0.4), 0 0 24px rgba(147, 51, 234, 0.4); }
   100% { box-shadow: 0 0 0px 2px rgba(0, 102, 255, 0.1), 0 0 10px rgba(147, 51, 234, 0.1); }
-}
-
-.animate-breathe {
-  animation: breathe-border 2s ease-in-out infinite;
-  border-radius: 32px;
 }
 
 @keyframes pageFadeIn {
@@ -231,41 +226,42 @@ body {
   animation: pageFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-@keyframes beamGlide1 {
+/* Shooting Diagonal Comet Glides with Smooth Tail Shadows */
+@keyframes shootingComet1 {
   0%, 100% {
-    transform: translate(0px, 0px) rotate(-45deg);
+    transform: translate(0px, 0px) rotate(-42deg);
   }
   50% {
-    transform: translate(24px, 32px) rotate(-45deg);
+    transform: translate(45px, 60px) rotate(-42deg);
   }
 }
 
-@keyframes beamGlide2 {
+@keyframes shootingComet2 {
   0%, 100% {
-    transform: translate(0px, 0px) rotate(-45deg);
+    transform: translate(0px, 0px) rotate(-42deg);
   }
   50% {
-    transform: translate(-28px, -36px) rotate(-45deg);
+    transform: translate(-50px, -65px) rotate(-42deg);
   }
 }
 
-@keyframes beamGlide3 {
+@keyframes shootingComet3 {
   0%, 100% {
-    transform: translate(0px, 0px) rotate(-45deg);
+    transform: translate(0px, 0px) rotate(-42deg);
   }
   50% {
-    transform: translate(20px, -26px) rotate(-45deg);
+    transform: translate(35px, -45px) rotate(-42deg);
   }
 }
 
-.animate-beam-glide-1 {
-  animation: beamGlide1 8s ease-in-out infinite;
+.animate-comet-glide-1 {
+  animation: shootingComet1 9s ease-in-out infinite;
 }
 
-.animate-beam-glide-2 {
-  animation: beamGlide2 11s ease-in-out infinite;
+.animate-comet-glide-2 {
+  animation: shootingComet2 12s ease-in-out infinite;
 }
 
-.animate-beam-glide-3 {
-  animation: beamGlide3 14s ease-in-out infinite;
+.animate-comet-glide-3 {
+  animation: shootingComet3 15s ease-in-out infinite;
 }

@@ -1,19 +1,49 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Filter, FileText, ArrowRight, ShieldAlert, Download, SlidersHorizontal } from 'lucide-react';
+import { Search, FileText, ArrowRight } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Chip } from '../components/ui/Chip';
 import { mockDocuments } from '../data/mockData';
 import { RiskStatus } from '../types';
-
 import { useLanguage } from '../context/LanguageContext';
+import { documentsApi, DocumentItem } from '../api/documentsApi';
 
 export const DocumentsPage: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState<string>('all');
+  const [documents, setDocuments] = useState<any[]>(mockDocuments);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    const fetchDocs = async () => {
+      try {
+        const liveDocs = await documentsApi.getDocuments();
+        if (liveDocs && liveDocs.length > 0) {
+          const mappedDocs = liveDocs.map((d: DocumentItem) => ({
+            id: d.id,
+            name: d.fileName,
+            category: d.fileType?.toUpperCase() || 'DOCUMENT',
+            uploadTime: d.uploadedAt ? new Date(d.uploadedAt).toLocaleString('az-AZ') : 'İndi',
+            department: 'Təhlükəsizlik İdarəsi',
+            size: d.fileSizeBytes ? `${(d.fileSizeBytes / (1024 * 1024)).toFixed(1)} MB` : '1.2 MB',
+            status: (d.finalStatus as RiskStatus) || (d.isContainInjection ? 'high_risk' : 'safe'),
+            riskScore: d.finalRiskScore ?? (d.isContainInjection ? 85 : 12),
+            fileType: d.fileType?.toUpperCase() || 'PDF'
+          }));
+          setDocuments(mappedDocs);
+        }
+      } catch (err) {
+        console.warn('Failed to load live documents, using default list:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchDocs();
+  }, []);
 
   const filterTabs = [
     { id: 'all', label: t('filterAll') || 'Bütün' },
@@ -23,7 +53,7 @@ export const DocumentsPage: React.FC = () => {
     { id: 'blocked', label: t('filterBlocked') || 'Bloklanan' }
   ];
 
-  const filteredDocs = mockDocuments.filter((doc) => {
+  const filteredDocs = documents.filter((doc) => {
     const matchesSearch = doc.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           doc.department.toLowerCase().includes(searchTerm.toLowerCase());
     if (activeFilter === 'all') return matchesSearch;
@@ -96,7 +126,7 @@ export const DocumentsPage: React.FC = () => {
         </div>
       </Card>
 
-      {/* Data List (Clean Enterprise Table with 1px dividers & 4px left accent bars) */}
+      {/* Data List */}
       <Card padding="none" className="overflow-hidden">
         {/* Table Header */}
         <div className="grid grid-cols-12 gap-4 px-6 py-3.5 bg-surface-container-low border-b border-outline-variant text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
@@ -109,65 +139,69 @@ export const DocumentsPage: React.FC = () => {
 
         {/* Rows */}
         <div className="divide-y divide-outline-variant">
-          {filteredDocs.map((doc) => (
-            <div
-              key={doc.id}
-              onClick={() => navigate(`/analysis/${doc.id}`)}
-              className="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-surface-container-low transition-colors cursor-pointer group relative"
-            >
-              {/* 4px Left Accent Bar */}
+          {isLoading ? (
+            <div className="p-8 text-center text-on-surface-variant">Məlumatlar yüklənir...</div>
+          ) : (
+            filteredDocs.map((doc) => (
               <div
-                className="absolute left-0 top-0 bottom-0 w-1"
-                style={{ backgroundColor: getAccentColor(doc.status) }}
-              />
+                key={doc.id}
+                onClick={() => navigate(`/analysis/${doc.id}`)}
+                className="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-surface-container-low transition-colors cursor-pointer group relative"
+              >
+                {/* 4px Left Accent Bar */}
+                <div
+                  className="absolute left-0 top-0 bottom-0 w-1"
+                  style={{ backgroundColor: getAccentColor(doc.status)} }
+                />
 
-              {/* Column 1: Document */}
-              <div className="col-span-5 flex items-center gap-3.5 min-w-0">
-                <div className="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center shrink-0">
-                  <FileText className="w-5 h-5 text-on-surface-variant group-hover:text-brand-blue transition-colors" />
-                </div>
-                <div className="min-w-0">
-                  <div className="text-title-lg font-medium text-on-surface truncate group-hover:text-brand-blue transition-colors">
-                    {doc.name}
+                {/* Column 1: Document */}
+                <div className="col-span-5 flex items-center gap-3.5 min-w-0">
+                  <div className="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center shrink-0">
+                    <FileText className="w-5 h-5 text-on-surface-variant group-hover:text-brand-blue transition-colors" />
                   </div>
-                  <div className="text-label-sm text-on-surface-variant/70">
-                    Category: {doc.category}
+                  <div className="min-w-0">
+                    <div className="text-title-lg font-medium text-on-surface truncate group-hover:text-brand-blue transition-colors">
+                      {doc.name}
+                    </div>
+                    <div className="text-label-sm text-on-surface-variant/70">
+                      Category: {doc.category}
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Column 2: Date & Dept */}
-              <div className="col-span-2 text-label-md text-on-surface-variant">
-                <div className="font-medium text-on-surface">{doc.department}</div>
-                <div className="text-label-sm text-on-surface-variant/70">{doc.uploadTime}</div>
-              </div>
+                {/* Column 2: Date & Dept */}
+                <div className="col-span-2 text-label-md text-on-surface-variant">
+                  <div className="font-medium text-on-surface">{doc.department}</div>
+                  <div className="text-label-sm text-on-surface-variant/70">{doc.uploadTime}</div>
+                </div>
 
-              {/* Column 3: Type / Size */}
-              <div className="col-span-2 text-label-md text-on-surface-variant">
-                <div className="font-medium text-on-surface">{doc.fileType}</div>
-                <div className="text-label-sm text-on-surface-variant/70">{doc.size}</div>
-              </div>
+                {/* Column 3: Type / Size */}
+                <div className="col-span-2 text-label-md text-on-surface-variant">
+                  <div className="font-medium text-on-surface">{doc.fileType}</div>
+                  <div className="text-label-sm text-on-surface-variant/70">{doc.size}</div>
+                </div>
 
-              {/* Column 4: Risk */}
-              <div className="col-span-1 flex items-center">
-                {doc.riskScore > 0 ? (
-                  <span className={`font-semibold ${doc.riskScore >= 70 ? 'text-error border-l-4 border-error pl-2' : doc.riskScore >= 40 ? 'text-warning border-l-4 border-warning pl-2' : 'text-success border-l-4 border-success pl-2'}`}>
-                    {doc.riskScore}/100
-                  </span>
-                ) : (
-                  <span className="text-on-surface-variant font-semibold">-</span>
-                )}
-              </div>
+                {/* Column 4: Risk */}
+                <div className="col-span-1 flex items-center justify-center">
+                  {doc.riskScore > 0 ? (
+                    <span className={`font-semibold ${doc.riskScore >= 70 ? 'text-error border-l-4 border-error pl-2' : doc.riskScore >= 40 ? 'text-warning border-l-4 border-warning pl-2' : 'text-success border-l-4 border-success pl-2'}`}>
+                      {doc.riskScore}/100
+                    </span>
+                  ) : (
+                    <span className="text-on-surface-variant font-semibold">-</span>
+                  )}
+                </div>
 
-              {/* Column 5: Status */}
-              <div className="col-span-2 flex items-center justify-end gap-3">
-                <Chip status={doc.status} />
-                <ArrowRight className="w-4 h-4 text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity" />
+                {/* Column 5: Status */}
+                <div className="col-span-2 flex items-center justify-end gap-3">
+                  <Chip status={doc.status} />
+                  <ArrowRight className="w-4 h-4 text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
 
-          {filteredDocs.length === 0 && (
+          {!isLoading && filteredDocs.length === 0 && (
             <div className="p-12 text-center text-on-surface-variant space-y-2">
               <FileText className="w-10 h-10 mx-auto text-outline" />
               <div className="text-title-lg font-semibold">Heç bir sənəd tapılmadı</div>

@@ -1,12 +1,18 @@
-import { ShieldAlert, User, Settings, ShieldCheck, Shield, ChevronDown, Check, LogIn } from 'lucide-react';
+import React from 'react';
+import { ShieldAlert, User, LogIn, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../context/LanguageContext';
-import { useUserRole } from '../../context/UserRoleContext';
+import { useAuth } from '../../context/AuthContext';
 
 export const TopBar: React.FC = () => {
   const navigate = useNavigate();
   const { t, lang, setLang } = useLanguage();
-  const { role, setRole, isAdmin } = useUserRole();
+  const { user, isAuthenticated, logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
   return (
     <header className="sticky top-4 z-40 w-full max-w-[1440px] mx-auto pr-6 sm:pr-8 pointer-events-auto">
@@ -16,7 +22,6 @@ export const TopBar: React.FC = () => {
           onClick={() => navigate('/')}
           className="flex items-center gap-3 cursor-pointer group"
         >
-          {/* White/neutral icon box background with blue shield icon inside */}
           <div className="w-9 h-9 rounded-full bg-white border border-outline-variant flex items-center justify-center shadow-xs transition-transform group-hover:scale-105">
             <ShieldAlert className="w-5 h-5 text-brand-blue" />
           </div>
@@ -27,9 +32,9 @@ export const TopBar: React.FC = () => {
           </div>
         </div>
 
-        {/* Right: User/Admin Role Switcher Hover Menu & Profile/Settings Icon Button */}
+        {/* Right: Controls & Profile */}
         <div className="flex items-center gap-3">
-          {/* Language Switcher with Sliding Background Box */}
+          {/* Language Switcher */}
           <div className="relative flex items-center bg-surface-container-lowest border border-outline-variant/80 p-0.5 rounded-full shadow-xs">
             <div
               className={`absolute top-0.5 bottom-0.5 w-[calc(50%-2px)] bg-brand-blue rounded-full shadow-xs transition-transform duration-300 ease-out ${
@@ -56,17 +61,33 @@ export const TopBar: React.FC = () => {
             </button>
           </div>
 
-          {/* Login / Auth Button */}
-          <button
-            onClick={() => navigate('/login')}
-            className="px-3.5 py-1.5 rounded-full bg-brand-blue/10 hover:bg-brand-blue/20 text-brand-blue font-bold text-xs border border-brand-blue/30 transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs hover:scale-105"
-            title="Daxil ol / Qeydiyyat"
-          >
-            <LogIn className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Daxil ol</span>
-          </button>
+          {/* Auth Button / User Profile */}
+          {isAuthenticated ? (
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-on-surface hidden md:inline truncate max-w-[120px]">
+                {user?.fullName || 'Samir Əliyev'}
+              </span>
+              <button
+                onClick={handleLogout}
+                className="px-3.5 py-1.5 rounded-full bg-error-container/30 hover:bg-error-container/60 text-error font-bold text-xs border border-error/30 transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs hover:scale-105"
+                title="Çıxış et"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Çıxış</span>
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => navigate('/login')}
+              className="px-3.5 py-1.5 rounded-full bg-brand-blue/10 hover:bg-brand-blue/20 text-brand-blue font-bold text-xs border border-brand-blue/30 transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs hover:scale-105"
+              title="Daxil ol / Qeydiyyat"
+            >
+              <LogIn className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Daxil ol</span>
+            </button>
+          )}
 
-          {/* Clean Profile/Settings Icon Button */}
+          {/* Settings Button */}
           <button
             onClick={() => navigate('/settings')}
             className="w-9 h-9 rounded-full bg-gradient-to-tr from-brand-blue to-brand-purple p-0.5 shadow-xs cursor-pointer hover:scale-105 transition-transform"

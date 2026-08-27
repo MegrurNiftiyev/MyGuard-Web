@@ -1,10 +1,10 @@
 import React from 'react';
 import { THEME_COLORS, hexToRgba } from '../../constants/themeColors';
 
-interface ShootingOrbConfig {
+interface ShootingCometConfig {
   id: string;
   size: number; // Diameter of ball in px
-  tailLength: number; // Length of the cylinder tail in px
+  tailLength: number; // Length of the diagonal fading shadow beam in px
   color: 'blue' | 'purple' | 'green';
   top?: string;
   bottom?: string;
@@ -14,152 +14,145 @@ interface ShootingOrbConfig {
   opacity?: number;
 }
 
-const ORB_CONFIGS: ShootingOrbConfig[] = [
-  // 1. Large Purple - Top Left
+const COMET_CONFIGS: ShootingCometConfig[] = [
   {
-    id: 'orb-1',
-    size: 110,
-    tailLength: 320,
-    color: 'purple',
-    top: '-40px',
-    left: '2%',
-    animationClass: 'animate-beam-glide-1',
-    opacity: 0.85
-  },
-  // 2. Large Blue - Top Right
-  {
-    id: 'orb-2',
+    id: 'comet-1',
     size: 130,
-    tailLength: 360,
-    color: 'blue',
-    top: '-60px',
-    right: '4%',
-    animationClass: 'animate-beam-glide-2',
+    tailLength: 550,
+    color: 'purple',
+    top: '-80px',
+    left: '2%',
+    animationClass: 'animate-comet-glide-1',
     opacity: 0.85
   },
-  // 3. Medium Green - Top Center
   {
-    id: 'orb-3',
-    size: 70,
-    tailLength: 220,
-    color: 'green',
-    top: '5%',
-    left: '38%',
-    animationClass: 'animate-beam-glide-3',
-    opacity: 0.75
+    id: 'comet-2',
+    size: 140,
+    tailLength: 600,
+    color: 'blue',
+    top: '-90px',
+    right: '3%',
+    animationClass: 'animate-comet-glide-2',
+    opacity: 0.85
   },
-  // 4. Medium Purple - Center Right
   {
-    id: 'orb-4',
+    id: 'comet-3',
+    size: 90,
+    tailLength: 420,
+    color: 'green',
+    top: '4%',
+    left: '35%',
+    animationClass: 'animate-comet-glide-3',
+    opacity: 0.8
+  },
+  {
+    id: 'comet-4',
+    size: 110,
+    tailLength: 480,
+    color: 'purple',
+    top: '38%',
+    right: '-30px',
+    animationClass: 'animate-comet-glide-1',
+    opacity: 0.82
+  },
+  {
+    id: 'comet-5',
+    size: 135,
+    tailLength: 580,
+    color: 'green',
+    bottom: '-60px',
+    right: '6%',
+    animationClass: 'animate-comet-glide-2',
+    opacity: 0.85
+  },
+  {
+    id: 'comet-6',
+    size: 100,
+    tailLength: 460,
+    color: 'blue',
+    top: '46%',
+    left: '1%',
+    animationClass: 'animate-comet-glide-3',
+    opacity: 0.82
+  },
+  {
+    id: 'comet-7',
     size: 85,
-    tailLength: 260,
+    tailLength: 390,
     color: 'purple',
-    top: '42%',
-    right: '-20px',
-    animationClass: 'animate-beam-glide-1',
-    opacity: 0.8
+    bottom: '5%',
+    left: '10%',
+    animationClass: 'animate-comet-glide-1',
+    opacity: 0.78
   },
-  // 5. Large Green - Bottom Right
   {
-    id: 'orb-5',
-    size: 120,
-    tailLength: 340,
-    color: 'green',
-    bottom: '-50px',
-    right: '8%',
-    animationClass: 'animate-beam-glide-2',
-    opacity: 0.85
-  },
-  // 6. Medium Blue - Center Left
-  {
-    id: 'orb-6',
-    size: 80,
-    tailLength: 240,
+    id: 'comet-8',
+    size: 95,
+    tailLength: 410,
     color: 'blue',
-    top: '48%',
-    left: '3%',
-    animationClass: 'animate-beam-glide-3',
+    bottom: '-30px',
+    left: '40%',
+    animationClass: 'animate-comet-glide-2',
     opacity: 0.8
-  },
-  // 7. Small Purple - Bottom Left
-  {
-    id: 'orb-7',
-    size: 60,
-    tailLength: 190,
-    color: 'purple',
-    bottom: '8%',
-    left: '12%',
-    animationClass: 'animate-beam-glide-1',
-    opacity: 0.75
-  },
-  // 8. Small Blue - Bottom Center
-  {
-    id: 'orb-8',
-    size: 55,
-    tailLength: 170,
-    color: 'blue',
-    bottom: '-20px',
-    left: '42%',
-    animationClass: 'animate-beam-glide-2',
-    opacity: 0.7
   }
 ];
 
 export const AuthFloatingOrbsBackground: React.FC = () => {
   return (
     <div className="fixed inset-0 pointer-events-none overflow-hidden z-0 select-none">
-      {ORB_CONFIGS.map((orb) => {
+      {COMET_CONFIGS.map((comet) => {
         let sphereGradient = '';
         let tailGradient = '';
         let glowColor = '';
 
-        if (orb.color === 'purple') {
-          sphereGradient = 'linear-gradient(135deg, #C084FC 0%, #9333EA 50%, #6B21A8 100%)';
-          tailGradient = `linear-gradient(to top, ${hexToRgba(THEME_COLORS.brandPurple, 0.42)} 0%, ${hexToRgba(THEME_COLORS.brandPurple, 0.15)} 55%, transparent 100%)`;
-          glowColor = 'rgba(147, 51, 234, 0.4)';
-        } else if (orb.color === 'blue') {
-          sphereGradient = 'linear-gradient(135deg, #60A5FA 0%, #0066FF 50%, #1D4ED8 100%)';
-          tailGradient = `linear-gradient(to top, ${hexToRgba(THEME_COLORS.brandBlue, 0.42)} 0%, ${hexToRgba(THEME_COLORS.brandBlue, 0.15)} 55%, transparent 100%)`;
-          glowColor = 'rgba(0, 102, 255, 0.4)';
+        if (comet.color === 'purple') {
+          sphereGradient = 'linear-gradient(135deg, #E9D5FF 0%, #9333EA 45%, #581C87 100%)';
+          tailGradient = `linear-gradient(to top, ${hexToRgba(THEME_COLORS.brandPurple, 0.45)} 0%, ${hexToRgba(THEME_COLORS.brandPurple, 0.12)} 60%, transparent 100%)`;
+          glowColor = 'rgba(147, 51, 234, 0.45)';
+        } else if (comet.color === 'blue') {
+          sphereGradient = 'linear-gradient(135deg, #DBEAFE 0%, #0066FF 45%, #1E40AF 100%)';
+          tailGradient = `linear-gradient(to top, ${hexToRgba(THEME_COLORS.brandBlue, 0.45)} 0%, ${hexToRgba(THEME_COLORS.brandBlue, 0.12)} 60%, transparent 100%)`;
+          glowColor = 'rgba(0, 102, 255, 0.45)';
         } else {
           // Green / Emerald
-          sphereGradient = 'linear-gradient(135deg, #34D399 0%, #10B981 50%, #047857 100%)';
-          tailGradient = `linear-gradient(to top, ${hexToRgba(THEME_COLORS.brandGreen, 0.42)} 0%, ${hexToRgba(THEME_COLORS.brandGreen, 0.15)} 55%, transparent 100%)`;
-          glowColor = 'rgba(16, 185, 129, 0.4)';
+          sphereGradient = 'linear-gradient(135deg, #D1FAE5 0%, #10B981 45%, #064E3B 100%)';
+          tailGradient = `linear-gradient(to top, ${hexToRgba(THEME_COLORS.brandGreen, 0.45)} 0%, ${hexToRgba(THEME_COLORS.brandGreen, 0.12)} 60%, transparent 100%)`;
+          glowColor = 'rgba(16, 185, 129, 0.45)';
         }
 
         return (
           <div
-            key={orb.id}
-            className={`absolute ${orb.animationClass} will-change-transform`}
+            key={comet.id}
+            className={`absolute ${comet.animationClass} will-change-transform`}
             style={{
-              top: orb.top,
-              bottom: orb.bottom,
-              left: orb.left,
-              right: orb.right,
-              width: `${orb.size}px`,
-              height: `${orb.size + orb.tailLength}px`,
-              opacity: orb.opacity ?? 0.8,
+              top: comet.top,
+              bottom: comet.bottom,
+              left: comet.left,
+              right: comet.right,
+              width: `${comet.size}px`,
+              height: `${comet.size + comet.tailLength}px`,
+              opacity: comet.opacity ?? 0.85,
               transformOrigin: 'center center'
             }}
           >
-            {/* Elongated Tube / Cylinder Tail Beam */}
+            {/* Long Fading Diagonal Shadow / Light Beam Tail in Matching Color */}
             <div
               className="w-full rounded-t-full absolute top-0 left-0"
               style={{
-                height: `${orb.tailLength + orb.size / 2}px`,
+                height: `${comet.tailLength + comet.size / 2}px`,
                 background: tailGradient,
-                boxShadow: `0 0 20px ${glowColor}`
+                boxShadow: `0 0 35px ${glowColor}`,
+                filter: 'blur(2px)'
               }}
             />
 
-            {/* Leading Sphere (Ball) at the lower edge of the cylinder */}
+            {/* Leading 3D Comet Sphere Ball */}
             <div
               className="rounded-full absolute bottom-0 left-0 w-full"
               style={{
-                height: `${orb.size}px`,
+                height: `${comet.size}px`,
                 background: sphereGradient,
-                boxShadow: `0 8px 32px ${glowColor}, inset 0 2px 6px rgba(255, 255, 255, 0.6)`
+                boxShadow: `0 10px 40px ${glowColor}, inset 0 2px 8px rgba(255, 255, 255, 0.85)`
               }}
             />
           </div>

@@ -1,25 +1,48 @@
-import React, { useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, ShieldAlert, CheckCircle, AlertOctagon, Layers, Eye, FileCode, RefreshCw, Sparkles, Ban, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+import { ShieldAlert, Eye, FileCode, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { mockDetailedAnalysis } from '../data/mockData';
+import { documentsApi, DocumentComparisonData } from '../api/documentsApi';
 import { useLanguage } from '../context/LanguageContext';
 
 export const TextComparisonPage: React.FC = () => {
-  const navigate = useNavigate();
   const { id } = useParams();
   const { t } = useLanguage();
   const [data, setData] = useState(mockDetailedAnalysis);
-  const [isBlocked, setIsBlocked] = useState(false);
   const [hasReviewed, setHasReviewed] = useState(false);
+  const [liveComparison, setLiveComparison] = useState<DocumentComparisonData | null>(null);
 
-  const handleBlock = () => {
-    setIsBlocked(true);
-  };
+  useEffect(() => {
+    const docId = id || 'doc-1724750000-123';
+    const fetchComparison = async () => {
+      try {
+        const comp = await documentsApi.getDocumentComparison(docId);
+        if (comp) {
+          setLiveComparison(comp);
+          setData(prev => ({
+            ...prev,
+            ocrPdfMatch: comp.ocrPdfMatch ?? prev.ocrPdfMatch,
+            flaggedSnippet: comp.flaggedSnippet || prev.flaggedSnippet,
+            hiddenTextDetected: comp.hiddenTextDetected ?? prev.hiddenTextDetected
+          }));
+        }
+      } catch (err) {
+        console.warn('Live document comparison fallback:', err);
+      }
+    };
+    fetchComparison();
+  }, [id]);
 
-  const handleCreateSafeVersion = () => {
-    // Dummy handler for UI
+  const handleReviewFeedback = async (isInjection: boolean) => {
+    const docId = id || 'doc-1724750000-123';
+    try {
+      await documentsApi.labelByUser(docId, isInjection);
+    } catch (err) {
+      console.warn('Feedback submit error:', err);
+    }
+    setHasReviewed(true);
   };
 
   return (
@@ -63,19 +86,19 @@ export const TextComparisonPage: React.FC = () => {
                 <p className="text-title-md font-bold text-gray-900 mb-1 flex items-center gap-2">
                   İnsan Təsdiqi Tələb Olunur 
                   <span className="bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-[10px] uppercase tracking-wider font-extrabold">
-                    Low Confidence: 0.55
+                    Zero Opacity / Hidden Font
                   </span>
                 </p>
                 <p className="text-body-md text-gray-600 font-medium">
-                  Modelin əminliyi aşağıdır. Zəhmət olmasa mətni oxuyaraq bunun injection olub-olmadığını təsdiqləyin:
+                  Zəhmət olmasa mətni oxuyaraq bunun injection olub-olmadığını təsdiqləyin:
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-3 shrink-0 w-full md:w-auto mt-2 md:mt-0">
-              <Button variant="danger" size="md" onClick={() => setHasReviewed(true)} className="rounded-full">
+              <Button variant="danger" size="md" onClick={() => handleReviewFeedback(true)} className="rounded-full">
                 Bəli, Zərərlidir
               </Button>
-              <Button variant="outline" size="md" onClick={() => setHasReviewed(true)} className="!bg-emerald-500 !text-white !border-emerald-500 hover:!bg-emerald-600 shadow-md rounded-full">
+              <Button variant="outline" size="md" onClick={() => handleReviewFeedback(false)} className="!bg-emerald-500 !text-white !border-emerald-500 hover:!bg-emerald-600 shadow-md rounded-full">
                 Xeyr, Təhlükəsizdir
               </Button>
             </div>
@@ -109,20 +132,24 @@ export const TextComparisonPage: React.FC = () => {
           </div>
 
           <div className="p-8 rounded-xl bg-[#F8F9FA] border border-outline-variant/30 font-serif text-lg text-gray-800 whitespace-pre-wrap leading-relaxed min-h-[400px] shadow-inner">
-            <div className="opacity-80">CV: Samir Əliyev</div>
-            <div className="opacity-80">Təhsil: Bakı Dövlət Universiteti - Kompüter Elmləri (2018-2022)</div>
-            <div className="opacity-80">Təcrübə: Senior Frontend Developer (3 il)</div>
-            <div className="opacity-80">Biliklər: React, TypeScript, Tailwind CSS, Node.js, REST API</div>
-            <div className="opacity-80">Əlaqə: samir.aliyev@email.com | +994 50 123 45 67</div>
-            <br />
-            <div className="opacity-80">Haqqında: Məsuliyyətli, komandada işləməyi bacaran və innovativ həllər təklif edən mütəxəssis.</div>
+            {liveComparison?.ocrText ? (
+              <div>{liveComparison.ocrText}</div>
+            ) : (
+              <>
+                <div className="opacity-80">CV: Samir Əliyev</div>
+                <div className="opacity-80">Təhsil: Bakı Dövlət Universiteti - Kompüter Elmləri (2018-2022)</div>
+                <div className="opacity-80">Təcrübə: Senior Frontend Developer (3 il)</div>
+                <div className="opacity-80">Biliklər: React, TypeScript, Tailwind CSS, Node.js, REST API</div>
+                <div className="opacity-80">Əlaqə: samir.aliyev@email.com | +994 50 123 45 67</div>
+                <br />
+                <div className="opacity-80">Haqqında: Məsuliyyətli, komandada işləməyi bacaran və innovativ həllər təklif edən mütəxəssis.</div>
+              </>
+            )}
           </div>
-
         </Card>
 
         {/* Right Column: PDF Text Layer (With Hidden Payload Highlighted) */}
         <Card padding="lg" className="border-error/20 bg-error/5 shadow-l1 flex flex-col gap-4 relative overflow-hidden">
-          
           <div className="flex items-center justify-between pb-4 border-b border-error/10">
             <div className="flex items-center gap-3">
               <div className="text-error flex items-center justify-center">
@@ -139,26 +166,29 @@ export const TextComparisonPage: React.FC = () => {
 
           {/* Code View with Highlighted Danger Text */}
           <div className="p-8 rounded-xl bg-[#F8F9FA] border border-error/20 font-serif text-lg text-gray-800 whitespace-pre-wrap leading-relaxed min-h-[400px] flex flex-col shadow-inner">
-            <div className="opacity-80">CV: Samir Əliyev</div>
-            <div className="opacity-80">Təhsil: Bakı Dövlət Universiteti - Kompüter Elmləri (2018-2022)</div>
-            <div className="opacity-80">Təcrübə: Senior Frontend Developer (3 il)</div>
-            <div className="opacity-80">Biliklər: React, TypeScript, Tailwind CSS, Node.js, REST API</div>
-            <div className="opacity-80">Əlaqə: samir.aliyev@email.com | +994 50 123 45 67</div>
+            {liveComparison?.pdfTextLayer ? (
+              <div>{liveComparison.pdfTextLayer}</div>
+            ) : (
+              <>
+                <div className="opacity-80">CV: Samir Əliyev</div>
+                <div className="opacity-80">Təhsil: Bakı Dövlət Universiteti - Kompüter Elmləri (2018-2022)</div>
+                <div className="opacity-80">Təcrübə: Senior Frontend Developer (3 il)</div>
+                <div className="opacity-80">Biliklər: React, TypeScript, Tailwind CSS, Node.js, REST API</div>
+                <div className="opacity-80">Əlaqə: samir.aliyev@email.com | +994 50 123 45 67</div>
 
-            {/* STRONG WARNING HIGHLIGHT FOR HIDDEN TEXT */}
-            <div className="my-4">
-              <div className="relative inline-block">
-                {/* The realistic highlighter effect */}
-                <span className="absolute -inset-1 bg-red-200/80 skew-x-[-15deg] transform"></span>
-                <span className="relative font-serif font-bold text-gray-900 text-xl leading-relaxed z-10 px-1">
-                  {data.flaggedSnippet}
-                </span>
-              </div>
-            </div>
+                <div className="my-4">
+                  <div className="relative inline-block">
+                    <span className="absolute -inset-1 bg-red-200/80 skew-x-[-15deg] transform"></span>
+                    <span className="relative font-serif font-bold text-gray-900 text-xl leading-relaxed z-10 px-1">
+                      {data.flaggedSnippet}
+                    </span>
+                  </div>
+                </div>
 
-            <div className="opacity-80">Haqqında: Məsuliyyətli, komandada işləməyi bacaran və innovativ həllər təklif edən mütəxəssis.</div>
+                <div className="opacity-80">Haqqında: Məsuliyyətli, komandada işləməyi bacaran və innovativ həllər təklif edən mütəxəssis.</div>
+              </>
+            )}
           </div>
-
         </Card>
       </div>
     </div>

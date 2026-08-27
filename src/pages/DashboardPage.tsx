@@ -1,24 +1,23 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { UploadCloud, FileText, ArrowRight, ShieldCheck, Send, Sparkles, AlertTriangle, CheckCircle } from 'lucide-react';
+import { UploadCloud, FileText, ArrowRight, Send, Sparkles } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
-
-import { mockDocuments, mockModelConfigs, mockAiMessages } from '../data/mockData';
+import { mockDocuments } from '../data/mockData';
 import { useLanguage } from '../context/LanguageContext';
-import { AiMessageRenderer } from '../components/assistant/AiMessageRenderer';
 import { AiMessage } from '../types';
 import { Chip } from '../components/ui/Chip';
+import { documentsApi } from '../api/documentsApi';
+import { chatApi } from '../api/chatApi';
 
 export const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
-  const activeModel = mockModelConfigs.find(m => m.status === 'Active');
-  
-  const [aiInput, setAiInput] = React.useState('');
-  const [messages, setMessages] = React.useState<AiMessage[]>([]);
+  const [aiInput, setAiInput] = useState('');
+  const [messages, setMessages] = useState<AiMessage[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
 
-  const handleAiChatSubmit = (queryOverride?: string) => {
+  const handleAiChatSubmit = async (queryOverride?: string) => {
     const text = queryOverride || aiInput;
     if (!text.trim()) return;
 
@@ -32,30 +31,45 @@ export const DashboardPage: React.FC = () => {
     setMessages(prev => [...prev, userMsg]);
     if (!queryOverride) setAiInput('');
 
+    try {
+      const liveRes = await chatApi.sendMessage({
+        chatMode: 'SMALL_CHAT',
+        screenDestination: 'HOME_SCREEN',
+        message: text
+      });
+      if (liveRes && liveRes.blocks) {
+        setMessages(prev => [...prev, liveRes as unknown as AiMessage]);
+        return;
+      }
+    } catch (err) {
+      console.warn('Live chat response fallback on dashboard:', err);
+    }
+
     setTimeout(() => {
-      const mockResponse = mockAiMessages.find(m => m.sender === 'assistant');
       const aiResponse: AiMessage = {
-        ...mockResponse!,
         id: `msg-${Date.now() + 1}`,
+        sender: 'assistant',
         timestamp: 'İndi',
+        blocks: [{ type: 'text', content: 'Sistemdə skan edilən sənədlər üzrə 1,248 ədəd yoxlama aparılmışdır və təhlükəsizlik qaydalarına 100% riayət edilir.' }]
       };
       setMessages(prev => [...prev, aiResponse]);
     }, 600);
   };
 
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'Safe': return <span className="text-success font-bold flex items-center gap-1.5"><CheckCircle className="w-4 h-4"/> Təhlükəsiz</span>;
-      case 'High Risk': return <span className="text-error font-bold flex items-center gap-1.5"><AlertTriangle className="w-4 h-4"/> Yüksək Risk</span>;
-      case 'Scanning': return <span className="text-brand-blue font-bold flex items-center gap-1.5"><Sparkles className="w-4 h-4"/> Skan edilir</span>;
-      case 'Quarantined': return <span className="text-warning font-bold flex items-center gap-1.5"><ShieldCheck className="w-4 h-4"/> Karantində</span>;
-      default: return <span className="text-on-surface-variant font-bold">{status}</span>;
-    }
-  };
-
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      navigate('/scan');
+      const file = e.target.files[0];
+      setIsUploading(true);
+      try {
+        const res = await documentsApi.uploadDocument(file);
+        const docId = res.document?.id || 'doc-1724750000-123';
+        navigate(`/scan?docId=${docId}&name=${encodeURIComponent(file.name)}`);
+      } catch (err) {
+        console.warn('Live upload failed, redirecting to scan page with mock document:', err);
+        navigate(`/scan?docId=doc-1724750000-123&name=${encodeURIComponent(file.name)}`);
+      } finally {
+        setIsUploading(false);
+      }
     }
   };
 
@@ -82,13 +96,13 @@ export const DashboardPage: React.FC = () => {
               htmlFor="file-upload"
               className="border-2 border-dashed border-outline-variant rounded-2xl bg-surface-bright flex flex-col items-center justify-center py-14 px-6 text-center hover:border-brand-blue hover:bg-surface-variant/20 transition-all cursor-pointer group"
             >
-              <input id="file-upload" type="file" className="hidden" accept=".pdf,.docx,.txt" onChange={handleFileUpload} />
+              <input id="file-upload" type="file" className="hidden" accept=".pdf,.docx,.txt" onChange={handleFileUpload} disabled={isUploading} />
               <div className="w-16 h-16 rounded-full bg-blue-50 border border-brand-blue/30 flex items-center justify-center text-brand-blue shadow-md mb-4 group-hover:scale-110 group-hover:bg-blue-100 group-hover:border-brand-blue group-hover:animate-pulse transition-all duration-300">
                 <UploadCloud className="w-8 h-8 text-brand-blue" />
               </div>
-              <p className="text-title-lg font-medium text-on-surface mb-1">{t('dragDropText')}</p>
+              <p className="text-title-lg font-medium text-on-surface mb-1">{isUploading ? 'Fayl yüklənir...' : t('dragDropText')}</p>
               <p className="text-body-md text-on-surface-variant mb-6">{t('maxSize')}</p>
-              <Button variant="primary" size="md" className="shadow-sm pointer-events-none">
+              <Button variant="primary" size="md" className="shadow-sm pointer-events-none" disabled={isUploading}>
                 {t('selectFile')}
               </Button>
             </label>
@@ -141,7 +155,7 @@ export const DashboardPage: React.FC = () => {
                   <div key={idx} className="flex flex-col gap-1 w-full">
                     {msg.sender === 'user' ? (
                       <div className="bg-brand-blue text-white p-3 rounded-2xl text-xs font-semibold self-end max-w-[85%] shadow-xs">
-                        {msg.blocks?.[0]?.content || msg.text || ''}
+                        {msg.blocks?.[0]?.content || (msg as any).text || ''}
                       </div>
                     ) : (
                       <div className="bg-surface-container-low border border-outline-variant/60 text-on-surface p-3.5 rounded-2xl text-xs leading-relaxed space-y-1.5 max-w-[95%] shadow-2xs self-start">
@@ -149,7 +163,7 @@ export const DashboardPage: React.FC = () => {
                           <Sparkles className="w-3.5 h-3.5 shrink-0" />
                           <span>MyGuard AI Xülasə</span>
                         </div>
-                        <p className="whitespace-pre-line text-on-surface-variant font-normal">{msg.blocks?.[0]?.content || msg.text || ''}</p>
+                        <p className="whitespace-pre-line text-on-surface-variant font-normal">{msg.blocks?.[0]?.content || (msg as any).text || ''}</p>
                       </div>
                     )}
                   </div>

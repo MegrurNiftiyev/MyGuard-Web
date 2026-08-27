@@ -15,12 +15,10 @@ export const PageShell: React.FC<PageShellProps> = ({ children }) => {
 
   if (isAuthPage) {
     return (
-      <div className="min-h-screen bg-dot-grid flex items-center justify-center relative selection:bg-brand-blue/20 selection:text-brand-blue p-4">
-        <main className="w-full max-w-md mx-auto">
-          <div key={location.pathname} className="animate-page-fade">
-            {children}
-          </div>
-        </main>
+      <div className="min-h-screen w-full bg-dot-grid relative overflow-hidden flex items-center justify-center selection:bg-brand-blue/20 selection:text-brand-blue">
+        <div key={location.pathname} className="w-full h-full min-h-screen flex items-center justify-center animate-page-fade relative">
+          {children}
+        </div>
       </div>
     );
   }

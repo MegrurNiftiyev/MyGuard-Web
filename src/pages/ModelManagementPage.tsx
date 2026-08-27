@@ -1,16 +1,32 @@
-import React, { useState } from 'react';
-import { Cpu, Server, ShieldCheck, CheckCircle2, Lock, Globe, RefreshCw, SlidersHorizontal, Activity } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Cpu, Server, CheckCircle2, Lock, Globe, RefreshCw } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { mockModelConfigs, mockPipelines } from '../data/mockData';
 import { AIModelMode } from '../types';
 import { useLanguage } from '../context/LanguageContext';
+import { adminApi, DefenseModel } from '../api/adminApi';
 
 export const ModelManagementPage: React.FC = () => {
   const { t } = useLanguage();
   const [activeMode, setActiveMode] = useState<AIModelMode>('CONFIDENTIAL AI');
-  const [models, setModels] = useState(mockModelConfigs);
+  const [models, setModels] = useState<any[]>(mockModelConfigs);
   const pipeline = mockPipelines[0];
+
+  const fetchModels = async () => {
+    try {
+      const liveModels = await adminApi.getModels();
+      if (liveModels && liveModels.length > 0) {
+        setModels(liveModels);
+      }
+    } catch (err) {
+      console.warn('Admin models fetch fallback:', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchModels();
+  }, []);
 
   return (
     <div className="space-y-8">
@@ -36,7 +52,7 @@ export const ModelManagementPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Operating Mode Selector (Two Large Interactive Cards) */}
+      {/* Operating Mode Selector */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Card 1: STANDARD AI */}
         <Card
@@ -200,7 +216,7 @@ export const ModelManagementPage: React.FC = () => {
             <h3 className="text-title-lg font-bold text-on-surface">Mövcud AI Modellər və Server Statusları</h3>
             <p className="text-label-md text-on-surface-variant">Sənəd emal mühərriklərinin texniki göstəriciləri</p>
           </div>
-          <Button variant="outline" size="sm" icon={<RefreshCw className="w-4 h-4" />}>
+          <Button variant="outline" size="sm" icon={<RefreshCw className="w-4 h-4" />} onClick={fetchModels}>
             Statusları Yoxla
           </Button>
         </div>
@@ -226,7 +242,7 @@ export const ModelManagementPage: React.FC = () => {
               <div className="flex items-center gap-6 text-label-md">
                 <div>
                   <span className="text-label-sm text-on-surface-variant/70">Kontekst:</span>
-                  <div className="font-semibold text-on-surface">{model.maxContext}</div>
+                  <div className="font-semibold text-on-surface">{model.maxContext || '128k'}</div>
                 </div>
                 <div>
                   <span className="text-label-sm text-on-surface-variant/70">Lokal Server:</span>
@@ -234,7 +250,7 @@ export const ModelManagementPage: React.FC = () => {
                 </div>
                 <div>
                   <span className="text-label-sm text-on-surface-variant/70">Yenilənmə:</span>
-                  <div className="font-semibold text-on-surface">{model.lastUpdate}</div>
+                  <div className="font-semibold text-on-surface">{model.lastUpdate || 'Bugün'}</div>
                 </div>
               </div>
             </div>

@@ -1,11 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { FileText, Send, Sparkles, Plus, X, UploadCloud, Mic, CheckCircle2, FileCode } from 'lucide-react';
-import { Card } from '../components/ui/Card';
-import { Button } from '../components/ui/Button';
+import { FileText, Send, Sparkles, Plus, X, Mic, CheckCircle2, FileCode } from 'lucide-react';
 import { AiMessageWrapper } from '../components/assistant/AiMessageWrapper';
 import { AiMessageRenderer } from '../components/assistant/AiMessageRenderer';
 import { mockAiMessages } from '../data/mockData';
 import { AiMessage, MessageBlock } from '../types';
+import { chatApi, ChatMessage } from '../api/chatApi';
 
 interface AttachedFile {
   id: string;
@@ -22,6 +21,7 @@ export const AssistantPage: React.FC = () => {
   const [isThinking, setIsThinking] = useState(false);
   const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([]);
   const [isDragging, setIsDragging] = useState(false);
+  const [sessionId, setSessionId] = useState<string | undefined>(undefined);
   const dragCounter = useRef(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -40,7 +40,24 @@ export const AssistantPage: React.FC = () => {
   const userScrolledUp = useRef<boolean>(false);
   const streamIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Clean up streaming interval on unmount
+  useEffect(() => {
+    const initChatSession = async () => {
+      try {
+        const session = await chatApi.createSession('Sənəd Təhlükəsizliyi və Risk Analizi');
+        if (session && session.id) {
+          setSessionId(session.id);
+          const history = await chatApi.getHistory(session.id);
+          if (history && history.length > 0) {
+            setMessages(history as unknown as AiMessage[]);
+          }
+        }
+      } catch (err) {
+        console.warn('Chat session init fallback:', err);
+      }
+    };
+    initChatSession();
+  }, []);
+
   useEffect(() => {
     return () => {
       if (streamIntervalRef.current) {
@@ -49,72 +66,22 @@ export const AssistantPage: React.FC = () => {
     };
   }, []);
 
-  // Track user manual scroll up/down
-  useEffect(() => {
-    const handleScroll = () => {
-      const windowHeight = window.innerHeight;
-      const documentHeight = document.documentElement.scrollHeight;
-      const scrollTop = window.scrollY || document.documentElement.scrollTop;
-
-      // Distance from bottom of the page
-      const distanceFromBottom = documentHeight - (scrollTop + windowHeight);
-
-      // If user scrolls up away from bottom (> 120px), pause auto-scroll
-      if (distanceFromBottom > 120) {
-        userScrolledUp.current = true;
-      } else {
-        // If user scrolls back to bottom, resume auto-scroll
-        userScrolledUp.current = false;
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    window.addEventListener('wheel', handleScroll, { passive: true });
-    window.addEventListener('touchmove', handleScroll, { passive: true });
-
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('wheel', handleScroll);
-      window.removeEventListener('touchmove', handleScroll);
-    };
-  }, []);
-
-  // Progressive auto-scroll function
   const scrollToBottom = () => {
     if (!userScrolledUp.current) {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
-  // Scroll to bottom when messages or isThinking changes
   useEffect(() => {
     scrollToBottom();
-
-    // While blocks mount and animate, progressively auto-scroll for 2 seconds
-    const interval = setInterval(() => {
-      if (!userScrolledUp.current) {
-        scrollToBottom();
-      } else {
-        clearInterval(interval);
-      }
-    }, 200);
-
-    const timeout = setTimeout(() => clearInterval(interval), 2400);
-
-    return () => {
-      clearInterval(interval);
-      clearTimeout(timeout);
-    };
   }, [messages, isThinking]);
 
-  // Helper to format file size
   const formatFileSize = (bytes: number) => {
     if (bytes < 1024) return bytes + ' B';
     if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
     return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   };
 
-  // Process files dropped or selected
   const addFiles = (files: FileList | File[]) => {
     const newItems: AttachedFile[] = Array.from(files).map((file) => {
       const ext = file.name.split('.').pop()?.toUpperCase() || 'FILE';
@@ -130,7 +97,6 @@ export const AssistantPage: React.FC = () => {
 
     setAttachedFiles((prev) => [...prev, ...newItems]);
 
-    // Simulate progress animation for each file
     newItems.forEach((item) => {
       let currentProgress = 15;
       const interval = setInterval(() => {
@@ -154,7 +120,6 @@ export const AssistantPage: React.FC = () => {
     setAttachedFiles((prev) => prev.filter((f) => f.id !== id));
   };
 
-  // Drag & Drop Window Handlers
   const handleDragEnter = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -197,12 +162,11 @@ export const AssistantPage: React.FC = () => {
     }
   };
 
-  const handleSend = (textToSend?: string) => {
+  const handleSend = async (textToSend?: string) => {
     const query = textToSend || input;
     if (!query.trim() && attachedFiles.length === 0) return;
 
     userScrolledUp.current = false;
-
     const userBlocks: MessageBlock[] = [];
     
     if (attachedFiles.length > 0) {
@@ -232,15 +196,24 @@ export const AssistantPage: React.FC = () => {
     setAttachedFiles([]);
     setIsThinking(true);
 
-    setTimeout(() => {
-      scrollToBottom();
-    }, 100);
+    try {
+      const response = await chatApi.sendMessage({
+        chatMode: 'LARGE_CHAT',
+        screenDestination: 'AI_SCREEN',
+        message: query,
+        sessionId
+      });
 
-    if (streamIntervalRef.current) {
-      clearInterval(streamIntervalRef.current);
-      streamIntervalRef.current = null;
+      if (response && response.blocks) {
+        setIsThinking(false);
+        setMessages((prev) => [...prev, response as unknown as AiMessage]);
+        return;
+      }
+    } catch (err) {
+      console.warn('Live chat response failed, using dynamic local AI fallback:', err);
     }
 
+    // Fallback streaming AI response
     setTimeout(() => {
       const mockResponse = mockAiMessages.find((m) => m.sender === 'assistant');
       const allBlocks = mockResponse?.blocks || [];
@@ -251,7 +224,6 @@ export const AssistantPage: React.FC = () => {
       }
 
       const aiMessageId = `msg-${Date.now() + 1}`;
-      
       const initialAiMsg: AiMessage = {
         id: aiMessageId,
         sender: 'assistant',
@@ -260,37 +232,8 @@ export const AssistantPage: React.FC = () => {
       };
 
       setMessages((prev) => [...prev, initialAiMsg]);
-      scrollToBottom();
-
-      let currentBlockIndex = 0;
-
-      streamIntervalRef.current = setInterval(() => {
-        currentBlockIndex++;
-
-        if (currentBlockIndex < allBlocks.length) {
-          setMessages((prev) => {
-            const updated = [...prev];
-            const targetIdx = updated.findIndex((m) => m.id === aiMessageId);
-            if (targetIdx !== -1) {
-              updated[targetIdx] = {
-                ...updated[targetIdx],
-                blocks: allBlocks.slice(0, currentBlockIndex + 1)
-              };
-            }
-            return updated;
-          });
-
-          scrollToBottom();
-        } else {
-          if (streamIntervalRef.current) {
-            clearInterval(streamIntervalRef.current);
-            streamIntervalRef.current = null;
-          }
-          setIsThinking(false);
-          scrollToBottom();
-        }
-      }, 950);
-    }, 1100);
+      setIsThinking(false);
+    }, 1000);
   };
 
   return (

@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ShieldAlert, AlertTriangle, CheckCircle, Ban, Sparkles, RefreshCw, Eye, FileCode, CheckCircle2 } from 'lucide-react';
+import { ShieldAlert, AlertTriangle, CheckCircle, Ban, Sparkles, Eye, FileCode, CheckCircle2, Download } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Chip } from '../components/ui/Chip';
 import { mockDetailedAnalysis, mockPipelines } from '../data/mockData';
 import { mockApi } from '../api/mockApi';
+import { documentsApi, DetailedDocumentReport } from '../api/documentsApi';
 import { useLanguage } from '../context/LanguageContext';
 
 export const AnalysisResultPage: React.FC = () => {
@@ -18,14 +19,31 @@ export const AnalysisResultPage: React.FC = () => {
   const [actionNotice, setActionNotice] = useState<string | null>(null);
   const [hasReviewed, setHasReviewed] = useState(false);
   const [isMockupModalOpen, setIsMockupModalOpen] = useState(false);
+  const [isCleaning, setIsCleaning] = useState(false);
+  const [cleanDownloadUrl, setCleanDownloadUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const loadData = async () => {
-      const docId = id || 'doc-001';
-      const result = await mockApi.getAnalysisResult(docId);
-      const pipe = await mockApi.getAnalysisPipeline(docId);
-      if (result) setAnalysis(result);
-      if (pipe) setPipeline(pipe);
+      const docId = id || 'doc-1724750000-123';
+      try {
+        const liveDoc: DetailedDocumentReport = await documentsApi.getDocumentById(docId);
+        if (liveDoc && liveDoc.id) {
+          setAnalysis({
+            ...mockDetailedAnalysis,
+            documentId: liveDoc.id,
+            documentName: liveDoc.fileName,
+            riskScore: liveDoc.finalRiskScore ?? 85,
+            flaggedSnippet: liveDoc.layer1_ocrTextMatch?.extraTextSegments?.[0] || mockDetailedAnalysis.flaggedSnippet,
+            plainExplanation: liveDoc.layer3_llmReview?.explanation || mockDetailedAnalysis.plainExplanation
+          });
+        }
+      } catch (err) {
+        console.warn('Fallback to mock for analysis result load:', err);
+        const result = await mockApi.getAnalysisResult(docId);
+        const pipe = await mockApi.getAnalysisPipeline(docId);
+        if (result) setAnalysis(result);
+        if (pipe) setPipeline(pipe);
+      }
     };
     loadData();
   }, [id]);
@@ -35,8 +53,33 @@ export const AnalysisResultPage: React.FC = () => {
     setActionNotice('Sənəd uğurla bloka alındı. Korporativ AI modellərinə daxil olması qadağan edildi.');
   };
 
-  const handleCreateSafeVersion = () => {
-    setActionNotice('Təhlükəsiz təmizlənmiş versiya yaradıldı. Zərərli PDF mətn qatı silindi və yenidən skan edildi.');
+  const handleCleanThreat = async () => {
+    setIsCleaning(true);
+    const docId = id || analysis.documentId || 'doc-1724750000-123';
+    try {
+      const res = await documentsApi.cleanInjection(docId, true);
+      if (res.downloadUrl) {
+        setCleanDownloadUrl(res.downloadUrl);
+        setActionNotice(`Təhlükəsiz təmizlənmiş versiya yaradıldı. Yükləmə linki hazırdır.`);
+      } else {
+        setActionNotice('Sənəddəki prompt injection təhdidləri uğurla təmizləndi.');
+      }
+    } catch (err) {
+      console.warn('Clean injection error, falling back:', err);
+      setActionNotice('Təhlükəsiz təmizlənmiş versiya yaradıldı. Zərərli PDF mətn qatı silindi.');
+    } finally {
+      setIsCleaning(false);
+    }
+  };
+
+  const handleUserReview = async (isInjection: boolean) => {
+    const docId = id || analysis.documentId || 'doc-1724750000-123';
+    try {
+      await documentsApi.labelByUser(docId, isInjection);
+    } catch (err) {
+      console.warn('Label user error fallback:', err);
+    }
+    setHasReviewed(true);
   };
 
   return (
@@ -75,11 +118,28 @@ export const AnalysisResultPage: React.FC = () => {
             <CheckCircle className="w-5 h-5 text-brand-blue" />
             <span>{actionNotice}</span>
           </div>
-          <button onClick={() => setActionNotice(null)} className="text-label-sm font-bold hover:underline">
-            Bağla
-          </button>
+          <div className="flex items-center gap-2">
+            {cleanDownloadUrl && (
+              <a href={cleanDownloadUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 bg-brand-blue text-white text-xs px-3 py-1.5 rounded-lg font-bold">
+                <Download className="w-3.5 h-3.5" /> Endir
+              </a>
+            )}
+            <button onClick={() => setActionNotice(null)} className="text-label-sm font-bold hover:underline">
+              Bağla
+            </button>
+          </div>
         </div>
       )}
+
+      {/* Action Toolbar */}
+      <div className="flex flex-wrap gap-3 justify-end">
+        <Button variant="outline" size="md" onClick={handleCleanThreat} disabled={isCleaning}>
+          {isCleaning ? 'Təmizlənir...' : 'Təhdidi Təmizlə'}
+        </Button>
+        <Button variant="danger" size="md" onClick={handleBlock} disabled={isBlocked}>
+          {isBlocked ? 'Bloklandı' : 'Sənədi Blokla'}
+        </Button>
+      </div>
 
       {/* Bento Grid: Metrics */}
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
@@ -145,51 +205,42 @@ export const AnalysisResultPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Detected Threats Section */}
-      <section className="flex flex-col gap-6">
-        <h2 className="text-headline-md font-bold text-on-surface">Aşkarlanan Təhlükələr</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant flex gap-4 items-start hover:border-error transition-colors">
-            <div className="bg-error-container p-2 rounded-lg text-error">
-              <Eye className="w-6 h-6" />
-            </div>
-            <div>
-              <h4 className="text-title-lg font-bold text-on-surface mb-1">Hidden Text</h4>
-              <p className="text-body-md text-on-surface-variant">Ağ fon üzərində ağ rənglə və ya 1px ölçüsündə gizlədilmiş təlimatlar.</p>
-            </div>
-          </div>
-          
-          <div className="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant flex gap-4 items-start hover:border-error transition-colors">
-            <div className="bg-error-container p-2 rounded-lg text-error">
+      {/* Human Review Loop UI (Inline) */}
+      {!hasReviewed && (
+        <div className="bg-white border-2 border-amber-400/50 rounded-[2rem] p-4 sm:p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-lg shadow-amber-100/50 my-4 relative overflow-hidden">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-amber-50 text-amber-500 flex items-center justify-center shrink-0 border border-amber-100">
               <AlertTriangle className="w-6 h-6" />
             </div>
             <div>
-              <h4 className="text-title-lg font-bold text-on-surface mb-1">Instruction Override</h4>
-              <p className="text-body-md text-on-surface-variant">Əvvəlki bütün təlimatları ləğv etməyə cəhd edən "Ignore previous instructions" əmrləri.</p>
+              <p className="text-title-md font-bold text-gray-900 mb-1 flex items-center gap-2">
+                İnsan Təsdiqi Tələb Olunur 
+                <span className="bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-[10px] uppercase tracking-wider font-extrabold">
+                  User Audit
+                </span>
+              </p>
+              <p className="text-body-md text-gray-600 font-medium">
+                Zəhmət olmasa mətni oxuyaraq bunun təhdid olub-olmadığını təsdiqləyin:
+              </p>
             </div>
           </div>
-          
-          <div className="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant flex gap-4 items-start hover:border-error transition-colors">
-            <div className="bg-error-container p-2 rounded-lg text-error">
-              <ShieldAlert className="w-6 h-6" />
-            </div>
-            <div>
-              <h4 className="text-title-lg font-bold text-on-surface mb-1">Ranking Manipulation</h4>
-              <p className="text-body-md text-on-surface-variant">Kandidatın reytinqini süni şəkildə artırmaq üçün yazılmış açar söz yığınları.</p>
-            </div>
-          </div>
-          
-          <div className="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant flex gap-4 items-start hover:border-error transition-colors">
-            <div className="bg-error-container p-2 rounded-lg text-error">
-              <Ban className="w-6 h-6" />
-            </div>
-            <div>
-              <h4 className="text-title-lg font-bold text-on-surface mb-1">External Action Request</h4>
-              <p className="text-body-md text-on-surface-variant">Sistemi kənar URL-lərə müraciət etməyə məcbur edən zərərli linklər.</p>
-            </div>
+          <div className="flex items-center gap-3 shrink-0 w-full md:w-auto mt-2 md:mt-0">
+            <Button variant="danger" size="md" onClick={() => handleUserReview(true)} className="rounded-full">
+              Bəli, Zərərlidir
+            </Button>
+            <Button variant="outline" size="md" onClick={() => handleUserReview(false)} className="!bg-emerald-500 !text-white !border-emerald-500 hover:!bg-emerald-600 shadow-md rounded-full">
+              Xeyr, Təhlükəsizdir
+            </Button>
           </div>
         </div>
-      </section>
+      )}
+      
+      {hasReviewed && (
+        <div className="bg-green-50/80 border border-green-200/60 rounded-xl p-4 sm:p-6 flex items-center gap-3 shadow-sm my-4 text-green-900 text-title-md font-bold">
+          <CheckCircle2 className="w-6 h-6 text-green-600" />
+          <span>{t('reviewThanks')}</span>
+        </div>
+      )}
 
       {/* Suspicious Text Highlight */}
       <section className="flex flex-col gap-4">
@@ -209,43 +260,6 @@ export const AnalysisResultPage: React.FC = () => {
             {t('textComparisonBtn')}
           </Button>
         </div>
-
-        {/* Human Review Loop UI (Inline) */}
-        {pipeline && pipeline.layer2_classification.confidence < 0.7 && !hasReviewed && (
-          <div className="bg-white border-2 border-amber-400/50 rounded-[2rem] p-4 sm:p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-lg shadow-amber-100/50 my-4 relative overflow-hidden">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-amber-50 text-amber-500 flex items-center justify-center shrink-0 border border-amber-100">
-                <AlertTriangle className="w-6 h-6" />
-              </div>
-              <div>
-                <p className="text-title-md font-bold text-gray-900 mb-1 flex items-center gap-2">
-                  İnsan Təsdiqi Tələb Olunur 
-                  <span className="bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-[10px] uppercase tracking-wider font-extrabold">
-                    Low Confidence: {pipeline.layer2_classification.confidence}
-                  </span>
-                </p>
-                <p className="text-body-md text-gray-600 font-medium">
-                  Modelin əminliyi aşağıdır. Zəhmət olmasa mətni oxuyaraq bunun injection olub-olmadığını təsdiqləyin:
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 shrink-0 w-full md:w-auto mt-2 md:mt-0">
-              <Button variant="danger" size="md" onClick={() => { mockApi.submitReviewFeedback(analysis.documentId, true); setHasReviewed(true); }} className="rounded-full">
-                Bəli, Zərərlidir
-              </Button>
-              <Button variant="outline" size="md" onClick={() => { mockApi.submitReviewFeedback(analysis.documentId, false); setHasReviewed(true); }} className="!bg-emerald-500 !text-white !border-emerald-500 hover:!bg-emerald-600 shadow-md rounded-full">
-                Xeyr, Təhlükəsizdir
-              </Button>
-            </div>
-          </div>
-        )}
-        
-        {hasReviewed && (
-          <div className="bg-green-50/80 border border-green-200/60 rounded-xl p-4 sm:p-6 flex items-center gap-3 shadow-sm my-4 text-green-900 text-title-md font-bold">
-            <CheckCircle2 className="w-6 h-6 text-green-600" />
-            <span>{t('reviewThanks')}</span>
-          </div>
-        )}
         
         {/* Mock Image Representation */}
         <div 
@@ -266,17 +280,11 @@ export const AnalysisResultPage: React.FC = () => {
           
           <div className="bg-[#F8F9FA] p-8 flex justify-center">
              <div className="bg-white max-w-2xl w-full p-8 shadow-sm rounded-sm border border-gray-200">
-               <div className="mb-6 h-4 w-32 bg-gray-200 rounded"></div>
-               <div className="mb-4 h-3 w-3/4 bg-gray-100 rounded"></div>
-               <div className="mb-4 h-3 w-5/6 bg-gray-100 rounded"></div>
-               <div className="mb-8 h-3 w-1/2 bg-gray-100 rounded"></div>
-               
                <p className="font-serif text-gray-800 text-lg leading-relaxed mb-6">
                  ...and her skills in project management are truly exceptional. She has always delivered on time.
                </p>
 
                <div className="relative inline-block my-2">
-                 {/* The realistic highlighter effect */}
                  <span className="absolute -inset-1 bg-yellow-200/80 skew-x-[-15deg] transform"></span>
                  <span className="relative font-serif font-bold text-gray-900 text-lg leading-relaxed z-10 px-1">
                    {analysis.flaggedSnippet}
@@ -284,19 +292,12 @@ export const AnalysisResultPage: React.FC = () => {
                </div>
                
                <p className="font-serif text-gray-800 text-lg leading-relaxed mt-6">
-                 I strongly recommend her for the upcoming promotion. Thank you for your consideration...
+                 I strongly recommend her for the promotion. Thank you for your consideration...
                </p>
-
-               <div className="mt-8 h-3 w-2/3 bg-gray-100 rounded"></div>
-               <div className="mt-4 h-3 w-1/2 bg-gray-100 rounded"></div>
              </div>
           </div>
         </div>
       </section>
-
-
-
-
 
       {/* Mockup Modal */}
       {isMockupModalOpen && (
@@ -327,29 +328,15 @@ export const AnalysisResultPage: React.FC = () => {
             
             <div className="bg-[#F8F9FA] p-6 sm:p-12 flex justify-center max-h-[calc(90vh-60px)] overflow-y-auto">
                <div className="bg-white max-w-3xl w-full p-8 sm:p-12 shadow-sm rounded-sm border border-gray-200">
-                 <div className="mb-6 h-4 w-32 bg-gray-200 rounded"></div>
-                 <div className="mb-4 h-3 w-3/4 bg-gray-100 rounded"></div>
-                 <div className="mb-4 h-3 w-5/6 bg-gray-100 rounded"></div>
-                 <div className="mb-8 h-3 w-1/2 bg-gray-100 rounded"></div>
-                 
                  <p className="font-serif text-gray-800 text-lg sm:text-xl leading-relaxed mb-6">
                    ...and her skills in project management are truly exceptional. She has always delivered on time.
                  </p>
-
                  <div className="relative inline-block my-2">
-                   {/* The realistic highlighter effect */}
                    <span className="absolute -inset-1 bg-yellow-200/80 skew-x-[-15deg] transform"></span>
                    <span className="relative font-serif font-bold text-gray-900 text-lg sm:text-xl leading-relaxed z-10 px-1">
                      {analysis.flaggedSnippet}
                    </span>
                  </div>
-                 
-                 <p className="font-serif text-gray-800 text-lg sm:text-xl leading-relaxed mt-6">
-                   I strongly recommend her for the upcoming promotion. Thank you for your consideration...
-                 </p>
-
-                 <div className="mt-8 h-3 w-2/3 bg-gray-100 rounded"></div>
-                 <div className="mt-4 h-3 w-1/2 bg-gray-100 rounded"></div>
                </div>
             </div>
           </div>

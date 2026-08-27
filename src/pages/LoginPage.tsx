@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ShieldCheck } from 'lucide-react';
+import { ShieldCheck, AlertCircle } from 'lucide-react';
 import { Card } from '../components/ui/Card';
+import { useAuth } from '../context/AuthContext';
 import { 
   AuthTabSwitcher, 
   AuthForm, 
@@ -12,38 +13,69 @@ import {
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
+  const { login, register } = useAuth();
   const [mode, setMode] = useState<'login' | 'register'>('login');
-  const [isSimulating, setIsSimulating] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [activeModal, setActiveModal] = useState<'sima' | 'mygov' | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSimulating(true);
-    setTimeout(() => {
-      setIsSimulating(false);
+  const handleFormSubmit = async (formData: {
+    finCode: string;
+    password: string;
+    fullName?: string;
+    email?: string;
+    phone?: string;
+    rememberMe?: boolean;
+  }) => {
+    setIsSubmitting(true);
+    setErrorMsg(null);
+    try {
+      if (mode === 'login') {
+        await login({
+          finCode: formData.finCode,
+          password: formData.password,
+          rememberMe: formData.rememberMe,
+        });
+      } else {
+        await register({
+          fullName: formData.fullName || 'İstifadəçi',
+          finCode: formData.finCode,
+          email: formData.email || `${formData.finCode.toLowerCase()}@soc.gov.az`,
+          phone: formData.phone,
+          password: formData.password,
+          department: 'İnformasiya Təhlükəsizliyi',
+        });
+      }
       navigate('/');
-    }, 1200);
+    } catch (err: any) {
+      console.warn('Auth error:', err);
+      setErrorMsg(err.message || 'Daxil olarkən xəta baş verdi.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handleProviderSelect = (provider: 'sima' | 'mygov' | 'guest') => {
+  const handleProviderSelect = async (provider: 'sima' | 'mygov' | 'guest') => {
     if (provider === 'guest') {
+      await login({ finCode: 'GUEST01', password: 'guestpassword' });
       navigate('/');
     } else {
       setActiveModal(provider);
     }
   };
 
-  const handleDigitalAuthSuccess = () => {
+  const handleDigitalAuthSuccess = async () => {
     setActiveModal(null);
+    await login({ finCode: 'DIGITAL', password: 'digitalpassword' });
     navigate('/');
   };
 
   return (
-    <div className="w-full min-h-[calc(100vh-180px)] flex items-center justify-center py-6 px-4 animate-in fade-in zoom-in-95 duration-500 relative">
-      {/* Floating 3D Diagonal Shooting Comet Spheres Background */}
+    <div className="w-full min-h-screen flex items-center justify-center py-10 px-4 relative">
+      {/* Floating 3D Diagonal Shooting Comet Spheres Full Viewport Background */}
       <AuthFloatingOrbsBackground />
 
-      <div className="w-full max-w-md space-y-6 relative z-10">
+      <div className="w-full max-w-md space-y-6 relative z-10 my-auto">
         {/* Brand Header */}
         <div className="flex flex-col items-center justify-center text-center space-y-2">
           <div className="w-14 h-14 rounded-2xl bg-white border border-outline-variant/80 flex items-center justify-center shadow-md">
@@ -59,9 +91,16 @@ export const LoginPage: React.FC = () => {
 
         {/* Auth Glass Container */}
         <Card padding="lg" className="border-outline-variant/80 shadow-2xl bg-surface-container-lowest/85 backdrop-blur-2xl rounded-3xl p-6 sm:p-8 relative overflow-hidden">
-          <AuthTabSwitcher mode={mode} onModeChange={setMode} />
+          <AuthTabSwitcher mode={mode} onModeChange={(newMode) => { setMode(newMode); setErrorMsg(null); }} />
+
+          {errorMsg && (
+            <div className="mb-4 p-3 rounded-xl bg-error-container/40 border border-error/30 text-error text-xs flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{errorMsg}</span>
+            </div>
+          )}
           
-          <AuthForm mode={mode} onSubmit={handleSubmit} isSimulating={isSimulating} />
+          <AuthForm mode={mode} onSubmitData={handleFormSubmit} isSubmitting={isSubmitting} />
 
           <div className="relative my-6 text-center">
             <div className="absolute inset-0 flex items-center">

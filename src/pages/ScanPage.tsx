@@ -1,24 +1,71 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { FileText, ArrowRight, ShieldCheck, RefreshCw } from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { FileText, ArrowRight } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { ProgressStep } from '../components/ui/ProgressStep';
 import { StepStatus } from '../types';
 import { mockScanSteps } from '../data/mockData';
 import { useLanguage } from '../context/LanguageContext';
+import { joinDocumentScanRoom, leaveDocumentScanRoom, ScanEventData } from '../api/socketClient';
 
 export const ScanPage: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
+  const [searchParams] = useSearchParams();
+  const documentId = searchParams.get('docId') || 'doc-1724750000-123';
+  const fileName = searchParams.get('name') || 'security_contract.pdf';
+
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [isScanning, setIsScanning] = useState(true);
 
   const [steps, setSteps] = useState(mockScanSteps.map((s, i) => ({
     ...s,
-    status: i === 0 ? 'completed' : 'processing' as StepStatus
+    status: i === 0 ? 'completed' : ('processing' as StepStatus)
   })));
 
+  // Real-time Socket.IO integration
+  useEffect(() => {
+    joinDocumentScanRoom(documentId, (data: ScanEventData) => {
+      console.log('Live Socket Scan Event:', data);
+      if (data.step) {
+        const stepNameMap: Record<string, number> = {
+          DOCUMENT_UPLOADED: 0,
+          PDF_TEXT_EXTRACTION: 1,
+          OCR_ANALYSIS: 2,
+          TEXT_COMPARISON: 3,
+          HIDDEN_TEXT_DETECTION: 4,
+          PROMPT_INJECTION_ANALYSIS: 5,
+          RISK_ASSESSMENT: 6,
+        };
+        const activeIdx = stepNameMap[data.step] ?? currentStepIndex;
+        setCurrentStepIndex(activeIdx);
+
+        if (activeIdx >= 6 || data.fileData?.currentStep === 'COMPLETED') {
+          setIsScanning(false);
+        }
+
+        setSteps((prevSteps) =>
+          prevSteps.map((step, idx) => {
+            if (idx < activeIdx) {
+              return { ...step, status: 'completed' as StepStatus };
+            }
+            if (idx === activeIdx) {
+              const status: StepStatus = data.fileData?.stepStatus === 'failed' ? 'failed' : 'processing';
+              return { ...step, status, description: data.message || step.description };
+            }
+            return step;
+          })
+        );
+      }
+    });
+
+    return () => {
+      leaveDocumentScanRoom(documentId);
+    };
+  }, [documentId]);
+
+  // Animated step progression simulation if socket server has not completed
   useEffect(() => {
     if (!isScanning) return;
 
@@ -34,19 +81,19 @@ export const ScanPage: React.FC = () => {
           oldSteps.map((step, idx) => {
             if (idx < next) {
               if (idx === 4 || idx === 5) {
-                return { ...step, status: 'warning' };
+                return { ...step, status: 'warning' as StepStatus };
               }
-              return { ...step, status: 'completed' };
+              return { ...step, status: 'completed' as StepStatus };
             }
             if (idx === next) {
-              return { ...step, status: 'processing' };
+              return { ...step, status: 'processing' as StepStatus };
             }
             return step;
           })
         );
         return next;
       });
-    }, 1200);
+    }, 1500);
 
     return () => clearInterval(timer);
   }, [isScanning, steps.length]);
@@ -60,7 +107,7 @@ export const ScanPage: React.FC = () => {
           <p className="text-body-md text-on-surface-variant">{t('scanSubtitle')}</p>
         </div>
         {!isScanning && (
-          <Button variant="primary" size="md" onClick={() => navigate('/analysis/doc-001')} icon={<ArrowRight className="w-4 h-4" />}>
+          <Button variant="primary" size="md" onClick={() => navigate(`/analysis/${documentId}`)} icon={<ArrowRight className="w-4 h-4" />}>
             {t('viewAnalysis')}
           </Button>
         )}
@@ -72,7 +119,7 @@ export const ScanPage: React.FC = () => {
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-title-lg font-medium text-on-surface">Target File</h2>
             <span className="bg-primary-container text-on-primary-container text-label-sm px-3 py-1 rounded-full border border-primary-fixed-dim">
-              {isScanning ? 'Scanning' : 'Analysis Complete'}
+              {isScanning ? 'Real-Time Scanning' : 'Analysis Complete'}
             </span>
           </div>
           
@@ -97,8 +144,8 @@ export const ScanPage: React.FC = () => {
           
           <div className="flex flex-col gap-2 mt-auto">
             <div className="flex justify-between items-center">
-              <span className="text-label-md font-medium text-on-surface">contract_v2_final.pdf</span>
-              <span className="text-label-sm text-on-surface-variant">2.4 MB</span>
+              <span className="text-label-md font-medium text-on-surface truncate max-w-[200px]">{fileName}</span>
+              <span className="text-label-sm text-on-surface-variant">Socket.IO Live</span>
             </div>
             <div className="w-full bg-surface-variant rounded-full h-2 overflow-hidden">
               <div className="bg-brand-blue h-2 rounded-full transition-all duration-500" style={{ width: `${Math.round(((currentStepIndex + 1) / steps.length) * 100)}%` }}></div>
@@ -129,9 +176,14 @@ export const ScanPage: React.FC = () => {
           </div>
 
           <div className="mt-10 flex justify-end gap-4 border-t border-outline-variant pt-6">
-            <Button variant="outline" size="md" onClick={() => navigate('/dashboard')}>
-              Cancel Scan
+            <Button variant="outline" size="md" onClick={() => navigate('/documents')}>
+              Ləğv Et
             </Button>
+            {!isScanning && (
+              <Button variant="primary" size="md" onClick={() => navigate(`/analysis/${documentId}`)}>
+                Hesabata Bax
+              </Button>
+            )}
           </div>
         </Card>
       </div>
