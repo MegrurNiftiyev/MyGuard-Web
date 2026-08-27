@@ -29,7 +29,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             setUser(profile);
             setToken(existingToken);
           } else {
-            // Fallback profile if token exists
+            // Fallback profile if token exists but offline
             setUser({
               uid: 'usr-local-001',
               fullName: 'Samir Əliyev',
@@ -60,22 +60,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setIsLoading(true);
     try {
       const res = await authApi.login(payload);
-      setUser(res.user);
-      setToken(res.token);
+      if (res && res.token && res.user) {
+        setUser(res.user);
+        setToken(res.token);
+      } else {
+        throw new Error('Serverdən etibarsız autentifikasiya cavabı alındı.');
+      }
     } catch (err) {
-      console.warn('Backend login fallback session:', err);
-      const fallbackUser: UserProfile = {
-        uid: 'usr-admin-001',
-        fullName: 'Samir Əliyev',
-        finCode: payload.finCode || '7AB1234',
-        email: payload.email || 'e.mammadov@soc.gov.az',
-        role: 'admin',
-        department: 'Təhlükəsizlik və İnformasiya İdarəsi'
-      };
-      const fallbackToken = 'myguard_access_token_' + Date.now();
-      localStorage.setItem('access_token', fallbackToken);
-      setUser(fallbackUser);
-      setToken(fallbackToken);
+      console.warn('Backend login error:', err);
+      // Re-throw so LoginPage handles and displays the error message banner
+      throw err;
     } finally {
       setIsLoading(false);
     }
@@ -85,22 +79,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setIsLoading(true);
     try {
       const res = await authApi.register(payload);
-      setUser(res.user);
-      setToken(res.token);
+      if (res && res.token && res.user) {
+        setUser(res.user);
+        setToken(res.token);
+      } else {
+        throw new Error('Serverdən etibarsız qeydiyyat cavabı alındı.');
+      }
     } catch (err) {
-      console.warn('Backend register fallback session:', err);
-      const fallbackUser: UserProfile = {
-        uid: 'usr-' + Date.now(),
-        fullName: payload.fullName || 'Samir Əliyev',
-        finCode: payload.finCode || '7AB1234',
-        email: payload.email || 'e.mammadov@soc.gov.az',
-        role: 'user',
-        department: payload.department || 'Təhlükəsizlik və İnformasiya İdarəsi'
-      };
-      const fallbackToken = 'myguard_access_token_' + Date.now();
-      localStorage.setItem('access_token', fallbackToken);
-      setUser(fallbackUser);
-      setToken(fallbackToken);
+      console.warn('Backend register error:', err);
+      // Re-throw so LoginPage handles and displays the error message banner
+      throw err;
     } finally {
       setIsLoading(false);
     }

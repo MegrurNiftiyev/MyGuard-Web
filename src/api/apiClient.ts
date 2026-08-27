@@ -47,7 +47,15 @@ export async function apiClient<T>(endpoint: string, options: RequestInit = {}):
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.error || errorData.message || `HTTP error ${response.status}`);
+    let defaultMsg = `Xəta baş verdi (${response.status})`;
+    if (response.status === 401 && endpoint.includes('/auth/login')) {
+      defaultMsg = 'FİN kod və ya şifrə yanlışdır.';
+    } else if (response.status === 409) {
+      defaultMsg = 'Bu FİN kod və ya e-poçt ünvanı artıq başqa hesabda istifadə olunur.';
+    } else if (response.status === 400) {
+      defaultMsg = 'Daxil edilən məlumatlar natamam və ya yanlışdır.';
+    }
+    throw new Error(errorData.error || errorData.message || defaultMsg);
   }
 
   return response.json();
