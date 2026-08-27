@@ -58,13 +58,28 @@ export function getAuthToken(): string | null {
 }
 
 export function setAuthTokens(token: string, refreshToken?: string): void {
-  localStorage.setItem('access_token', token);
-  if (refreshToken) {
-    localStorage.setItem('refresh_token', refreshToken);
+  try {
+    localStorage.setItem('access_token', token);
+    if (refreshToken) {
+      localStorage.setItem('refresh_token', refreshToken);
+    }
+  } catch (err) {
+    console.warn('Failed to set auth tokens:', err);
   }
 }
 
 export function clearAuthTokens(): void {
-  localStorage.removeItem('access_token');
-  localStorage.removeItem('refresh_token');
+  try {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    sessionStorage.clear();
+    // Clear cookies
+    document.cookie.split(';').forEach((c) => {
+      document.cookie = c
+        .replace(/^ +/, '')
+        .replace(/=.*/, '=;expires=' + new Date().toUTCString() + ';path=/');
+    });
+  } catch (err) {
+    console.warn('Storage purge error during logout:', err);
+  }
 }

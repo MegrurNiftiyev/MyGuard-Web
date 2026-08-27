@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { authApi, UserProfile, LoginPayload, RegisterPayload } from '../api/authApi';
-import { getAuthToken } from '../api/apiClient';
+import { getAuthToken, clearAuthTokens } from '../api/apiClient';
 
 interface AuthContextType {
   user: UserProfile | null;
@@ -27,8 +27,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           const profile = await authApi.getCurrentUser();
           if (profile) {
             setUser(profile);
+            setToken(existingToken);
           } else {
-            // Fallback profile if backend offline but token saved
+            // Fallback profile if token exists
             setUser({
               uid: 'usr-local-001',
               fullName: 'Samir Əliyev',
@@ -37,10 +38,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
               role: 'admin',
               department: 'Təhlükəsizlik və İnformasiya İdarəsi'
             });
+            setToken(existingToken);
           }
         } catch (err) {
           console.warn('Initial profile load failed:', err);
+          clearAuthTokens();
+          setUser(null);
+          setToken(null);
         }
+      } else {
+        setUser(null);
+        setToken(null);
       }
       setIsLoading(false);
     };
@@ -99,6 +107,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const logout = () => {
+    setIsLoading(false);
     authApi.logout();
     setUser(null);
     setToken(null);
@@ -109,7 +118,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       value={{
         user,
         token,
-        isAuthenticated: !!user || !!token,
+        isAuthenticated: Boolean(user && token),
         isLoading,
         login,
         register,
