@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { THEME_COLORS } from '../../constants/themeColors';
 
 interface CometParticle {
+  id: number;
   x: number;
   y: number;
   speed: number;
@@ -34,38 +35,70 @@ export const AuthFloatingOrbsBackground: React.FC = () => {
 
     window.addEventListener('resize', handleResize);
 
-    const colors: ('blue' | 'purple' | 'green')[] = ['blue', 'purple', 'green'];
+    // Exact equal 1/3 color distribution: 6 Blue, 6 Purple, 6 Green (18 Total)
+    const particleColors: ('blue' | 'purple' | 'green')[] = [
+      'blue', 'blue', 'blue', 'blue', 'blue', 'blue',
+      'purple', 'purple', 'purple', 'purple', 'purple', 'purple',
+      'green', 'green', 'green', 'green', 'green', 'green',
+    ];
 
-    const createParticle = (randomizePosition = true): CometParticle => {
-      const color = colors[Math.floor(Math.random() * colors.length)];
-      // Radius between 7px and 30px (diameter 14px to 60px)
-      const radius = Math.random() * 23 + 7;
+    const particles: CometParticle[] = [];
+
+    // Helper to check for collision/overlap with existing particles
+    const isOverlapping = (x: number, y: number, radius: number, existingParticles: CometParticle[]): boolean => {
+      const minGap = 50; // Minimum distance gap between circle centers
+      for (const other of existingParticles) {
+        const dist = Math.hypot(x - other.x, y - other.y);
+        if (dist < radius + other.radius + minGap) {
+          return true;
+        }
+      }
+      return false;
+    };
+
+    const createSingleParticle = (
+      id: number,
+      color: 'blue' | 'purple' | 'green',
+      randomizePosition = true,
+      existing: CometParticle[] = []
+    ): CometParticle => {
+      // Radius between 8px and 28px
+      const radius = Math.random() * 20 + 8;
       
-      // Inverse physics speed scaling: smaller circles move faster, larger circles move slower
-      const baseSpeedFactor = 48;
+      // Inverse speed scaling: smaller circles move faster, larger circles move slower
+      const baseSpeedFactor = 46;
       const speed = (baseSpeedFactor / radius) * (Math.random() * 0.35 + 0.82);
       
-      const tailLength = Math.random() * 250 + radius * 12; // Tail scales nicely with size
-      const angle = Math.PI / 4 + (Math.random() * 0.16 - 0.08); // ~45 deg diagonal glide
+      const tailLength = Math.random() * 220 + radius * 11;
+      const angle = Math.PI / 4 + (Math.random() * 0.14 - 0.07); // ~45 deg diagonal angle
 
-      let x: number;
-      let y: number;
+      let x = 0;
+      let y = 0;
+      let attempts = 0;
+      const maxAttempts = 50;
 
-      if (randomizePosition) {
-        x = Math.random() * (width + 400) - 200;
-        y = Math.random() * (height + 400) - 200;
-      } else {
-        // Spawn from top or left edge outside screen bounds
-        if (Math.random() > 0.5) {
-          x = Math.random() * width;
-          y = -tailLength - 60;
+      while (attempts < maxAttempts) {
+        if (randomizePosition) {
+          x = Math.random() * (width + 400) - 200;
+          y = Math.random() * (height + 400) - 200;
         } else {
-          x = -tailLength - 60;
-          y = Math.random() * height;
+          if (Math.random() > 0.5) {
+            x = Math.random() * width;
+            y = -tailLength - 60;
+          } else {
+            x = -tailLength - 60;
+            y = Math.random() * height;
+          }
         }
+
+        if (!isOverlapping(x, y, radius, existing)) {
+          break;
+        }
+        attempts++;
       }
 
       return {
+        id,
         x,
         y,
         speed,
@@ -73,15 +106,15 @@ export const AuthFloatingOrbsBackground: React.FC = () => {
         tailLength,
         angle,
         color,
-        opacity: Math.random() * 0.25 + 0.72, // 0.72 to 0.97
+        opacity: Math.random() * 0.22 + 0.75, // 0.75 to 0.97
       };
     };
 
-    // Pool of 20 active comets
-    const particleCount = 20;
-    const particles: CometParticle[] = Array.from({ length: particleCount }, () =>
-      createParticle(true)
-    );
+    // Initialize 18 particles with strict equal color allocation and collision avoidance
+    particleColors.forEach((color, i) => {
+      const particle = createSingleParticle(i, color, true, particles);
+      particles.push(particle);
+    });
 
     const render = () => {
       ctx.clearRect(0, 0, width, height);
@@ -98,7 +131,7 @@ export const AuthFloatingOrbsBackground: React.FC = () => {
         const tailX = p.x - Math.cos(p.angle) * p.tailLength;
         const tailY = p.y - Math.sin(p.angle) * p.tailLength;
 
-        // Solid core color matching theme (no white highlights)
+        // Solid core color matching theme
         let mainRgb: string = '0, 102, 255';
         let coreColor: string = THEME_COLORS.brandBlue;
 
@@ -115,8 +148,8 @@ export const AuthFloatingOrbsBackground: React.FC = () => {
 
         // 1. Long Fading Shadow Tail — Width matches exact circle diameter (radius * 2)
         const tailGrad = ctx.createLinearGradient(p.x, p.y, tailX, tailY);
-        tailGrad.addColorStop(0, `rgba(${mainRgb}, 0.5)`);
-        tailGrad.addColorStop(0.35, `rgba(${mainRgb}, 0.18)`);
+        tailGrad.addColorStop(0, `rgba(${mainRgb}, 0.52)`);
+        tailGrad.addColorStop(0.38, `rgba(${mainRgb}, 0.2)`);
         tailGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
 
         ctx.beginPath();
@@ -129,19 +162,19 @@ export const AuthFloatingOrbsBackground: React.FC = () => {
         ctx.shadowBlur = 12;
         ctx.stroke();
 
-        // 2. Pure Solid Color Circle Head (No white 3D shine spot)
+        // 2. Pure Solid Color Circle Head (No white shine spot)
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
         ctx.fillStyle = coreColor;
-        ctx.shadowColor = `rgba(${mainRgb}, 0.55)`;
-        ctx.shadowBlur = 20;
+        ctx.shadowColor = `rgba(${mainRgb}, 0.6)`;
+        ctx.shadowBlur = 22;
         ctx.fill();
 
         ctx.restore();
 
-        // 3. Boundary Check — Respawn if particle moved off canvas
-        if (p.x - p.tailLength > width + 100 || p.y - p.tailLength > height + 100) {
-          particles[index] = createParticle(false);
+        // 3. Boundary Check — Respawn retaining exact same color to maintain equal distribution
+        if (p.x - p.tailLength > width + 120 || p.y - p.tailLength > height + 120) {
+          particles[index] = createSingleParticle(p.id, p.color, false, particles.filter(other => other.id !== p.id));
         }
       });
 

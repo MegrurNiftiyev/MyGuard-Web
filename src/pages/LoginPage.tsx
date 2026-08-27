@@ -70,7 +70,7 @@ export const LoginPage: React.FC = () => {
       {/* Floating 3D Diagonal Shooting Comet Spheres Full Viewport Background */}
       <AuthFloatingOrbsBackground />
 
-      <div className="w-full max-w-md space-y-6 relative z-10 my-auto">
+      <div className="w-full max-w-md space-y-6 relative z-10 my-auto transition-all duration-500 ease-out">
         {/* Brand Header */}
         <div className="flex flex-col items-center justify-center text-center space-y-2">
           <div className="w-14 h-14 rounded-2xl bg-white border border-outline-variant/80 flex items-center justify-center shadow-md">
@@ -84,18 +84,21 @@ export const LoginPage: React.FC = () => {
           </p>
         </div>
 
-        {/* Auth Glass Container */}
-        <Card padding="lg" className="border-outline-variant/80 shadow-2xl bg-surface-container-lowest/85 backdrop-blur-2xl rounded-3xl p-6 sm:p-8 relative overflow-hidden">
+        {/* Auth Glass Container with Smooth Height & Content Expansion Transition */}
+        <Card padding="lg" className="border-outline-variant/80 shadow-2xl bg-surface-container-lowest/85 backdrop-blur-2xl rounded-3xl p-6 sm:p-8 relative overflow-hidden transition-all duration-500 ease-in-out">
           <AuthTabSwitcher mode={mode} onModeChange={(newMode) => { setMode(newMode); setErrorMsg(null); }} />
 
           {errorMsg && (
-            <div className="mb-4 p-3 rounded-xl bg-error-container/40 border border-error/30 text-error text-xs flex items-center gap-2">
+            <div className="mb-4 p-3 rounded-xl bg-error-container/40 border border-error/30 text-error text-xs flex items-center gap-2 animate-in fade-in zoom-in-95 duration-300">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{errorMsg}</span>
             </div>
           )}
           
-          <AuthForm mode={mode} onSubmitData={handleFormSubmit} isSubmitting={isSubmitting} />
+          {/* Form Container with Smooth Fade & Scale Keyframes */}
+          <div key={mode} className="animate-in fade-in-50 zoom-in-95 duration-400 ease-out">
+            <AuthForm mode={mode} onSubmitData={handleFormSubmit} isSubmitting={isSubmitting} />
+          </div>
 
           <div className="relative my-6 text-center">
             <div className="absolute inset-0 flex items-center">
