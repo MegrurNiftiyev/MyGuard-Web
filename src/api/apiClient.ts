@@ -2,9 +2,11 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://myguard-backend-i
 
 export async function apiClient<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const token = localStorage.getItem('access_token');
+  const userLang = localStorage.getItem('app_language') || 'az';
 
   const headers: HeadersInit = {
     'Accept': 'application/json',
+    'Accept-Language': userLang,
     ...(options.body instanceof FormData ? {} : { 'Content-Type': 'application/json' }),
     ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
     ...options.headers,
@@ -22,7 +24,11 @@ export async function apiClient<T>(endpoint: string, options: RequestInit = {}):
       try {
         const refreshRes = await fetch(`${BASE_URL}/auth/refresh`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json', 
+            'Accept': 'application/json',
+            'Accept-Language': userLang 
+          },
           body: JSON.stringify({ refreshToken })
         });
         if (refreshRes.ok) {
