@@ -55,13 +55,8 @@ export const LoginPage: React.FC = () => {
     }
   };
 
-  const handleProviderSelect = async (provider: 'sima' | 'mygov' | 'guest') => {
-    if (provider === 'guest') {
-      await login({ finCode: 'GUEST01', password: 'guestpassword' });
-      navigate('/');
-    } else {
-      setActiveModal(provider);
-    }
+  const handleProviderSelect = (provider: 'sima' | 'mygov') => {
+    setActiveModal(provider);
   };
 
   const handleDigitalAuthSuccess = async () => {
