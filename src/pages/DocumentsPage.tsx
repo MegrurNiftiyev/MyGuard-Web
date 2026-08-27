@@ -6,7 +6,6 @@ import { Button } from '../components/ui/Button';
 import { Chip } from '../components/ui/Chip';
 import { TableSkeleton } from '../components/ui/Skeleton';
 import { EmptyState } from '../components/ui/EmptyState';
-import { mockDocuments } from '../data/mockData';
 import { RiskStatus } from '../types';
 import { useLanguage } from '../context/LanguageContext';
 import { documentsApi, DocumentItem } from '../api/documentsApi';
@@ -16,17 +15,18 @@ export const DocumentsPage: React.FC = () => {
   const { t } = useLanguage();
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState<string>('all');
-  const [documents, setDocuments] = useState<any[]>(mockDocuments);
+  const [documents, setDocuments] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const fetchDocs = async () => {
+      setIsLoading(true);
       try {
         const liveDocs = await documentsApi.getDocuments();
         if (liveDocs && liveDocs.length > 0) {
           const mappedDocs = liveDocs.map((d: DocumentItem) => ({
             id: d.id,
-            name: d.fileName,
+            name: d.fileName || 'Sənəd.pdf',
             category: d.fileType?.toUpperCase() || 'DOCUMENT',
             uploadTime: d.uploadedAt ? new Date(d.uploadedAt).toLocaleString('az-AZ') : 'İndi',
             department: 'Təhlükəsizlik İdarəsi',
@@ -36,9 +36,12 @@ export const DocumentsPage: React.FC = () => {
             fileType: d.fileType?.toUpperCase() || 'PDF'
           }));
           setDocuments(mappedDocs);
+        } else {
+          setDocuments([]);
         }
       } catch (err) {
-        console.warn('Failed to load live documents, using default list:', err);
+        console.warn('Live documents fetch failed:', err);
+        setDocuments([]);
       } finally {
         setIsLoading(false);
       }
@@ -61,21 +64,6 @@ export const DocumentsPage: React.FC = () => {
     if (activeFilter === 'all') return matchesSearch;
     return matchesSearch && doc.status === activeFilter;
   });
-
-  const getAccentColor = (status: RiskStatus) => {
-    switch (status) {
-      case 'blocked':
-        return '#ba1a1a';
-      case 'high_risk':
-        return '#ba1a1a';
-      case 'suspicious':
-        return '#8c5000';
-      case 'safe':
-        return '#006e36';
-      default:
-        return '#c4c6cf';
-    }
-  };
 
   return (
     <div className="space-y-8 pb-8">
@@ -146,12 +134,12 @@ export const DocumentsPage: React.FC = () => {
           ) : filteredDocs.length === 0 ? (
             <EmptyState
               icon={FileText}
-              title="Axtarışa uyğun sənəd tapılmadı"
-              description="Axtarış sözünü və ya təyin etdiyiniz risk filtrlərini dəyişdirərək yenidən cəhd edin."
+              title="Hələ ki skan edilmiş sənəd yoxdur"
+              description="Axtarış meyarlarına uyğun sənəd tapılmadı və ya sistemdə hələ heç bir sənəd skan edilməyib."
               primaryActionLabel="Yeni Sənəd Skan Et"
               onPrimaryAction={() => navigate('/scan')}
-              secondaryActionLabel="Filtrləri Sıfırla"
-              onSecondaryAction={() => { setSearchTerm(''); setActiveFilter('all'); }}
+              secondaryActionLabel={searchTerm || activeFilter !== 'all' ? "Filtrləri Sıfırla" : undefined}
+              onSecondaryAction={searchTerm || activeFilter !== 'all' ? () => { setSearchTerm(''); setActiveFilter('all'); } : undefined}
             />
           ) : (
             filteredDocs.map((doc) => (
@@ -160,12 +148,6 @@ export const DocumentsPage: React.FC = () => {
                 onClick={() => navigate(`/analysis/${doc.id}`)}
                 className="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-surface-container-low transition-colors cursor-pointer group relative"
               >
-                {/* 4px Left Accent Bar */}
-                <div
-                  className="absolute left-0 top-0 bottom-0 w-1"
-                  style={{ backgroundColor: getAccentColor(doc.status) }}
-                />
-
                 {/* Column 1: Document */}
                 <div className="col-span-5 flex items-center gap-3.5 min-w-0">
                   <div className="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center shrink-0">
