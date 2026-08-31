@@ -336,7 +336,7 @@ export const ScanPage: React.FC = () => {
         </div>
         <div className="flex gap-3">
           {!isScanning && (
-            <Button variant="secondary" size="md" onClick={clearGlobalState}>
+            <Button variant="outline" size="md" onClick={clearGlobalState}>
               Yeni Skan
             </Button>
           )}
@@ -414,7 +414,7 @@ export const ScanPage: React.FC = () => {
               Ləğv Et
             </Button>
             {!isScanning && (
-              <Button variant="primary" size="md" onClick={() => navigate(`/analysis/${documentId}`)}>
+              <Button variant="primary" size="md" onClick={() => navigate(`/analysis/${activeDocId}`)}>
                 Hesabata Bax
               </Button>
             )}
