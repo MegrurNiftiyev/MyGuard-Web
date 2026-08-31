@@ -9,6 +9,16 @@ import { Typewriter } from '../components/ui/Typewriter';
 import { documentsApi, DetailedDocumentReport } from '../api/documentsApi';
 import { useLanguage } from '../context/LanguageContext';
 
+const decodeFileName = (text: string) => {
+  if (!text) return text;
+  try {
+    // Fixes UTF-8 mojibake (e.g. ÆmÉkdaÅ) and ensures correct display
+    return decodeURIComponent(escape(text));
+  } catch {
+    return text;
+  }
+};
+
 export const AnalysisResultPage: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -154,9 +164,9 @@ export const AnalysisResultPage: React.FC = () => {
              (analysis.fileType?.includes('PNG') || analysis.fileType?.includes('JPG')) ? <FileImage className="w-7 h-7" /> :
              <File className="w-7 h-7" />}
           </div>
-          <div className="flex flex-col">
-            <h1 className="text-lg font-bold text-on-surface">
-              {analysis.documentName}
+          <div className="flex flex-col min-w-0">
+            <h1 className="text-lg font-bold text-on-surface font-sans break-all" style={{ fontFamily: "'Inter', system-ui, -apple-system, sans-serif" }}>
+              {decodeFileName(analysis.documentName)}
             </h1>
             <div className="flex items-center gap-2 mt-1 text-xs text-on-surface-variant font-medium">
               <span>{analysis.fileType?.toUpperCase()}</span>
@@ -189,31 +199,29 @@ export const AnalysisResultPage: React.FC = () => {
             </button>
           </div>
 
-          <div className={`px-5 py-3 rounded-2xl flex items-center justify-center gap-3 bg-white border ${riskColors.border}/30 shadow-sm`}>
-            <div className="flex flex-col items-center justify-center">
-              <span className={`text-[11px] font-bold uppercase tracking-wider mb-2 ${riskColors.text} opacity-80`}>Risk Skoru</span>
-              <div className="relative w-16 h-16 flex items-center justify-center">
-                <svg className="w-16 h-16 absolute -rotate-90" viewBox="0 0 48 48">
-                  <circle cx="24" cy="24" r="20" stroke="currentColor" strokeWidth="4" fill="none" className={`${riskColors.text} opacity-20`} />
-                  <circle 
-                    cx="24" cy="24" r="20" 
-                    stroke="currentColor" 
-                    strokeWidth="4" 
-                    fill="none" 
-                    strokeLinecap="round"
-                    className={riskColors.text} 
-                    style={{ 
-                      strokeDasharray: 2 * Math.PI * 20, 
-                      strokeDashoffset: (2 * Math.PI * 20) - ((isMounted ? analysis.riskScore : 0) / 100) * (2 * Math.PI * 20),
-                      transition: 'stroke-dashoffset 1s ease-out'
-                    }} 
-                  />
-                </svg>
-                <span className={`text-lg font-extrabold ${riskColors.text}`}>
-                  {analysis.riskScore}%
-                </span>
-              </div>
+          <div className="flex flex-col items-center justify-center ml-2">
+            <div className="relative w-16 h-16 flex items-center justify-center mb-1.5">
+              <svg className="w-16 h-16 absolute -rotate-90" viewBox="0 0 48 48">
+                <circle cx="24" cy="24" r="20" stroke="currentColor" strokeWidth="4" fill="none" className={`${riskColors.text} opacity-20`} />
+                <circle 
+                  cx="24" cy="24" r="20" 
+                  stroke="currentColor" 
+                  strokeWidth="4" 
+                  fill="none" 
+                  strokeLinecap="round"
+                  className={riskColors.text} 
+                  style={{ 
+                    strokeDasharray: 2 * Math.PI * 20, 
+                    strokeDashoffset: (2 * Math.PI * 20) - ((isMounted ? analysis.riskScore : 0) / 100) * (2 * Math.PI * 20),
+                    transition: 'stroke-dashoffset 1s ease-out'
+                  }} 
+                />
+              </svg>
+              <span className={`text-lg font-extrabold ${riskColors.text}`}>
+                {analysis.riskScore}%
+              </span>
             </div>
+            <span className={`text-[10px] font-bold uppercase tracking-wider ${riskColors.text} opacity-90 whitespace-nowrap`}>Risk Skoru</span>
           </div>
         </div>
       </header>

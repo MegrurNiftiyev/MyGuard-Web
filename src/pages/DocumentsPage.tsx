@@ -10,6 +10,15 @@ import { RiskStatus } from '../types';
 import { useLanguage } from '../context/LanguageContext';
 import { documentsApi, DocumentItem } from '../api/documentsApi';
 
+const decodeFileName = (text: string) => {
+  if (!text) return text;
+  try {
+    return decodeURIComponent(escape(text));
+  } catch {
+    return text;
+  }
+};
+
 export const DocumentsPage: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
@@ -155,8 +164,8 @@ export const DocumentsPage: React.FC = () => {
                       <FileText className="w-5 h-5 text-on-surface-variant group-hover:text-brand-blue transition-colors" />
                     </div>
                     <div className="min-w-0">
-                      <div className="text-title-lg font-medium text-on-surface truncate group-hover:text-brand-blue transition-colors">
-                        {doc.name}
+                      <div className="text-title-lg font-medium text-on-surface truncate group-hover:text-brand-blue transition-colors font-sans" style={{ fontFamily: "'Inter', system-ui, -apple-system, sans-serif" }}>
+                        {decodeFileName(doc.name)}
                       </div>
                       <div className="text-label-sm text-on-surface-variant/70">
                         Category: {doc.category}
