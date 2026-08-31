@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { FileText, ArrowRight, UploadCloud, ShieldAlert, Sparkles } from 'lucide-react';
+import { FileText, ArrowRight, UploadCloud, ShieldAlert, Sparkles, FileCode } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { ProgressStep } from '../components/ui/ProgressStep';
@@ -30,6 +30,8 @@ export const ScanPage: React.FC = () => {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [isScanning, setIsScanning] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const dragCounter = React.useRef(0);
 
   const [steps, setSteps] = useState(
     DEFAULT_SCAN_STEPS.map((s, i) => ({
@@ -38,21 +40,57 @@ export const ScanPage: React.FC = () => {
     }))
   );
 
-  // Handle direct file upload from idle scan page
+  const processFile = async (file: File) => {
+    setIsUploading(true);
+    try {
+      const res = await documentsApi.uploadDocument(file);
+      const newDocId = res.document?.id || `doc-${Date.now()}`;
+      navigate(`/scan?docId=${newDocId}&name=${encodeURIComponent(file.name)}`);
+    } catch (err) {
+      console.warn('Scan page file upload fallback:', err);
+      navigate(`/scan?docId=doc-${Date.now()}&name=${encodeURIComponent(file.name)}`);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      const file = e.target.files[0];
-      setIsUploading(true);
-      try {
-        const res = await documentsApi.uploadDocument(file);
-        const newDocId = res.document?.id || `doc-${Date.now()}`;
-        navigate(`/scan?docId=${newDocId}&name=${encodeURIComponent(file.name)}`);
-      } catch (err) {
-        console.warn('Scan page file upload fallback:', err);
-        navigate(`/scan?docId=doc-${Date.now()}&name=${encodeURIComponent(file.name)}`);
-      } finally {
-        setIsUploading(false);
-      }
+      await processFile(e.target.files[0]);
+    }
+  };
+
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounter.current += 1;
+    if (e.dataTransfer.items && e.dataTransfer.items.length > 0) {
+      setIsDragging(true);
+    }
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounter.current -= 1;
+    if (dragCounter.current === 0) {
+      setIsDragging(false);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    dragCounter.current = 0;
+
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      await processFile(e.dataTransfer.files[0]);
     }
   };
 
@@ -97,7 +135,12 @@ export const ScanPage: React.FC = () => {
               return { ...step, status: 'completed' as StepStatus };
             }
             if (idx === activeIdx) {
-              const status: StepStatus = data.fileData?.stepStatus === 'failed' ? 'failed' : 'processing';
+              let status: StepStatus = 'processing';
+              if (data.fileData?.stepStatus === 'failed') {
+                status = 'failed';
+              } else if (data.fileData?.stepStatus === 'completed' || data.fileData?.currentStep === 'COMPLETED') {
+                status = 'completed';
+              }
               return { ...step, status, description: data.message || step.description };
             }
             return { ...step, status: 'pending' as StepStatus };
@@ -114,7 +157,34 @@ export const ScanPage: React.FC = () => {
   // If no document is selected/being scanned, render the Idle Scan State in exact same layout
   if (!documentId) {
     return (
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start pb-8">
+      <div 
+        className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start pb-8 min-h-[80vh] relative"
+        onDragEnter={handleDragEnter}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+      >
+        {isDragging && (
+          <div className="fixed inset-0 z-[60] bg-surface-container-lowest/85 backdrop-blur-md flex flex-col items-center justify-center p-6 transition-all duration-300 animate-in fade-in zoom-in-95 pointer-events-none">
+            <div className="w-full max-w-xl p-10 border-2 border-dashed border-brand-blue/70 rounded-3xl bg-surface/95 flex flex-col items-center justify-center text-center space-y-5 shadow-2xl">
+              <div className="relative flex items-center justify-center mb-2">
+                <div className="w-16 h-16 rounded-2xl bg-brand-blue/15 text-brand-blue flex items-center justify-center rotate-[-12deg] shadow-md">
+                  <FileCode className="w-8 h-8" />
+                </div>
+                <div className="w-16 h-16 rounded-2xl bg-purple-100 text-brand-purple flex items-center justify-center rotate-[8deg] -ml-6 shadow-md border border-purple-200">
+                  <FileText className="w-8 h-8" />
+                </div>
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-title-lg font-bold text-on-surface tracking-tight">Sənədi bura buraxın</h3>
+                <p className="text-body-md text-on-surface-variant">
+                  Skan etmək üçün istənilən faylı bura sürükləyib buraxa bilərsiniz
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Header spanning full width */}
         <header className="lg:col-span-12 mb-2">
           <h1 className="text-headline-lg-mobile md:text-headline-lg font-bold text-on-surface mb-2">
@@ -202,7 +272,34 @@ export const ScanPage: React.FC = () => {
 
   // Active Scan State (when documentId is present)
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start pb-8">
+    <div 
+      className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start pb-8 min-h-[80vh] relative"
+      onDragEnter={handleDragEnter}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
+      {isDragging && (
+        <div className="fixed inset-0 z-[60] bg-surface-container-lowest/85 backdrop-blur-md flex flex-col items-center justify-center p-6 transition-all duration-300 animate-in fade-in zoom-in-95 pointer-events-none">
+          <div className="w-full max-w-xl p-10 border-2 border-dashed border-brand-blue/70 rounded-3xl bg-surface/95 flex flex-col items-center justify-center text-center space-y-5 shadow-2xl">
+            <div className="relative flex items-center justify-center mb-2">
+              <div className="w-16 h-16 rounded-2xl bg-brand-blue/15 text-brand-blue flex items-center justify-center rotate-[-12deg] shadow-md">
+                <FileCode className="w-8 h-8" />
+              </div>
+              <div className="w-16 h-16 rounded-2xl bg-purple-100 text-brand-purple flex items-center justify-center rotate-[8deg] -ml-6 shadow-md border border-purple-200">
+                <FileText className="w-8 h-8" />
+              </div>
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-title-lg font-bold text-on-surface tracking-tight">Sənədi bura buraxın</h3>
+              <p className="text-body-md text-on-surface-variant">
+                Yeni sənəd skan etmək üçün onu bura sürükləyib buraxa bilərsiniz
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header spanning full width */}
       <header className="lg:col-span-12 mb-2 flex justify-between items-end">
         <div>

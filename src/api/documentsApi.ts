@@ -23,16 +23,30 @@ export interface DetailedDocumentReport extends DocumentItem {
     matchPercent: number;
     hiddenTextDetected: boolean;
     extraTextSegments: string[];
+    textDifferenceFound?: boolean;
+    differenceSnippet?: string;
+    ocrText?: string;
+    pdfTextLayer?: string;
     status: string;
   };
   layer2_classification?: {
     label: string;
     confidence: number;
+    accuracy?: number;
     categories: string[];
+    message?: string;
+    requiresUserConfirmation?: boolean;
   };
   layer3_llmReview?: {
     used: boolean;
-    explanation: string;
+    explanation?: string;
+    message?: string;
+    isMalicious?: boolean;
+    confidence?: number;
+    attackVector?: string;
+    mitigationSteps?: string[];
+    reasoning?: string;
+    recommendedAction?: string;
   };
   reviewedByUser?: boolean;
   userReviewLabel?: boolean | null;

@@ -3,37 +3,69 @@ import { useParams } from 'react-router-dom';
 import { ShieldAlert, Eye, FileCode, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
-import { mockDetailedAnalysis } from '../data/mockData';
+import { HumanReviewBox } from '../components/ui/HumanReviewBox';
 import { documentsApi, DocumentComparisonData } from '../api/documentsApi';
 import { useLanguage } from '../context/LanguageContext';
 
 export const TextComparisonPage: React.FC = () => {
   const { id } = useParams();
   const { t } = useLanguage();
-  const [data, setData] = useState(mockDetailedAnalysis);
   const [hasReviewed, setHasReviewed] = useState(false);
   const [liveComparison, setLiveComparison] = useState<DocumentComparisonData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    const docId = id || 'doc-1724750000-123';
+    setIsMounted(true);
+  }, []);
+
+  const getMatchScoreColor = (score: number) => {
+    if (score === 100) return { text: 'text-emerald-500', bg: 'bg-emerald-50', border: 'border-emerald-300' };
+    if (score >= 98) return { text: 'text-amber-500', bg: 'bg-amber-50', border: 'border-amber-300' };
+    return { text: 'text-error', bg: 'bg-error-container', border: 'border-error/40' };
+  };
+
+  useEffect(() => {
     const fetchComparison = async () => {
+      setIsLoading(true);
+      if (!id) {
+        setIsLoading(false);
+        return;
+      }
       try {
-        const comp = await documentsApi.getDocumentComparison(docId);
+        const comp = await documentsApi.getDocumentComparison(id);
         if (comp) {
           setLiveComparison(comp);
-          setData(prev => ({
-            ...prev,
-            ocrPdfMatch: comp.ocrPdfMatch ?? prev.ocrPdfMatch,
-            flaggedSnippet: comp.flaggedSnippet || prev.flaggedSnippet,
-            hiddenTextDetected: comp.hiddenTextDetected ?? prev.hiddenTextDetected
-          }));
         }
       } catch (err) {
-        console.warn('Live document comparison fallback:', err);
+        console.error('Failed to load comparison data:', err);
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchComparison();
   }, [id]);
+
+  const highlightSnippet = (fullText: string, snippet?: string) => {
+    if (!fullText) return <span className="opacity-50 italic">Mətn tapılmadı</span>;
+    if (!snippet || !fullText.includes(snippet)) return <span>{fullText}</span>;
+    const parts = fullText.split(snippet);
+    return (
+      <>
+        {parts.map((part, i) => (
+          <React.Fragment key={i}>
+            {part}
+            {i < parts.length - 1 && (
+              <span className="relative inline-block mx-1">
+                <span className="absolute -inset-1 bg-red-200/80 skew-x-[-15deg] transform rounded"></span>
+                <span className="relative font-bold text-red-900 z-10 px-1">{snippet}</span>
+              </span>
+            )}
+          </React.Fragment>
+        ))}
+      </>
+    );
+  };
 
   const handleReviewFeedback = async (isInjection: boolean) => {
     const docId = id || 'doc-1724750000-123';
@@ -62,48 +94,74 @@ export const TextComparisonPage: React.FC = () => {
           </div>
 
           {/* Top Score Banner */}
-          <div className="flex items-center gap-4 bg-surface-container-lowest border border-outline-variant p-4 rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.03)]">
-            <div className="text-right">
-              <div className="text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">Uyğunluq Hesabı</div>
-              <div className="text-headline-sm font-bold text-error mt-1">
-                OCR ↔ PDF uyğunluğu: {data.ocrPdfMatch}%
+          {isLoading ? (
+            <div className="w-64 h-20 bg-surface-container-lowest border border-outline-variant p-4 rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.03)] animate-pulse flex items-center justify-between gap-4">
+               <div className="flex flex-col gap-2 w-full items-end">
+                 <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+                 <div className="h-6 bg-gray-200 rounded w-full"></div>
+               </div>
+               <div className="w-12 h-12 rounded-full bg-gray-200 shrink-0"></div>
+            </div>
+          ) : (() => {
+            const matchScore = liveComparison?.ocrPdfMatch ?? 0;
+            const matchColors = getMatchScoreColor(matchScore);
+            return (
+              <div className={`px-5 py-3 rounded-2xl flex items-center gap-5 bg-white border ${matchColors.border} shadow-sm`}>
+                <div className="flex flex-col items-end justify-center">
+                  <span className={`text-[11px] font-bold uppercase tracking-wider mb-0.5 ${matchColors.text} opacity-80`}>
+                    Uyğunluq Hesabı
+                  </span>
+                  <span className={`text-sm font-extrabold leading-none ${matchColors.text}`}>
+                    OCR ↔ PDF
+                  </span>
+                </div>
+                <div className="relative w-12 h-12 flex items-center justify-center">
+                  <svg className="w-14 h-14 absolute -rotate-90" viewBox="0 0 48 48">
+                    <circle cx="24" cy="24" r="20" stroke="currentColor" strokeWidth="3" fill="none" className={`${matchColors.text} opacity-20`} />
+                    <circle 
+                      cx="24" cy="24" r="20" 
+                      stroke="currentColor" 
+                      strokeWidth="3" 
+                      fill="none" 
+                      strokeLinecap="round"
+                      className={matchColors.text} 
+                      style={{ 
+                        strokeDasharray: 2 * Math.PI * 20, 
+                        strokeDashoffset: (2 * Math.PI * 20) - ((isMounted ? matchScore : 0) / 100) * (2 * Math.PI * 20),
+                        transition: 'stroke-dashoffset 1s ease-out'
+                      }} 
+                    />
+                  </svg>
+                  <span className={`absolute text-[11px] font-extrabold ${matchColors.text}`}>{matchScore}%</span>
+                </div>
               </div>
-            </div>
-            <div className="w-12 h-12 rounded-full border-4 border-error/20 border-t-error flex items-center justify-center relative shrink-0">
-              <FileCode className="w-5 h-5 text-error absolute" />
-            </div>
-          </div>
+            );
+          })()}
         </div>
 
-        {/* Human Review Loop UI (Inline) */}
-        {!hasReviewed && (
-          <div className="bg-white border-2 border-amber-400/50 rounded-[2rem] p-4 sm:p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-lg shadow-amber-100/50 my-4 relative overflow-hidden">
+        {/* Human Review Loop UI */}
+        {isLoading ? (
+          <div className="bg-white rounded-2xl p-5 sm:p-6 flex items-center justify-between gap-6 shadow-sm border border-outline-variant/40 mt-8 mb-4 animate-pulse">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-amber-50 text-amber-500 flex items-center justify-center shrink-0 border border-amber-100">
-                <AlertTriangle className="w-6 h-6" />
-              </div>
-              <div>
-                <p className="text-title-md font-bold text-gray-900 mb-1 flex items-center gap-2">
-                  İnsan Təsdiqi Tələb Olunur 
-                  <span className="bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-[10px] uppercase tracking-wider font-extrabold">
-                    Zero Opacity / Hidden Font
-                  </span>
-                </p>
-                <p className="text-body-md text-gray-600 font-medium">
-                  Zəhmət olmasa mətni oxuyaraq bunun injection olub-olmadığını təsdiqləyin:
-                </p>
-              </div>
+               <div className="w-10 h-10 rounded-full bg-surface-container shrink-0"></div>
+               <div className="flex flex-col gap-2">
+                 <div className="h-4 bg-surface-container rounded w-48"></div>
+                 <div className="h-3 bg-surface-container rounded w-64"></div>
+               </div>
             </div>
-            <div className="flex items-center gap-3 shrink-0 w-full md:w-auto mt-2 md:mt-0">
-              <Button variant="danger" size="md" onClick={() => handleReviewFeedback(true)} className="rounded-full">
-                Bəli, Zərərlidir
-              </Button>
-              <Button variant="outline" size="md" onClick={() => handleReviewFeedback(false)} className="!bg-emerald-500 !text-white !border-emerald-500 hover:!bg-emerald-600 shadow-md rounded-full">
-                Xeyr, Təhlükəsizdir
-              </Button>
-            </div>
+            <div className="h-10 bg-surface-container rounded w-32 shrink-0"></div>
           </div>
-        )}
+        ) : !hasReviewed && liveComparison?.flaggedSnippet ? (
+          <HumanReviewBox 
+            onPrimaryClick={() => handleReviewFeedback(true)}
+            onSecondaryClick={() => handleReviewFeedback(false)}
+            primaryLabel="Təhdiddir"
+            secondaryLabel="Təhlükəsizdir"
+            primaryIcon={<AlertTriangle className="w-4 h-4" />}
+            customLabel={liveComparison.flaggedMetadata?.visibilityType || 'GİZLİ MƏTN'}
+            description="Zəhmət olmasa OCR və PDF qatlarını müqayisə edərək bunun təhdid olub-olmadığını təsdiqləyin."
+          />
+        ) : null}
         
         {hasReviewed && (
           <div className="bg-green-50/80 border border-green-200/60 rounded-xl p-4 sm:p-6 flex items-center gap-3 shadow-sm my-4 text-green-900 text-title-md font-bold">
@@ -131,19 +189,18 @@ export const TextComparisonPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="p-8 rounded-xl bg-[#F8F9FA] border border-outline-variant/30 font-serif text-lg text-gray-800 whitespace-pre-wrap leading-relaxed min-h-[400px] shadow-inner">
-            {liveComparison?.ocrText ? (
-              <div>{liveComparison.ocrText}</div>
+          <div className="p-6 md:p-8 rounded-xl bg-[#F8F9FA] border border-outline-variant/30 font-serif text-base md:text-lg text-gray-800 whitespace-pre-wrap leading-relaxed min-h-[400px] shadow-inner">
+            {isLoading ? (
+              <div className="flex flex-col gap-4 animate-pulse">
+                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                <div className="h-4 bg-gray-200 rounded w-full"></div>
+                <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+                <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+              </div>
+            ) : liveComparison?.ocrText ? (
+              <div className="opacity-90">{liveComparison.ocrText}</div>
             ) : (
-              <>
-                <div className="opacity-80">CV: Samir Əliyev</div>
-                <div className="opacity-80">Təhsil: Bakı Dövlət Universiteti - Kompüter Elmləri (2018-2022)</div>
-                <div className="opacity-80">Təcrübə: Senior Frontend Developer (3 il)</div>
-                <div className="opacity-80">Biliklər: React, TypeScript, Tailwind CSS, Node.js, REST API</div>
-                <div className="opacity-80">Əlaqə: samir.aliyev@email.com | +994 50 123 45 67</div>
-                <br />
-                <div className="opacity-80">Haqqında: Məsuliyyətli, komandada işləməyi bacaran və innovativ həllər təklif edən mütəxəssis.</div>
-              </>
+              <div className="opacity-50 italic text-center mt-10">Vizual mətn (OCR) tapılmadı</div>
             )}
           </div>
         </Card>
@@ -159,34 +216,30 @@ export const TextComparisonPage: React.FC = () => {
                 <h3 className="text-title-lg font-bold text-on-surface">PDF Kod Qatı (AI Tərəfindən)</h3>
               </div>
             </div>
-            <div className="text-label-sm font-bold text-error tracking-wide uppercase">
-              1 Injection Tapıldı
+            <div className={`text-label-sm font-bold tracking-wide uppercase ${liveComparison?.flaggedSnippet ? 'text-error' : 'text-emerald-600'}`}>
+              {isLoading ? (
+                <div className="h-4 w-32 bg-gray-200 rounded animate-pulse"></div>
+              ) : liveComparison?.flaggedSnippet ? (
+                'Təhdid Tapıldı'
+              ) : (
+                'Problem yoxdur'
+              )}
             </div>
           </div>
 
           {/* Code View with Highlighted Danger Text */}
-          <div className="p-8 rounded-xl bg-[#F8F9FA] border border-error/20 font-serif text-lg text-gray-800 whitespace-pre-wrap leading-relaxed min-h-[400px] flex flex-col shadow-inner">
-            {liveComparison?.pdfTextLayer ? (
-              <div>{liveComparison.pdfTextLayer}</div>
+          <div className="p-6 md:p-8 rounded-xl bg-[#F8F9FA] border border-error/20 font-serif text-base md:text-lg text-gray-800 whitespace-pre-wrap leading-relaxed min-h-[400px] flex flex-col shadow-inner">
+            {isLoading ? (
+              <div className="flex flex-col gap-4 animate-pulse">
+                <div className="h-4 bg-error/10 rounded w-3/4"></div>
+                <div className="h-4 bg-error/10 rounded w-full"></div>
+                <div className="h-4 bg-error/20 rounded w-5/6"></div>
+                <div className="h-4 bg-error/10 rounded w-2/3"></div>
+              </div>
+            ) : liveComparison?.pdfTextLayer ? (
+              <div className="opacity-90">{highlightSnippet(liveComparison.pdfTextLayer, liveComparison.flaggedSnippet)}</div>
             ) : (
-              <>
-                <div className="opacity-80">CV: Samir Əliyev</div>
-                <div className="opacity-80">Təhsil: Bakı Dövlət Universiteti - Kompüter Elmləri (2018-2022)</div>
-                <div className="opacity-80">Təcrübə: Senior Frontend Developer (3 il)</div>
-                <div className="opacity-80">Biliklər: React, TypeScript, Tailwind CSS, Node.js, REST API</div>
-                <div className="opacity-80">Əlaqə: samir.aliyev@email.com | +994 50 123 45 67</div>
-
-                <div className="my-4">
-                  <div className="relative inline-block">
-                    <span className="absolute -inset-1 bg-red-200/80 skew-x-[-15deg] transform"></span>
-                    <span className="relative font-serif font-bold text-gray-900 text-xl leading-relaxed z-10 px-1">
-                      {data.flaggedSnippet}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="opacity-80">Haqqında: Məsuliyyətli, komandada işləməyi bacaran və innovativ həllər təklif edən mütəxəssis.</div>
-              </>
+              <div className="opacity-50 italic text-center mt-10">PDF daxili mətn qatı tapılmadı</div>
             )}
           </div>
         </Card>
