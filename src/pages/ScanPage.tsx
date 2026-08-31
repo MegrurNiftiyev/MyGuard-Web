@@ -20,26 +20,61 @@ const DEFAULT_SCAN_STEPS = [
   { stepNumber: 7, title: 'Risk Assessment', description: 'Risk balı hesablanır və sənəd statusu müəyyən edilir' }
 ];
 
+// Global state to persist scan pipeline across route changes
+let globalDocId: string | null = null;
+let globalFileName: string | null = null;
+let globalSteps: any[] | null = null;
+let globalCurrentStepIndex: number = 0;
+let globalIsScanning: boolean = false;
+
 export const ScanPage: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const documentId = searchParams.get('docId');
-  const fileName = searchParams.get('name') || 'Sənəd.pdf';
+  const urlDocId = searchParams.get('docId');
+  const urlFileName = searchParams.get('name');
 
-  const [currentStepIndex, setCurrentStepIndex] = useState(0);
-  const [isScanning, setIsScanning] = useState(false);
+  const activeDocId = urlDocId || globalDocId;
+  const activeFileName = urlFileName || globalFileName || 'Sənəd.pdf';
+
+  useEffect(() => {
+    if (urlDocId) {
+      globalDocId = urlDocId;
+      globalFileName = urlFileName;
+    }
+  }, [urlDocId, urlFileName]);
+
+  const [currentStepIndex, setCurrentStepIndex] = useState(globalCurrentStepIndex);
+  const [isScanning, setIsScanning] = useState(globalIsScanning);
   const [isUploading, setIsUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const dragCounter = useRef(0);
 
   const [steps, setSteps] = useState(
-    DEFAULT_SCAN_STEPS.map((s, i) => ({
+    globalSteps || DEFAULT_SCAN_STEPS.map((s, i) => ({
       ...s,
       status: 'pending' as StepStatus
     }))
   );
+
+  useEffect(() => {
+    globalCurrentStepIndex = currentStepIndex;
+    globalIsScanning = isScanning;
+    globalSteps = steps;
+  }, [currentStepIndex, isScanning, steps]);
+
+  const clearGlobalState = () => {
+    globalDocId = null;
+    globalFileName = null;
+    globalSteps = null;
+    globalCurrentStepIndex = 0;
+    globalIsScanning = false;
+    setSearchParams({});
+    setSteps(DEFAULT_SCAN_STEPS.map(s => ({ ...s, status: 'pending' as StepStatus })));
+    setCurrentStepIndex(0);
+    setIsScanning(false);
+  };
 
   const processFile = async (file: File) => {
     setIsUploading(true);
@@ -109,23 +144,25 @@ export const ScanPage: React.FC = () => {
     }
   };
 
-  // Real-time Socket.IO integration when documentId exists
+  // Real-time Socket.IO integration when activeDocId exists
   useEffect(() => {
-    if (!documentId) {
+    if (!activeDocId) {
       setIsScanning(false);
       setSteps(DEFAULT_SCAN_STEPS.map((s) => ({ ...s, status: 'pending' as StepStatus })));
       return;
     }
 
-    setIsScanning(true);
-    setSteps(
-      DEFAULT_SCAN_STEPS.map((s, i) => ({
-        ...s,
-        status: i === 0 ? ('processing' as StepStatus) : ('pending' as StepStatus)
-      }))
-    );
+    if (!globalSteps) {
+      setIsScanning(true);
+      setSteps(
+        DEFAULT_SCAN_STEPS.map((s, i) => ({
+          ...s,
+          status: i === 0 ? ('processing' as StepStatus) : ('pending' as StepStatus)
+        }))
+      );
+    }
 
-    joinDocumentScanRoom(documentId, (data: ScanEventData) => {
+    joinDocumentScanRoom(activeDocId, (data: ScanEventData) => {
       console.log('Live Socket Scan Event:', data);
       if (data.step) {
         const stepNameMap: Record<string, number> = {
@@ -165,9 +202,9 @@ export const ScanPage: React.FC = () => {
     });
 
     return () => {
-      leaveDocumentScanRoom(documentId);
+      leaveDocumentScanRoom(activeDocId);
     };
-  }, [documentId]);
+  }, [activeDocId]);
 
   // Shared Drag Overlay Node
   const renderDragOverlay = () => {
@@ -196,7 +233,7 @@ export const ScanPage: React.FC = () => {
   };
 
   // If no document is selected/being scanned, render the Idle Scan State in exact same layout
-  if (!documentId) {
+  if (!activeDocId) {
     return (
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start pb-8 min-h-[80vh] relative">
         {renderDragOverlay()}
@@ -297,11 +334,18 @@ export const ScanPage: React.FC = () => {
           <h1 className="text-headline-lg-mobile md:text-headline-lg font-bold text-on-surface mb-2">{t('scanTitle')}</h1>
           <p className="text-body-md text-on-surface-variant">{t('scanSubtitle')}</p>
         </div>
-        {!isScanning && (
-          <Button variant="primary" size="md" onClick={() => navigate(`/analysis/${documentId}`)} icon={<ArrowRight className="w-4 h-4" />}>
-            {t('viewAnalysis')}
-          </Button>
-        )}
+        <div className="flex gap-3">
+          {!isScanning && (
+            <Button variant="secondary" size="md" onClick={clearGlobalState}>
+              Yeni Skan
+            </Button>
+          )}
+          {!isScanning && (
+            <Button variant="primary" size="md" onClick={() => navigate(`/analysis/${activeDocId}`)} icon={<ArrowRight className="w-4 h-4" />}>
+              {t('viewAnalysis')}
+            </Button>
+          )}
+        </div>
       </header>
 
       {/* Upload/Preview Card */}
@@ -334,7 +378,7 @@ export const ScanPage: React.FC = () => {
           
           <div className="flex flex-col gap-2 mt-auto">
             <div className="flex justify-between items-center">
-              <span className="text-label-md font-medium text-on-surface truncate max-w-[200px]">{fileName}</span>
+              <span className="text-label-md font-medium text-on-surface truncate max-w-[200px]">{activeFileName}</span>
               <span className="text-label-sm text-on-surface-variant">Socket.IO Live</span>
             </div>
             <div className="w-full bg-surface-variant rounded-full h-2 overflow-hidden">
