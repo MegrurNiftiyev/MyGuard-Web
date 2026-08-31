@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { UploadCloud, FileText, ArrowRight, Send, Sparkles, FileCode } from 'lucide-react';
 import { Card } from '../components/ui/Card';
@@ -18,7 +19,7 @@ export const DashboardPage: React.FC = () => {
   const [messages, setMessages] = useState<AiMessage[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
-  const dragCounter = React.useRef(0);
+  const dragCounter = useRef(0);
 
   const [documents, setDocuments] = useState<DocumentItem[]>([]);
   const [isLoadingDocs, setIsLoadingDocs] = useState<boolean>(true);
@@ -58,6 +59,68 @@ export const DashboardPage: React.FC = () => {
     fetchRecentDocs();
   }, []);
 
+  const processFile = async (file: File) => {
+    setIsUploading(true);
+    try {
+      const res = await documentsApi.uploadDocument(file);
+      const docId = res.document?.id || `doc-${Date.now()}`;
+      navigate(`/scan?docId=${docId}&name=${encodeURIComponent(file.name)}`);
+    } catch (err) {
+      console.warn('Live upload failed:', err);
+      navigate(`/scan?name=${encodeURIComponent(file.name)}`);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  useEffect(() => {
+    const handleDragEnter = (e: DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dragCounter.current += 1;
+      if (e.dataTransfer?.items && e.dataTransfer.items.length > 0) {
+        setIsDragging(true);
+      }
+    };
+
+    const handleDragLeave = (e: DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dragCounter.current -= 1;
+      if (dragCounter.current === 0) {
+        setIsDragging(false);
+      }
+    };
+
+    const handleDragOver = (e: DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+    };
+
+    const handleDrop = async (e: DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsDragging(false);
+      dragCounter.current = 0;
+
+      if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {
+        await processFile(e.dataTransfer.files[0]);
+      }
+    };
+
+    window.addEventListener('dragenter', handleDragEnter);
+    window.addEventListener('dragleave', handleDragLeave);
+    window.addEventListener('dragover', handleDragOver);
+    window.addEventListener('drop', handleDrop);
+
+    return () => {
+      window.removeEventListener('dragenter', handleDragEnter);
+      window.removeEventListener('dragleave', handleDragLeave);
+      window.removeEventListener('dragover', handleDragOver);
+      window.removeEventListener('drop', handleDrop);
+    };
+  }, []);
+
   const handleAiChatSubmit = async (queryOverride?: string) => {
     const text = queryOverride || aiInput;
     if (!text.trim()) return;
@@ -95,57 +158,9 @@ export const DashboardPage: React.FC = () => {
     }
   };
 
-  const processFile = async (file: File) => {
-    setIsUploading(true);
-    try {
-      const res = await documentsApi.uploadDocument(file);
-      const docId = res.document?.id || `doc-${Date.now()}`;
-      navigate(`/scan?docId=${docId}&name=${encodeURIComponent(file.name)}`);
-    } catch (err) {
-      console.warn('Live upload failed:', err);
-      navigate(`/scan?name=${encodeURIComponent(file.name)}`);
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       await processFile(e.target.files[0]);
-    }
-  };
-
-  const handleDragEnter = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    dragCounter.current += 1;
-    if (e.dataTransfer.items && e.dataTransfer.items.length > 0) {
-      setIsDragging(true);
-    }
-  };
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    dragCounter.current -= 1;
-    if (dragCounter.current === 0) {
-      setIsDragging(false);
-    }
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
-
-  const handleDrop = async (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-    dragCounter.current = 0;
-
-    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      await processFile(e.dataTransfer.files[0]);
     }
   };
 
@@ -156,15 +171,9 @@ export const DashboardPage: React.FC = () => {
   ];
 
   return (
-    <div 
-      className="flex flex-col gap-10 w-full pb-8 min-h-screen relative"
-      onDragEnter={handleDragEnter}
-      onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
-      onDrop={handleDrop}
-    >
-      {isDragging && (
-        <div className="fixed inset-0 z-[60] bg-surface-container-lowest/85 backdrop-blur-md flex flex-col items-center justify-center p-6 transition-all duration-300 animate-in fade-in zoom-in-95 pointer-events-none">
+    <div className="flex flex-col gap-10 w-full pb-8 min-h-screen relative">
+      {isDragging && createPortal(
+        <div className="fixed inset-0 z-[100] bg-surface-container-lowest/85 backdrop-blur-md flex flex-col items-center justify-center p-6 transition-all duration-300 animate-in fade-in zoom-in-95 pointer-events-none">
           <div className="w-full max-w-xl p-10 border-2 border-dashed border-brand-blue/70 rounded-3xl bg-surface/95 flex flex-col items-center justify-center text-center space-y-5 shadow-2xl">
             <div className="relative flex items-center justify-center mb-2">
               <div className="w-16 h-16 rounded-2xl bg-brand-blue/15 text-brand-blue flex items-center justify-center rotate-[-12deg] shadow-md">
@@ -181,7 +190,8 @@ export const DashboardPage: React.FC = () => {
               </p>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Top Row: Upload & AI Panel */}

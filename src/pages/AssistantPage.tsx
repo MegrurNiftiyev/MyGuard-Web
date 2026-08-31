@@ -248,7 +248,7 @@ export const AssistantPage: React.FC = () => {
       className="max-w-4xl mx-auto flex flex-col min-h-[calc(100vh-10rem)] pb-48 relative"
     >
       {isDragging && createPortal(
-        <div className="fixed inset-0 z-[99999] bg-surface-container-lowest/85 backdrop-blur-md flex flex-col items-center justify-center p-6 transition-all duration-300 animate-in fade-in zoom-in-95 pointer-events-none">
+        <div className="fixed inset-0 z-[100] bg-surface-container-lowest/85 backdrop-blur-md flex flex-col items-center justify-center p-6 transition-all duration-300 animate-in fade-in zoom-in-95 pointer-events-none">
           <div className="w-full max-w-xl p-10 border-2 border-dashed border-brand-blue/70 rounded-3xl bg-surface/95 flex flex-col items-center justify-center text-center space-y-5 shadow-2xl">
             <div className="relative flex items-center justify-center mb-2">
               <div className="w-16 h-16 rounded-2xl bg-brand-blue/15 text-brand-blue flex items-center justify-center rotate-[-12deg] shadow-md">

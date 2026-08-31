@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { FileText, ArrowRight, UploadCloud, ShieldAlert, Sparkles, FileCode } from 'lucide-react';
 import { Card } from '../components/ui/Card';
@@ -31,7 +32,7 @@ export const ScanPage: React.FC = () => {
   const [isScanning, setIsScanning] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
-  const dragCounter = React.useRef(0);
+  const dragCounter = useRef(0);
 
   const [steps, setSteps] = useState(
     DEFAULT_SCAN_STEPS.map((s, i) => ({
@@ -54,43 +55,57 @@ export const ScanPage: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    const handleDragEnter = (e: DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dragCounter.current += 1;
+      if (e.dataTransfer?.items && e.dataTransfer.items.length > 0) {
+        setIsDragging(true);
+      }
+    };
+
+    const handleDragLeave = (e: DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dragCounter.current -= 1;
+      if (dragCounter.current === 0) {
+        setIsDragging(false);
+      }
+    };
+
+    const handleDragOver = (e: DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+    };
+
+    const handleDrop = async (e: DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsDragging(false);
+      dragCounter.current = 0;
+
+      if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {
+        await processFile(e.dataTransfer.files[0]);
+      }
+    };
+
+    window.addEventListener('dragenter', handleDragEnter);
+    window.addEventListener('dragleave', handleDragLeave);
+    window.addEventListener('dragover', handleDragOver);
+    window.addEventListener('drop', handleDrop);
+
+    return () => {
+      window.removeEventListener('dragenter', handleDragEnter);
+      window.removeEventListener('dragleave', handleDragLeave);
+      window.removeEventListener('dragover', handleDragOver);
+      window.removeEventListener('drop', handleDrop);
+    };
+  }, []);
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       await processFile(e.target.files[0]);
-    }
-  };
-
-  const handleDragEnter = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    dragCounter.current += 1;
-    if (e.dataTransfer.items && e.dataTransfer.items.length > 0) {
-      setIsDragging(true);
-    }
-  };
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    dragCounter.current -= 1;
-    if (dragCounter.current === 0) {
-      setIsDragging(false);
-    }
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
-
-  const handleDrop = async (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-    dragCounter.current = 0;
-
-    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      await processFile(e.dataTransfer.files[0]);
     }
   };
 
@@ -154,36 +169,37 @@ export const ScanPage: React.FC = () => {
     };
   }, [documentId]);
 
+  // Shared Drag Overlay Node
+  const renderDragOverlay = () => {
+    if (!isDragging) return null;
+    return createPortal(
+      <div className="fixed inset-0 z-[100] bg-surface-container-lowest/85 backdrop-blur-md flex flex-col items-center justify-center p-6 transition-all duration-300 animate-in fade-in zoom-in-95 pointer-events-none">
+        <div className="w-full max-w-xl p-10 border-2 border-dashed border-brand-blue/70 rounded-3xl bg-surface/95 flex flex-col items-center justify-center text-center space-y-5 shadow-2xl">
+          <div className="relative flex items-center justify-center mb-2">
+            <div className="w-16 h-16 rounded-2xl bg-brand-blue/15 text-brand-blue flex items-center justify-center rotate-[-12deg] shadow-md">
+              <FileCode className="w-8 h-8" />
+            </div>
+            <div className="w-16 h-16 rounded-2xl bg-purple-100 text-brand-purple flex items-center justify-center rotate-[8deg] -ml-6 shadow-md border border-purple-200">
+              <FileText className="w-8 h-8" />
+            </div>
+          </div>
+          <div className="space-y-1">
+            <h3 className="text-title-lg font-bold text-on-surface tracking-tight">Sənədi bura buraxın</h3>
+            <p className="text-body-md text-on-surface-variant">
+              Skan etmək üçün istənilən faylı bura sürükləyib buraxa bilərsiniz
+            </p>
+          </div>
+        </div>
+      </div>,
+      document.body
+    );
+  };
+
   // If no document is selected/being scanned, render the Idle Scan State in exact same layout
   if (!documentId) {
     return (
-      <div 
-        className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start pb-8 min-h-[80vh] relative"
-        onDragEnter={handleDragEnter}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
-      >
-        {isDragging && (
-          <div className="fixed inset-0 z-[60] bg-surface-container-lowest/85 backdrop-blur-md flex flex-col items-center justify-center p-6 transition-all duration-300 animate-in fade-in zoom-in-95 pointer-events-none">
-            <div className="w-full max-w-xl p-10 border-2 border-dashed border-brand-blue/70 rounded-3xl bg-surface/95 flex flex-col items-center justify-center text-center space-y-5 shadow-2xl">
-              <div className="relative flex items-center justify-center mb-2">
-                <div className="w-16 h-16 rounded-2xl bg-brand-blue/15 text-brand-blue flex items-center justify-center rotate-[-12deg] shadow-md">
-                  <FileCode className="w-8 h-8" />
-                </div>
-                <div className="w-16 h-16 rounded-2xl bg-purple-100 text-brand-purple flex items-center justify-center rotate-[8deg] -ml-6 shadow-md border border-purple-200">
-                  <FileText className="w-8 h-8" />
-                </div>
-              </div>
-              <div className="space-y-1">
-                <h3 className="text-title-lg font-bold text-on-surface tracking-tight">Sənədi bura buraxın</h3>
-                <p className="text-body-md text-on-surface-variant">
-                  Skan etmək üçün istənilən faylı bura sürükləyib buraxa bilərsiniz
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start pb-8 min-h-[80vh] relative">
+        {renderDragOverlay()}
 
         {/* Header spanning full width */}
         <header className="lg:col-span-12 mb-2">
@@ -272,33 +288,8 @@ export const ScanPage: React.FC = () => {
 
   // Active Scan State (when documentId is present)
   return (
-    <div 
-      className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start pb-8 min-h-[80vh] relative"
-      onDragEnter={handleDragEnter}
-      onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
-      onDrop={handleDrop}
-    >
-      {isDragging && (
-        <div className="fixed inset-0 z-[60] bg-surface-container-lowest/85 backdrop-blur-md flex flex-col items-center justify-center p-6 transition-all duration-300 animate-in fade-in zoom-in-95 pointer-events-none">
-          <div className="w-full max-w-xl p-10 border-2 border-dashed border-brand-blue/70 rounded-3xl bg-surface/95 flex flex-col items-center justify-center text-center space-y-5 shadow-2xl">
-            <div className="relative flex items-center justify-center mb-2">
-              <div className="w-16 h-16 rounded-2xl bg-brand-blue/15 text-brand-blue flex items-center justify-center rotate-[-12deg] shadow-md">
-                <FileCode className="w-8 h-8" />
-              </div>
-              <div className="w-16 h-16 rounded-2xl bg-purple-100 text-brand-purple flex items-center justify-center rotate-[8deg] -ml-6 shadow-md border border-purple-200">
-                <FileText className="w-8 h-8" />
-              </div>
-            </div>
-            <div className="space-y-1">
-              <h3 className="text-title-lg font-bold text-on-surface tracking-tight">Sənədi bura buraxın</h3>
-              <p className="text-body-md text-on-surface-variant">
-                Yeni sənəd skan etmək üçün onu bura sürükləyib buraxa bilərsiniz
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start pb-8 min-h-[80vh] relative">
+      {renderDragOverlay()}
 
       {/* Header spanning full width */}
       <header className="lg:col-span-12 mb-2 flex justify-between items-end">
