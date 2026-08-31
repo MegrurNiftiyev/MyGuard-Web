@@ -49,7 +49,7 @@ export const RiskReportsPage: React.FC = () => {
       </header>
 
       {/* KPI Stats Cards Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <Card padding="lg" className="border-l-4 border-l-brand-blue shadow-[0px_4px_20px_rgba(16,0,40,0.04)] hover:shadow-lg transition-shadow">
           <div className="flex items-center justify-between text-on-surface-variant mb-4">
             <span className="text-title-md font-semibold">{t('totalScanned')}</span>

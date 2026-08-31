@@ -118,8 +118,8 @@ export const DocumentsPage: React.FC = () => {
 
       {/* Data List */}
       <Card padding="none" className="overflow-hidden">
-        {/* Table Header */}
-        <div className="grid grid-cols-12 gap-4 px-6 py-3.5 bg-surface-container-low border-b border-outline-variant text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
+        {/* Table Header (Desktop Only) */}
+        <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-3.5 bg-surface-container-low border-b border-outline-variant text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
           <div className="col-span-5">Sənəd</div>
           <div className="col-span-2">Tarix & Departament</div>
           <div className="col-span-2">Tip / Həcm</div>
@@ -146,37 +146,57 @@ export const DocumentsPage: React.FC = () => {
               <div
                 key={doc.id}
                 onClick={() => navigate(`/analysis/${doc.id}`)}
-                className="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-surface-container-low transition-colors cursor-pointer group relative"
+                className="flex flex-col md:grid md:grid-cols-12 gap-3 md:gap-4 px-4 sm:px-6 py-4 items-start md:items-center hover:bg-surface-container-low transition-colors cursor-pointer group relative"
               >
                 {/* Column 1: Document */}
-                <div className="col-span-5 flex items-center gap-3.5 min-w-0">
-                  <div className="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center shrink-0">
-                    <FileText className="w-5 h-5 text-on-surface-variant group-hover:text-brand-blue transition-colors" />
+                <div className="w-full md:col-span-5 flex items-center justify-between md:justify-start gap-3.5 min-w-0">
+                  <div className="flex items-center gap-3.5 min-w-0">
+                    <div className="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center shrink-0">
+                      <FileText className="w-5 h-5 text-on-surface-variant group-hover:text-brand-blue transition-colors" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-title-lg font-medium text-on-surface truncate group-hover:text-brand-blue transition-colors">
+                        {doc.name}
+                      </div>
+                      <div className="text-label-sm text-on-surface-variant/70">
+                        Category: {doc.category}
+                      </div>
+                    </div>
                   </div>
-                  <div className="min-w-0">
-                    <div className="text-title-lg font-medium text-on-surface truncate group-hover:text-brand-blue transition-colors">
-                      {doc.name}
-                    </div>
-                    <div className="text-label-sm text-on-surface-variant/70">
-                      Category: {doc.category}
-                    </div>
+                  {/* Mobile-only status & risk block to save space */}
+                  <div className="flex md:hidden flex-col items-end gap-1.5 shrink-0">
+                     <Chip status={doc.status} />
+                     {doc.riskScore > 0 && (
+                       <span className={`font-semibold text-[11px] ${doc.riskScore >= 70 ? 'text-error' : doc.riskScore >= 40 ? 'text-warning' : 'text-success'}`}>
+                         Xal: {doc.riskScore}/100
+                       </span>
+                     )}
                   </div>
                 </div>
 
-                {/* Column 2: Date & Dept */}
-                <div className="col-span-2 text-label-md text-on-surface-variant">
+                {/* Column 2: Date & Dept (Desktop) */}
+                <div className="hidden md:block col-span-2 text-label-md text-on-surface-variant">
                   <div className="font-medium text-on-surface">{doc.department}</div>
                   <div className="text-label-sm text-on-surface-variant/70">{doc.uploadTime}</div>
                 </div>
 
-                {/* Column 3: Type / Size */}
-                <div className="col-span-2 text-label-md text-on-surface-variant">
+                {/* Column 3: Type / Size (Desktop) */}
+                <div className="hidden md:block col-span-2 text-label-md text-on-surface-variant">
                   <div className="font-medium text-on-surface">{doc.fileType}</div>
                   <div className="text-label-sm text-on-surface-variant/70">{doc.size}</div>
                 </div>
 
-                {/* Column 4: Risk */}
-                <div className="col-span-1 flex items-center justify-center">
+                {/* Mobile-only additional details row */}
+                <div className="flex md:hidden items-center gap-3 text-xs text-on-surface-variant/80 pl-[54px] w-full mt-1">
+                  <span>{doc.uploadTime.split(' ')[0]}</span>
+                  <span>•</span>
+                  <span className="truncate">{doc.department}</span>
+                  <span>•</span>
+                  <span>{doc.size}</span>
+                </div>
+
+                {/* Column 4: Risk (Desktop) */}
+                <div className="hidden md:flex col-span-1 items-center justify-center">
                   {doc.riskScore > 0 ? (
                     <span className={`font-semibold ${doc.riskScore >= 70 ? 'text-error border-l-4 border-error pl-2' : doc.riskScore >= 40 ? 'text-warning border-l-4 border-warning pl-2' : 'text-success border-l-4 border-success pl-2'}`}>
                       {doc.riskScore}/100
@@ -186,8 +206,8 @@ export const DocumentsPage: React.FC = () => {
                   )}
                 </div>
 
-                {/* Column 5: Status */}
-                <div className="col-span-2 flex items-center justify-end gap-3">
+                {/* Column 5: Status (Desktop) */}
+                <div className="hidden md:flex col-span-2 items-center justify-end gap-3">
                   <Chip status={doc.status} />
                   <ArrowRight className="w-4 h-4 text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>

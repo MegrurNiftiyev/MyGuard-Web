@@ -222,8 +222,8 @@ export const DashboardPage: React.FC = () => {
           </Card>
         </div>
 
-        {/* Right: Fixed-Height AI Panel with Internal Scrollbar */}
-        <div className="w-full lg:w-[420px] shrink-0 h-[490px]">
+        {/* Right: Fixed-Height AI Panel with Internal Scrollbar (Hidden on Mobile) */}
+        <div className="hidden md:block w-full lg:w-[420px] shrink-0 h-[490px]">
           <aside className="w-full h-full bg-surface-container-lowest rounded-3xl border border-outline-variant/60 shadow-[0_8px_32px_rgba(0,102,255,0.08)] flex flex-col overflow-hidden p-5">
             {/* AI Widget Header */}
             <div className="flex items-center justify-between pb-3 border-b border-outline-variant/50 shrink-0 mb-3">
@@ -323,40 +323,75 @@ export const DashboardPage: React.FC = () => {
               onPrimaryAction={() => navigate('/scan')}
             />
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse min-w-[600px]">
-                <thead>
-                  <tr className="border-b border-outline-variant">
-                    <th className="py-3 px-4 text-label-sm text-on-surface-variant">Name</th>
-                    <th className="py-3 px-4 text-label-sm text-on-surface-variant">Time</th>
-                    <th className="py-3 px-4 text-label-sm text-on-surface-variant w-[150px]">Status</th>
-                    <th className="py-3 px-4 text-label-sm text-on-surface-variant w-[150px]">Risk Score</th>
-                  </tr>
-                </thead>
-                <tbody className="text-body-md">
-                  {documents.slice(0, 3).map((doc) => (
-                    <tr key={doc.id} onClick={() => navigate(`/analysis/${doc.id}`)} className="border-b border-outline-variant/50 hover:bg-surface-bright transition-colors cursor-pointer group">
-                      <td className="py-4 px-4 flex items-center gap-3">
-                        <FileText className="w-5 h-5 text-tertiary" />
-                        <span className="font-medium text-on-surface group-hover:text-brand-blue transition-colors">{doc.name}</span>
-                      </td>
-                      <td className="py-4 px-4 text-on-surface-variant text-sm">{doc.uploadTime}</td>
-                      <td className="py-4 px-4">
-                        <Chip status={doc.status} />
-                      </td>
-                      <td className="py-4 px-4">
-                        {doc.riskScore > 0 ? (
-                          <span className={`font-semibold ${doc.riskScore >= 70 ? 'text-error border-l-4 border-error pl-2' : doc.riskScore >= 40 ? 'text-warning border-l-4 border-warning pl-2' : 'text-success border-l-4 border-success pl-2'}`}>
-                            {doc.riskScore}/100
-                          </span>
-                        ) : (
-                          <span className="text-on-surface-variant font-semibold">-</span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="flex flex-col border border-outline-variant/60 rounded-xl overflow-hidden bg-surface-container-lowest">
+              {/* Desktop Header */}
+              <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-3.5 bg-surface-container-low border-b border-outline-variant text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
+                <div className="col-span-5">Name</div>
+                <div className="col-span-3">Time</div>
+                <div className="col-span-2">Status</div>
+                <div className="col-span-2 text-right">Risk Score</div>
+              </div>
+              
+              <div className="divide-y divide-outline-variant/60">
+                {documents.slice(0, 3).map((doc) => (
+                  <div 
+                    key={doc.id} 
+                    onClick={() => navigate(`/analysis/${doc.id}`)} 
+                    className="flex flex-col md:grid md:grid-cols-12 gap-3 md:gap-4 px-4 sm:px-6 py-4 items-start md:items-center hover:bg-surface-bright transition-colors cursor-pointer group relative"
+                  >
+                    {/* Column 1: Document Name & Icon */}
+                    <div className="w-full md:col-span-5 flex items-center justify-between md:justify-start gap-3.5 min-w-0">
+                      <div className="flex items-center gap-3.5 min-w-0">
+                        <div className="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center shrink-0">
+                          <FileText className="w-5 h-5 text-tertiary group-hover:text-brand-blue transition-colors" />
+                        </div>
+                        <div className="min-w-0">
+                          <div className="text-title-md font-medium text-on-surface truncate group-hover:text-brand-blue transition-colors">
+                            {doc.name}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Mobile-only status & risk block to save space */}
+                      <div className="flex md:hidden flex-col items-end gap-1.5 shrink-0">
+                         <Chip status={doc.status} />
+                         {doc.riskScore > 0 && (
+                           <span className={`font-semibold text-[11px] ${doc.riskScore >= 70 ? 'text-error' : doc.riskScore >= 40 ? 'text-warning' : 'text-success'}`}>
+                             {doc.riskScore}/100
+                           </span>
+                         )}
+                      </div>
+                    </div>
+
+                    {/* Column 2: Date & Time (Desktop) */}
+                    <div className="hidden md:block col-span-3 text-label-md text-on-surface-variant">
+                      <div className="text-label-sm text-on-surface-variant/70">{doc.uploadTime}</div>
+                    </div>
+
+                    {/* Mobile-only additional details row */}
+                    <div className="flex md:hidden items-center gap-3 text-xs text-on-surface-variant/80 pl-[54px] w-full mt-1">
+                      <span>{doc.uploadTime}</span>
+                    </div>
+
+                    {/* Column 3: Status (Desktop) */}
+                    <div className="hidden md:flex col-span-2 items-center">
+                      <Chip status={doc.status} />
+                    </div>
+
+                    {/* Column 4: Risk (Desktop) */}
+                    <div className="hidden md:flex col-span-2 items-center justify-end">
+                      {doc.riskScore > 0 ? (
+                        <span className={`font-semibold ${doc.riskScore >= 70 ? 'text-error border-l-4 border-error pl-2' : doc.riskScore >= 40 ? 'text-warning border-l-4 border-warning pl-2' : 'text-success border-l-4 border-success pl-2'}`}>
+                          {doc.riskScore}/100
+                        </span>
+                      ) : (
+                        <span className="text-on-surface-variant font-semibold">-</span>
+                      )}
+                      <ArrowRight className="w-4 h-4 text-on-surface-variant ml-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </Card>

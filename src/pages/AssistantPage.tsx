@@ -13,17 +13,32 @@ interface AttachedFile {
   typeLabel: string;
   status: 'uploading' | 'completed';
   progress: number;
+  fileObj?: File;
+  extractedText?: string;
 }
 
+// Global state to persist chat history and session across route changes without a Context provider
+let globalMessages: AiMessage[] = [];
+let globalSessionId: string | undefined = undefined;
+
 export const AssistantPage: React.FC = () => {
-  const [messages, setMessages] = useState<AiMessage[]>([]);
+  const [messages, setMessages] = useState<AiMessage[]>(globalMessages);
   const [input, setInput] = useState('');
   const [isThinking, setIsThinking] = useState(false);
   const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([]);
   const [isDragging, setIsDragging] = useState(false);
-  const [sessionId, setSessionId] = useState<string | undefined>(undefined);
+  const [sessionId, setSessionId] = useState<string | undefined>(globalSessionId);
   const dragCounter = useRef(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Sync state to global variables so they persist when unmounting (navigating away)
+  useEffect(() => {
+    globalMessages = messages;
+  }, [messages]);
+
+  useEffect(() => {
+    globalSessionId = sessionId;
+  }, [sessionId]);
 
   const suggestedQuestions = [
     'Sənədin risk dərəcəsi nədir?',
@@ -39,27 +54,9 @@ export const AssistantPage: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const userScrolledUp = useRef<boolean>(false);
 
-  useEffect(() => {
-    const initChatSession = async () => {
-      try {
-        const session = await chatApi.createSession('Sənəd Təhlükəsizliyi və Risk Analizi');
-        if (session && session.id) {
-          setSessionId(session.id);
-          const history = await chatApi.getHistory(session.id);
-          if (history && history.length > 0) {
-            setMessages(history as unknown as AiMessage[]);
-          }
-        }
-      } catch (err) {
-        console.warn('Chat session init failed:', err);
-      }
-    };
-    initChatSession();
-  }, []);
-
   const scrollToBottom = () => {
     if (!userScrolledUp.current) {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
   };
 
@@ -82,13 +79,23 @@ export const AssistantPage: React.FC = () => {
         size: formatFileSize(file.size),
         typeLabel: ext === 'HTML' || ext === 'PDF' || ext === 'DOCX' ? `${ext} File` : 'File',
         status: 'uploading',
-        progress: 15
+        progress: 15,
+        fileObj: file
       };
     });
 
     setAttachedFiles((prev) => [...prev, ...newItems]);
 
     newItems.forEach((item) => {
+      if (item.fileObj) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const text = e.target?.result as string;
+          setAttachedFiles(prev => prev.map(f => f.id === item.id ? { ...f, extractedText: text } : f));
+        };
+        reader.readAsText(item.fileObj);
+      }
+
       let currentProgress = 15;
       const interval = setInterval(() => {
         currentProgress += Math.floor(Math.random() * 25) + 15;
@@ -174,6 +181,8 @@ export const AssistantPage: React.FC = () => {
     userScrolledUp.current = false;
     const userBlocks: MessageBlock[] = [];
     
+    let combinedQuery = query;
+
     if (attachedFiles.length > 0) {
       attachedFiles.forEach((file) => {
         userBlocks.push({
@@ -182,6 +191,10 @@ export const AssistantPage: React.FC = () => {
           sizeLabel: file.size,
           url: '#'
         });
+        
+        if (file.extractedText) {
+            combinedQuery += `\n${file.name}?${file.extractedText}`;
+        }
       });
     }
 
@@ -202,7 +215,6 @@ export const AssistantPage: React.FC = () => {
     setIsThinking(true);
 
     try {
-      // Ensure session exists or create one on demand
       let currentSessionId = sessionId;
       if (!currentSessionId) {
         const newSession = await chatApi.createSession('Sənəd Təhlükəsizliyi və Risk Analizi');
@@ -213,7 +225,7 @@ export const AssistantPage: React.FC = () => {
       const response = await chatApi.sendMessage({
         chatMode: 'LARGE_CHAT',
         screenDestination: 'AI_SCREEN',
-        message: query,
+        message: combinedQuery,
         sessionId: currentSessionId
       });
 
@@ -245,7 +257,7 @@ export const AssistantPage: React.FC = () => {
 
   return (
     <div
-      className="max-w-4xl mx-auto flex flex-col min-h-[calc(100vh-10rem)] pb-48 relative"
+      className="max-w-4xl mx-auto flex flex-col min-h-[calc(100dvh-10rem)] pb-48 relative"
     >
       {isDragging && createPortal(
         <div className="fixed inset-0 z-[100] bg-surface-container-lowest/85 backdrop-blur-md flex flex-col items-center justify-center p-6 transition-all duration-300 animate-in fade-in zoom-in-95 pointer-events-none">
@@ -304,7 +316,7 @@ export const AssistantPage: React.FC = () => {
           </div>
         </div>
       ) : (
-        <div className="flex-1 space-y-6 pb-48 pt-4">
+        <div className="w-full space-y-6 pb-4 pt-4">
           {messages.map((msg) => (
             <div key={msg.id} className="space-y-2">
               {msg.sender === 'user' ? (
@@ -345,118 +357,123 @@ export const AssistantPage: React.FC = () => {
             </div>
           )}
 
-          <div ref={messagesEndRef} />
+          {/* Spacer to push the scroll target above the floating input bar */}
+          <div className="h-40 pointer-events-none" />
+          <div ref={messagesEndRef} className="h-1" />
         </div>
       )}
 
-      {/* Floating Pinned AI Input Box */}
-      <div className="fixed bottom-6 left-4 right-4 md:left-24 md:right-8 z-50 flex justify-center pointer-events-none">
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleSend();
-          }}
-          className="w-full max-w-4xl pointer-events-auto bg-white/95 backdrop-blur-2xl border border-outline-variant/80 rounded-3xl p-3 shadow-[0_16px_48px_rgba(0,102,255,0.2)] space-y-2 transition-all"
-        >
-          {attachedFiles.length > 0 && (
-            <div className="flex flex-wrap gap-2 px-2 pt-1 border-b border-outline-variant/50 pb-2">
-              {attachedFiles.map((file) => (
-                <div
-                  key={file.id}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-container-low border border-outline-variant text-xs shadow-2xs group relative"
-                >
-                  {file.status === 'uploading' ? (
-                    <div className="w-5 h-5 flex items-center justify-center text-brand-blue shrink-0">
-                      <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24">
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="3"
-                          fill="none"
-                        />
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8v8H4z"
-                        />
-                      </svg>
-                    </div>
-                  ) : (
-                    <div className="w-5 h-5 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-200/50">
-                      <CheckCircle2 className="w-3.5 h-3.5" />
-                    </div>
-                  )}
-
-                  <div className="flex flex-col text-left overflow-hidden pr-1">
-                    <span className="text-xs font-semibold text-on-surface truncate max-w-[120px] leading-snug">
-                      {file.name}
-                    </span>
-                    <span className="text-[9px] text-on-surface-variant/80 font-medium leading-none mt-0.5">
-                      {file.status === 'uploading' ? `(${file.progress}%)` : file.typeLabel}
-                    </span>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => removeFile(file.id)}
-                    className="ml-auto p-1 text-on-surface-variant/60 hover:text-error hover:bg-error-container/30 rounded-full transition-colors shrink-0"
-                    title="Sil"
+      {/* Floating Pinned AI Input Box - Portaled to avoid stacking context issues */}
+      {createPortal(
+        <div className="fixed bottom-3 md:bottom-6 left-1/2 -translate-x-1/2 w-full max-w-4xl px-3 md:px-0 md:ml-10 z-[60] flex justify-center pointer-events-none">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSend();
+            }}
+            className="w-full pointer-events-auto bg-white/95 backdrop-blur-2xl border border-outline-variant/80 rounded-3xl p-3 shadow-[0_16px_48px_rgba(0,102,255,0.2)] space-y-2 transition-all"
+          >
+            {attachedFiles.length > 0 && (
+              <div className="flex flex-wrap gap-2 px-2 pt-1 border-b border-outline-variant/50 pb-2">
+                {attachedFiles.map((file) => (
+                  <div
+                    key={file.id}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-container-low border border-outline-variant text-xs shadow-2xs group relative"
                   >
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
-              ))}
+                    {file.status === 'uploading' ? (
+                      <div className="w-5 h-5 flex items-center justify-center text-brand-blue shrink-0">
+                        <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24">
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="3"
+                            fill="none"
+                          />
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8v8H4z"
+                          />
+                        </svg>
+                      </div>
+                    ) : (
+                      <div className="w-5 h-5 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-200/50">
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                      </div>
+                    )}
+
+                    <div className="flex flex-col text-left overflow-hidden pr-1">
+                      <span className="text-xs font-semibold text-on-surface truncate max-w-[120px] leading-snug">
+                        {file.name}
+                      </span>
+                      <span className="text-[9px] text-on-surface-variant/80 font-medium leading-none mt-0.5">
+                        {file.status === 'uploading' ? `(${file.progress}%)` : file.typeLabel}
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => removeFile(file.id)}
+                      className="ml-auto p-1 text-on-surface-variant/60 hover:text-error hover:bg-error-container/30 rounded-full transition-colors shrink-0"
+                      title="Sil"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="flex items-center gap-1 sm:gap-2 px-1 sm:px-2">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full hover:bg-surface-container-high/70 text-on-surface-variant flex items-center justify-center transition-colors shrink-0 cursor-pointer"
+              >
+                <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
+              </button>
+
+              <input
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                disabled={isThinking}
+                placeholder={
+                  isThinking
+                    ? 'AI analiz edir...'
+                    : attachedFiles.length > 0
+                    ? 'Fayllar barədə soruş...'
+                    : 'Təhlükəsizlik barədə soruş...'
+                }
+                className="flex-1 min-w-0 py-2 sm:py-3 px-1 sm:px-2 bg-transparent text-sm sm:text-body-md text-on-surface focus:outline-none placeholder:text-on-surface-variant/60"
+              />
+
+              <button
+                type="button"
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full hover:bg-surface-container-high/70 text-on-surface-variant flex items-center justify-center transition-colors shrink-0 cursor-pointer"
+              >
+                <Mic className="w-4 h-4 sm:w-5 sm:h-5" />
+              </button>
+
+              <button
+                type="submit"
+                disabled={isThinking || (!input.trim() && attachedFiles.length === 0)}
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-brand-blue text-white flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-md cursor-pointer disabled:opacity-40 disabled:hover:scale-100 shrink-0"
+              >
+                {isThinking ? (
+                  <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 animate-pulse" />
+                ) : (
+                  <Send className="w-4 h-4 sm:w-5 sm:h-5 ml-0.5" />
+                )}
+              </button>
             </div>
-          )}
-
-          <div className="flex items-center gap-2 px-2">
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="w-10 h-10 rounded-full hover:bg-surface-container-high/70 text-on-surface-variant flex items-center justify-center transition-colors shrink-0 cursor-pointer"
-            >
-              <Plus className="w-5 h-5" />
-            </button>
-
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              disabled={isThinking}
-              placeholder={
-                isThinking
-                  ? 'MyGuard AI analiz edir...'
-                  : attachedFiles.length > 0
-                  ? 'Əlavə edilmiş fayllar haqqında soruşun...'
-                  : 'Sənəd təhlükəsizliyi haqqında istənilən sualı verin...'
-              }
-              className="flex-1 py-3 px-2 bg-transparent text-body-md text-on-surface focus:outline-none placeholder:text-on-surface-variant/60"
-            />
-
-            <button
-              type="button"
-              className="w-10 h-10 rounded-full hover:bg-surface-container-high/70 text-on-surface-variant flex items-center justify-center transition-colors shrink-0 cursor-pointer"
-            >
-              <Mic className="w-5 h-5" />
-            </button>
-
-            <button
-              type="submit"
-              disabled={isThinking || (!input.trim() && attachedFiles.length === 0)}
-              className="w-10 h-10 rounded-full bg-brand-blue text-white flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-md cursor-pointer disabled:opacity-40 disabled:hover:scale-100 shrink-0"
-            >
-              {isThinking ? (
-                <Sparkles className="w-5 h-5 animate-pulse" />
-              ) : (
-                <Send className="w-5 h-5 ml-0.5" />
-              )}
-            </button>
-          </div>
-        </form>
-      </div>
+          </form>
+        </div>,
+        document.body
+      )}
     </div>
   );
 };

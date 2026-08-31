@@ -1,6 +1,6 @@
 import { io, Socket } from 'socket.io-client';
 
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'https://myguard-backend-i4ll.onrender.com';
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'https://mygurad-backend-v2.onrender.com';
 
 let socket: Socket | null = null;
 

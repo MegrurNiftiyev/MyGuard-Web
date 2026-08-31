@@ -44,7 +44,7 @@ export const HumanReviewBox: React.FC<HumanReviewBoxProps> = ({
           </p>
         </div>
       </div>
-      <div className="flex items-center gap-3 shrink-0 w-full md:w-auto mt-2 md:mt-0">
+      <div className="flex items-center justify-center md:justify-end gap-3 shrink-0 w-full md:w-auto mt-2 md:mt-0">
         {onSecondaryClick && (
           <button 
             onClick={onSecondaryClick} 

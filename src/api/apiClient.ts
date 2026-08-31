@@ -1,4 +1,4 @@
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://myguard-backend-i4ll.onrender.com/api';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://mygurad-backend-v2.onrender.com/api';
 
 export async function apiClient<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const token = localStorage.getItem('access_token');

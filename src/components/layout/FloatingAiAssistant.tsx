@@ -46,7 +46,7 @@ export const FloatingAiAssistant: React.FC = () => {
   };
 
   return (
-    <div className="fixed bottom-8 right-6 sm:right-8 z-50 pointer-events-auto flex flex-col items-end">
+    <div className="hidden md:flex fixed bottom-8 right-8 z-40 pointer-events-auto flex-col items-end">
       {/* Floating Quick Chat Popup Window */}
       {isOpen && (
         <div className="mb-4 w-[90vw] sm:w-96 rounded-2xl bg-surface-container-lowest shadow-[0_8px_32px_rgba(0,102,255,0.08)] border border-outline-variant/60 overflow-hidden flex flex-col max-h-[480px] animate-in fade-in slide-in-from-bottom-4 duration-200">

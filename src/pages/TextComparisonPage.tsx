@@ -81,21 +81,20 @@ export const TextComparisonPage: React.FC = () => {
     <div className="space-y-6 pb-8">
       {/* Header */}
       <div className="space-y-4">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="flex flex-col gap-4">
-            <div>
-              <h1 className="text-headline-lg-mobile md:text-headline-lg font-bold text-on-surface mb-2">
-                OCR ↔ PDF Layer Text Comparison
-              </h1>
-              <p className="text-body-md text-on-surface-variant max-w-2xl">
-                İnsan gözünün gördüyü fiziki mətn (OCR) ilə AI modelinin oxuduğu daxili PDF kodu (Text Layer) arasındakı fərqlər.
-              </p>
-            </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center justify-between">
+          <div className="flex flex-col gap-2">
+            <h1 className="text-headline-lg-mobile md:text-headline-lg font-bold text-on-surface leading-tight">
+              OCR ↔ PDF Layer Text Comparison
+            </h1>
+            <p className="text-body-md text-on-surface-variant">
+              İnsan gözünün gördüyü fiziki mətn (OCR) ilə AI modelinin oxuduğu daxili PDF kodu (Text Layer) arasındakı fərqlər.
+            </p>
           </div>
 
           {/* Top Score Banner */}
+          <div className="flex sm:justify-end">
           {isLoading ? (
-            <div className="w-64 h-20 bg-surface-container-lowest border border-outline-variant p-4 rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.03)] animate-pulse flex items-center justify-between gap-4">
+            <div className="w-full max-w-sm h-20 bg-surface-container-lowest border border-outline-variant p-4 rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.03)] animate-pulse flex items-center justify-between gap-4">
                <div className="flex flex-col gap-2 w-full items-end">
                  <div className="h-4 bg-gray-200 rounded w-2/3"></div>
                  <div className="h-6 bg-gray-200 rounded w-full"></div>
@@ -106,7 +105,7 @@ export const TextComparisonPage: React.FC = () => {
             const matchScore = liveComparison?.ocrPdfMatch ?? 0;
             const matchColors = getMatchScoreColor(matchScore);
             return (
-              <div className={`px-5 py-3 rounded-2xl flex items-center gap-5 bg-white border ${matchColors.border} shadow-sm`}>
+              <div className={`w-full max-w-sm px-5 py-3 rounded-2xl flex items-center justify-between sm:justify-end gap-5 bg-white border ${matchColors.border} shadow-sm`}>
                 <div className="flex flex-col items-end justify-center">
                   <span className={`text-[11px] font-bold uppercase tracking-wider mb-0.5 ${matchColors.text} opacity-80`}>
                     Uyğunluq Hesabı
@@ -115,7 +114,7 @@ export const TextComparisonPage: React.FC = () => {
                     OCR ↔ PDF
                   </span>
                 </div>
-                <div className="relative w-12 h-12 flex items-center justify-center">
+                <div className="relative w-12 h-12 flex items-center justify-center shrink-0">
                   <svg className="w-14 h-14 absolute -rotate-90" viewBox="0 0 48 48">
                     <circle cx="24" cy="24" r="20" stroke="currentColor" strokeWidth="3" fill="none" className={`${matchColors.text} opacity-20`} />
                     <circle 
@@ -137,6 +136,7 @@ export const TextComparisonPage: React.FC = () => {
               </div>
             );
           })()}
+          </div>
         </div>
 
         {/* Human Review Loop UI */}

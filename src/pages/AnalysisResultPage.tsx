@@ -189,42 +189,37 @@ export const AnalysisResultPage: React.FC = () => {
             </button>
           </div>
 
-          <div className={`px-5 py-3 rounded-2xl flex items-center gap-5 bg-white border ${riskColors.border}/30 shadow-sm`}>
+          <div className={`px-5 py-3 rounded-2xl flex items-center justify-center gap-3 bg-white border ${riskColors.border}/30 shadow-sm`}>
             <div className="flex flex-col items-center justify-center">
-              <span className={`text-[11px] font-bold uppercase tracking-wider mb-0.5 ${riskColors.text} opacity-80`}>Risk Score</span>
-              <span className={`text-xl font-extrabold leading-none ${riskColors.text}`}>
-                {analysis.riskScore}/100
-              </span>
-            </div>
-            <div className="relative w-12 h-12 flex items-center justify-center">
-              <svg className="w-14 h-14 absolute -rotate-90" viewBox="0 0 48 48">
-                <circle cx="24" cy="24" r="20" stroke="currentColor" strokeWidth="3" fill="none" className={`${riskColors.text} opacity-20`} />
-                <circle 
-                  cx="24" cy="24" r="20" 
-                  stroke="currentColor" 
-                  strokeWidth="3" 
-                  fill="none" 
-                  strokeLinecap="round"
-                  className={riskColors.text} 
-                  style={{ 
-                    strokeDasharray: 2 * Math.PI * 20, 
-                    strokeDashoffset: (2 * Math.PI * 20) - ((isMounted ? analysis.riskScore : 0) / 100) * (2 * Math.PI * 20),
-                    transition: 'stroke-dashoffset 1s ease-out'
-                  }} 
-                />
-              </svg>
-              {analysis.riskScore < 30 ? (
-                <CheckCircle2 className={`w-5 h-5 ${riskColors.text}`} />
-              ) : (
-                <ShieldAlert className={`w-5 h-5 ${riskColors.text}`} />
-              )}
+              <span className={`text-[11px] font-bold uppercase tracking-wider mb-2 ${riskColors.text} opacity-80`}>Risk Skoru</span>
+              <div className="relative w-16 h-16 flex items-center justify-center">
+                <svg className="w-16 h-16 absolute -rotate-90" viewBox="0 0 48 48">
+                  <circle cx="24" cy="24" r="20" stroke="currentColor" strokeWidth="4" fill="none" className={`${riskColors.text} opacity-20`} />
+                  <circle 
+                    cx="24" cy="24" r="20" 
+                    stroke="currentColor" 
+                    strokeWidth="4" 
+                    fill="none" 
+                    strokeLinecap="round"
+                    className={riskColors.text} 
+                    style={{ 
+                      strokeDasharray: 2 * Math.PI * 20, 
+                      strokeDashoffset: (2 * Math.PI * 20) - ((isMounted ? analysis.riskScore : 0) / 100) * (2 * Math.PI * 20),
+                      transition: 'stroke-dashoffset 1s ease-out'
+                    }} 
+                  />
+                </svg>
+                <span className={`text-lg font-extrabold ${riskColors.text}`}>
+                  {analysis.riskScore}%
+                </span>
+              </div>
             </div>
           </div>
         </div>
       </header>
 
       {/* Bento Grid: Metrics */}
-      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <Card padding="md" className="flex flex-col gap-4 bg-white rounded-2xl border border-outline-variant/60 shadow-sm relative overflow-hidden">
           <div className="flex justify-between items-start">
             <h3 className="text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider">OCR + PDF Uyğunluğu</h3>

@@ -41,9 +41,6 @@ export const SettingsPage: React.FC = () => {
     <div className="max-w-4xl mx-auto space-y-12 pb-24 relative">
       {/* SECTION 1: Profil və Autentifikasiya Sessiyası */}
       <section className="space-y-6">
-        <h2 className="text-title-lg font-bold text-on-surface border-b border-outline-variant/60 pb-3">
-          {t('profileSection') || 'Profil və Hesab Sessiyası'}
-        </h2>
 
         <div className="space-y-6">
           {/* User Header & Logout Card */}
@@ -94,21 +91,16 @@ export const SettingsPage: React.FC = () => {
 
           {/* Language Preferences Tile */}
           <Card padding="lg" className="border-outline-variant/60 shadow-sm">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="flex items-start gap-4">
-                <Globe className="w-6 h-6 text-brand-blue mt-1" />
-                <div>
-                  <h4 className="text-title-lg font-medium text-on-surface truncate">
-                    {t('interfaceLanguage') || 'İnterfeys Dili'}
-                  </h4>
-                  <p className="text-label-sm text-on-surface-variant/80 mt-1 max-w-sm">
-                    {t('selectInterfaceLanguage') || 'Sistemin istifadəçi interfeysi dilini seçin'}
-                  </p>
-                </div>
+            <div className="flex flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <Globe className="w-5 h-5 text-brand-blue" />
+                <h4 className="text-title-lg font-medium text-on-surface leading-tight">
+                  {t('interfaceLanguage') || 'Dil'}
+                </h4>
               </div>
 
               {/* Sliding Background Language Pill Switcher */}
-              <div className="relative flex items-center bg-surface-container-lowest border border-outline-variant/80 p-1 rounded-full shadow-xs self-start sm:self-auto">
+              <div className="relative flex items-center bg-surface-container-lowest border border-outline-variant/80 p-1 rounded-full shadow-xs">
                 <div
                   className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-brand-blue rounded-full shadow-sm transition-transform duration-300 ease-out ${
                     lang === 'az' ? 'translate-x-0' : 'translate-x-[calc(100%+4px)]'
@@ -117,21 +109,21 @@ export const SettingsPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setLang('az')}
-                  className={`relative z-10 px-4 py-2 text-label-md font-bold rounded-full transition-colors cursor-pointer flex items-center gap-2 min-w-[76px] justify-center ${
+                  className={`relative z-10 px-4 py-1.5 text-label-md font-bold rounded-full transition-colors cursor-pointer flex items-center gap-2 min-w-[64px] justify-center ${
                     lang === 'az' ? 'text-white' : 'text-on-surface-variant hover:text-on-surface'
                   }`}
                 >
-                  <span>🇦🇿 AZ</span>
+                  <span>AZ</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setLang('en')}
-                  className={`relative z-10 px-4 py-2 text-label-md font-bold rounded-full transition-colors cursor-pointer flex items-center gap-2 min-w-[76px] justify-center ${
+                  className={`relative z-10 px-4 py-1.5 text-label-md font-bold rounded-full transition-colors cursor-pointer flex items-center gap-2 min-w-[64px] justify-center ${
                     lang === 'en' ? 'text-white' : 'text-on-surface-variant hover:text-on-surface'
                   }`}
                 >
-                  <span>🇬🇧 EN</span>
+                  <span>EN</span>
                 </button>
               </div>
             </div>
@@ -141,16 +133,13 @@ export const SettingsPage: React.FC = () => {
 
       {/* SECTION 2: Təhlükəsizlik */}
       <section className="space-y-6 mt-8">
-        <h2 className="text-title-lg font-bold text-on-surface border-b border-outline-variant/60 pb-3">
-          {t('securitySection') || 'Təhlükəsizlik'}
-        </h2>
 
         {/* Section 1: Scan Parameters */}
         <Card padding="lg" className="space-y-6">
           <div className="flex items-center gap-3 pb-3 border-b border-outline-variant">
             <Sliders className="w-5 h-5 text-brand-blue" />
-            <h3 className="text-title-lg font-bold text-on-surface">
-              {t('scanParameters') || '1. Skan Parametrləri (Scan Parameters)'}
+            <h3 className="text-title-lg font-bold text-on-surface leading-tight">
+              {t('scanParameters') || '1. Skan Parametrləri'}
             </h3>
           </div>
 
@@ -160,7 +149,7 @@ export const SettingsPage: React.FC = () => {
               <div className="flex items-start gap-4">
                 <Sliders className="w-6 h-6 text-brand-blue mt-1" />
                 <div>
-                  <h4 className="text-title-lg font-medium text-on-surface truncate">
+                  <h4 className="text-title-lg font-medium text-on-surface leading-tight">
                     {t('ocrThreshold') || 'OCR ↔ PDF Uyğunluq Eşik Dərəcəsi'}
                   </h4>
                   <p className="text-label-sm text-on-surface-variant/80 mt-1 max-w-sm">
@@ -186,7 +175,7 @@ export const SettingsPage: React.FC = () => {
               <div className="flex items-start gap-4">
                 <Lock className="w-6 h-6 text-brand-purple mt-1" />
                 <div>
-                  <h4 className="text-title-lg font-medium text-on-surface truncate">
+                  <h4 className="text-title-lg font-medium text-on-surface leading-tight">
                     {t('sensitivity') || 'Injection Həssaslığı'}
                   </h4>
                   <p className="text-label-sm text-on-surface-variant/80 mt-1 max-w-sm">
@@ -194,13 +183,13 @@ export const SettingsPage: React.FC = () => {
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-2 bg-surface-container-low p-1 rounded-xl">
+              <div className="flex items-center w-full sm:w-auto sm:min-w-[320px] bg-surface-container-low p-1 rounded-xl">
                 {(['Low', 'Medium', 'High'] as const).map((level) => (
                   <button
                     key={level}
                     type="button"
                     onClick={() => { setSensitivity(level); markDirty(); }}
-                    className={`px-4 py-2 rounded-lg text-label-sm font-semibold transition-all cursor-pointer ${
+                    className={`flex-1 px-2 sm:px-4 py-2 rounded-lg text-label-sm font-semibold transition-all cursor-pointer text-center ${
                       sensitivity === level
                         ? 'bg-brand-blue text-white shadow-sm'
                         : 'text-on-surface-variant hover:bg-surface-container-high'
@@ -219,7 +208,7 @@ export const SettingsPage: React.FC = () => {
               <div className="flex items-start gap-4">
                 <Bell className="w-6 h-6 text-emerald-500 mt-1" />
                 <div>
-                  <h4 className="text-title-lg font-medium text-on-surface truncate">
+                  <h4 className="text-title-lg font-medium text-on-surface leading-tight">
                     {t('autoScanMode') || 'Avtomatik Skan Rejimi'}
                   </h4>
                   <p className="text-label-sm text-on-surface-variant/80 mt-1 max-w-sm">
@@ -236,8 +225,8 @@ export const SettingsPage: React.FC = () => {
         <Card padding="lg" className="space-y-6">
           <div className="flex items-center gap-3 pb-3 border-b border-outline-variant">
             <Lock className="w-5 h-5 text-brand-blue" />
-            <h3 className="text-title-lg font-bold text-on-surface">
-              {t('privacyIsolation') || '2. Məxfilik və İzolyasiya (Privacy & Isolation)'}
+            <h3 className="text-title-lg font-bold text-on-surface leading-tight">
+              {t('privacyIsolation') || '2. Məxfilik və İzolyasiya'}
             </h3>
           </div>
 
@@ -247,7 +236,7 @@ export const SettingsPage: React.FC = () => {
               <div className="flex items-start gap-4">
                 <Lock className="w-6 h-6 text-brand-purple mt-1" />
                 <div>
-                  <h4 className="text-title-lg font-medium text-on-surface truncate">
+                  <h4 className="text-title-lg font-medium text-on-surface leading-tight">
                     {t('confidentialModeTitle') || 'Konfidensial Rejim'}
                   </h4>
                   <p className="text-label-sm text-on-surface-variant/80 mt-1 max-w-sm">
@@ -263,7 +252,7 @@ export const SettingsPage: React.FC = () => {
               <div className="flex items-start gap-4">
                 <Globe className="w-6 h-6 text-brand-blue mt-1" />
                 <div>
-                  <h4 className="text-title-lg font-medium text-on-surface truncate">
+                  <h4 className="text-title-lg font-medium text-on-surface leading-tight">
                     {t('externalAiTitle') || 'Xarici AI Modellərindən İstifadə'}
                   </h4>
                   <p className="text-label-sm text-on-surface-variant/80 mt-1 max-w-sm">

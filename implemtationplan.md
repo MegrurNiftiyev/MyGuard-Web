@@ -7,11 +7,11 @@ Bu sənəd **MyGuard Web Frontend** tətbiqini Canlı (Production) Backend REST 
 ## 📌 1. Baza Server Məlumatları və Canlı Linklər
 
 - **Canlı Backend URL (Production Base URL):**  
-  `https://myguard-backend-i4ll.onrender.com`
+  `https://mygurad-backend-v2.onrender.com`
 - **İnteraktiv Swagger Sənədləşməsi (API Docs):**  
-  `https://myguard-backend-i4ll.onrender.com/api-docs`
+  `https://mygurad-backend-v2.onrender.com/api-docs`
 - **Real-Time WebSocket (Socket.IO):**  
-  `https://myguard-backend-i4ll.onrender.com`
+  `https://mygurad-backend-v2.onrender.com`
 - **Standart Sorğu Başlıqları (Headers):**
   ```http
   Accept: application/json
@@ -27,7 +27,7 @@ Bu sənəd **MyGuard Web Frontend** tətbiqini Canlı (Production) Backend REST 
 
 ### 🔹 2.1 POST `/api/auth/register` (Qeydiyyat)
 Yeni istifadəçi qeydiyyatı.
-- **URL:** `https://myguard-backend-i4ll.onrender.com/api/auth/register`
+- **URL:** `https://mygurad-backend-v2.onrender.com/api/auth/register`
 - **Method:** `POST`
 - **Request Body (JSON):**
 ```json
@@ -64,7 +64,7 @@ Yeni istifadəçi qeydiyyatı.
 
 ### 🔹 2.2 POST `/api/auth/login` (Daxil ol)
 FİN Kod (əsas) və ya Email ilə daxil olmaq.
-- **URL:** `https://myguard-backend-i4ll.onrender.com/api/auth/login`
+- **URL:** `https://mygurad-backend-v2.onrender.com/api/auth/login`
 - **Method:** `POST`
 - **Request Body (JSON):**
 ```json
@@ -97,7 +97,7 @@ FİN Kod (əsas) və ya Email ilə daxil olmaq.
 ---
 
 ### 🔹 2.3 POST `/api/auth/refresh` (Token Yenilənməsi)
-- **URL:** `https://myguard-backend-i4ll.onrender.com/api/auth/refresh`
+- **URL:** `https://mygurad-backend-v2.onrender.com/api/auth/refresh`
 - **Method:** `POST`
 - **Request Body (JSON):**
 ```json
@@ -116,7 +116,7 @@ FİN Kod (əsas) və ya Email ilə daxil olmaq.
 ---
 
 ### 🔹 2.4 GET `/api/users/me` (Cari Profil)
-- **URL:** `https://myguard-backend-i4ll.onrender.com/api/users/me`
+- **URL:** `https://mygurad-backend-v2.onrender.com/api/users/me`
 - **Method:** `GET`
 - **Response (200 OK):**
 ```json
@@ -138,7 +138,7 @@ FİN Kod (əsas) və ya Email ilə daxil olmaq.
 ## 📄 3. Sənəd Yükləmə, Skan və Analiz (`/api/documents`)
 
 ### 🔹 3.1 POST `/api/documents/upload` (Sənəd Yükləmək və Skana Başlamaq)
-- **URL:** `https://myguard-backend-i4ll.onrender.com/api/documents/upload`
+- **URL:** `https://mygurad-backend-v2.onrender.com/api/documents/upload`
 - **Method:** `POST`
 - **Content-Type:** `multipart/form-data`
 - **Form Data:**
@@ -167,7 +167,7 @@ FİN Kod (əsas) və ya Email ilə daxil olmaq.
 ---
 
 ### 🔹 3.2 GET `/api/documents` (Bütün Sənədlər Siyahısı)
-- **URL:** `https://myguard-backend-i4ll.onrender.com/api/documents`
+- **URL:** `https://mygurad-backend-v2.onrender.com/api/documents`
 - **Method:** `GET`
 - **Response (200 OK):**
 ```json
@@ -188,7 +188,7 @@ FİN Kod (əsas) və ya Email ilə daxil olmaq.
 ---
 
 ### 🔹 3.3 GET `/api/documents/:id` (Dərin Analiz Hesabatı)
-- **URL:** `https://myguard-backend-i4ll.onrender.com/api/documents/doc-1724750000-123`
+- **URL:** `https://mygurad-backend-v2.onrender.com/api/documents/doc-1724750000-123`
 - **Method:** `GET`
 - **Response (200 OK):**
 ```json
@@ -231,7 +231,7 @@ FİN Kod (əsas) və ya Email ilə daxil olmaq.
 ---
 
 ### 🔹 3.4 GET `/api/documents/:id/comparison` (OCR və PDF Müqayisəsi)
-- **URL:** `https://myguard-backend-i4ll.onrender.com/api/documents/doc-1724750000-123/comparison`
+- **URL:** `https://mygurad-backend-v2.onrender.com/api/documents/doc-1724750000-123/comparison`
 - **Method:** `GET`
 - **Response (200 OK):**
 ```json
@@ -254,7 +254,7 @@ FİN Kod (əsas) və ya Email ilə daxil olmaq.
 ---
 
 ### 🔹 3.5 POST `/api/documents/:id/clean-injection` (Təhdid Təmizləmə)
-- **URL:** `https://myguard-backend-i4ll.onrender.com/api/documents/doc-1724750000-123/clean-injection`
+- **URL:** `https://mygurad-backend-v2.onrender.com/api/documents/doc-1724750000-123/clean-injection`
 - **Method:** `POST`
 - **Request Body (JSON):**
 ```json
@@ -275,7 +275,7 @@ FİN Kod (əsas) və ya Email ilə daxil olmaq.
 ---
 
 ### 🔹 3.6 PATCH `/api/documents/:id/label-by-user` (İstifadəçi Qərarı Düzəlişi)
-- **URL:** `https://myguard-backend-i4ll.onrender.com/api/documents/doc-1724750000-123/label-by-user`
+- **URL:** `https://mygurad-backend-v2.onrender.com/api/documents/doc-1724750000-123/label-by-user`
 - **Method:** `PATCH`
 - **Request Body (JSON):**
 ```json
@@ -301,7 +301,7 @@ Frontend-də skan animasiyasını canlı izləmək üçün Socket.IO klientində
 ```typescript
 import { io } from 'socket.io-client';
 
-const socket = io('https://myguard-backend-i4ll.onrender.com', {
+const socket = io('https://mygurad-backend-v2.onrender.com', {
   transports: ['websocket', 'polling']
 });
 
@@ -332,7 +332,7 @@ socket.on('scan_event', (data) => {
 ## 🤖 5. AI Assistant & Çat Sistemləri (`/api/chat`)
 
 ### 🔹 5.1 POST `/api/chat/session` (Yeni Çat Sessiyası Açmaq)
-- **URL:** `https://myguard-backend-i4ll.onrender.com/api/chat/session`
+- **URL:** `https://mygurad-backend-v2.onrender.com/api/chat/session`
 - **Method:** `POST`
 - **Request Body (JSON):**
 ```json
@@ -357,7 +357,7 @@ socket.on('scan_event', (data) => {
 ---
 
 ### 🔹 5.2 GET `/api/chat/history/:sessionId` (Mesaj Tarixçəsi)
-- **URL:** `https://myguard-backend-i4ll.onrender.com/api/chat/history/session-1724750000`
+- **URL:** `https://mygurad-backend-v2.onrender.com/api/chat/history/session-1724750000`
 - **Method:** `GET`
 - **Response (200 OK):**
 ```json
@@ -450,7 +450,7 @@ socket.on('scan_event', (data) => {
 ## 🛡️ 6. Agent Monitorinqi və Təhlükəsizlik Əməliyyatları (`/api/security`)
 
 ### 🔹 6.1 GET `/api/security/actions` (Agent Əməliyyatları Siyahısı)
-- **URL:** `https://myguard-backend-i4ll.onrender.com/api/security/actions`
+- **URL:** `https://mygurad-backend-v2.onrender.com/api/security/actions`
 - **Method:** `GET`
 - **Response (200 OK):**
 ```json
@@ -474,7 +474,7 @@ socket.on('scan_event', (data) => {
 ---
 
 ### 🔹 6.2 PATCH `/api/security/actions/:id/decision` (Qərarın Dəyişdirilməsi)
-- **URL:** `https://myguard-backend-i4ll.onrender.com/api/security/actions/act-101/decision`
+- **URL:** `https://mygurad-backend-v2.onrender.com/api/security/actions/act-101/decision`
 - **Method:** `PATCH`
 - **Request Body (JSON):**
 ```json
@@ -499,7 +499,7 @@ socket.on('scan_event', (data) => {
 ## 📊 7. Analitika və Hesabatlar (`/api/reports`)
 
 ### 🔹 7.1 GET `/api/reports/risk-summary` (Risk Xülasəsi Və Dashboard Metrikaları)
-- **URL:** `https://myguard-backend-i4ll.onrender.com/api/reports/risk-summary`
+- **URL:** `https://mygurad-backend-v2.onrender.com/api/reports/risk-summary`
 - **Method:** `GET`
 - **Response (200 OK):**
 ```json
@@ -526,7 +526,7 @@ socket.on('scan_event', (data) => {
 ## ⚙️ 8. AI Model İdarəetməsi (`/api/admin`)
 
 ### 🔹 8.1 GET `/api/admin/models` (Aktiv Müdafiə Modelləri Siyahısı)
-- **URL:** `https://myguard-backend-i4ll.onrender.com/api/admin/models`
+- **URL:** `https://mygurad-backend-v2.onrender.com/api/admin/models`
 - **Method:** `GET`
 - **Response (200 OK):**
 ```json
@@ -567,7 +567,7 @@ socket.on('scan_event', (data) => {
 ## 💻 10. Frontend API Servis Kodu Nümunəsi (`apiClient.ts`)
 
 ```typescript
-const BASE_URL = 'https://myguard-backend-i4ll.onrender.com/api';
+const BASE_URL = 'https://mygurad-backend-v2.onrender.com/api';
 
 export async function apiClient<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const token = localStorage.getItem('access_token');
