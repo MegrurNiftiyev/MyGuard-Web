@@ -142,7 +142,7 @@ export const BottomNav: React.FC<SideNavProps> = ({ disableFixed = false }) => {
               key={item.id}
               to={item.path}
               title={item.label}
-              className="relative -top-5 z-20 flex items-center justify-center w-14 h-14 rounded-full bg-brand-blue text-white shadow-[0_8px_20px_rgba(49,116,239,0.35)] transition-transform active:scale-95 mx-2"
+              className="relative -top-5 z-20 flex items-center justify-center w-14 h-14 rounded-[22px] bg-brand-blue text-white shadow-[0_4px_12px_rgba(49,116,239,0.22)] transition-transform active:scale-95 mx-2"
             >
               <Icon className="w-7 h-7" />
             </NavLink>

@@ -46,25 +46,29 @@ export const TextComparisonPage: React.FC = () => {
     fetchComparison();
   }, [id]);
 
-  const highlightSnippet = (fullText: string, snippet?: string) => {
+    const highlightSnippet = (fullText: string, snippets?: string[]) => {
     if (!fullText) return <span className="opacity-50 italic">Mətn tapılmadı</span>;
-    if (!snippet || !fullText.includes(snippet)) return <span>{fullText}</span>;
-    const parts = fullText.split(snippet);
-    return (
-      <>
-        {parts.map((part, i) => (
-          <React.Fragment key={i}>
-            {part}
-            {i < parts.length - 1 && (
-              <span className="relative inline-block mx-1">
-                <span className="absolute -inset-1 bg-red-200/80 skew-x-[-15deg] transform rounded"></span>
-                <span className="relative font-bold text-red-900 z-10 px-1">{snippet}</span>
-              </span>
-            )}
-          </React.Fragment>
-        ))}
-      </>
-    );
+    if (!snippets || snippets.length === 0) return <span>{fullText}</span>;
+    
+    return snippets.reduce((acc: any, snippet) => {
+      if (!snippet) return acc;
+      const parts = typeof acc === 'string' ? acc.split(snippet) : acc;
+      if (typeof parts === 'string') return parts;
+      
+      const res: any[] = [];
+      parts.forEach((part: any, i: number) => {
+        res.push(part);
+        if (i < parts.length - 1) {
+          res.push(
+            <span key={i + '-' + snippet.substring(0, 5)} className="relative inline-block mx-1">
+              <span className="absolute -inset-1 bg-red-200/80 skew-x-[-15deg] transform rounded"></span>
+              <span className="relative font-bold text-red-900 z-10 px-1">{snippet}</span>
+            </span>
+          );
+        }
+      });
+      return res;
+    }, fullText);
   };
 
   const handleReviewFeedback = async (isInjection: boolean) => {
@@ -151,7 +155,7 @@ export const TextComparisonPage: React.FC = () => {
             </div>
             <div className="h-10 bg-surface-container rounded w-32 shrink-0"></div>
           </div>
-        ) : !hasReviewed && liveComparison?.flaggedSnippet ? (
+        ) : !hasReviewed && (liveComparison?.flaggedSnippets && liveComparison.flaggedSnippets.length > 0) ? (
           <HumanReviewBox 
             onPrimaryClick={() => handleReviewFeedback(true)}
             onSecondaryClick={() => handleReviewFeedback(false)}
@@ -216,10 +220,10 @@ export const TextComparisonPage: React.FC = () => {
                 <h3 className="text-title-lg font-bold text-on-surface">PDF Kod Qatı (AI Tərəfindən)</h3>
               </div>
             </div>
-            <div className={`text-label-sm font-bold tracking-wide uppercase ${liveComparison?.flaggedSnippet ? 'text-error' : 'text-emerald-600'}`}>
+            <div className={`text-label-sm font-bold tracking-wide uppercase ${(liveComparison?.flaggedSnippets && liveComparison.flaggedSnippets.length > 0) ? 'text-error' : 'text-emerald-600'}`}>
               {isLoading ? (
                 <div className="h-4 w-32 bg-gray-200 rounded animate-pulse"></div>
-              ) : liveComparison?.flaggedSnippet ? (
+              ) : (liveComparison?.flaggedSnippets && liveComparison.flaggedSnippets.length > 0) ? (
                 'Təhdid Tapıldı'
               ) : (
                 'Problem yoxdur'
@@ -237,7 +241,7 @@ export const TextComparisonPage: React.FC = () => {
                 <div className="h-4 bg-error/10 rounded w-2/3"></div>
               </div>
             ) : liveComparison?.pdfTextLayer ? (
-              <div className="opacity-90">{highlightSnippet(liveComparison.pdfTextLayer, liveComparison.flaggedSnippet)}</div>
+              <div className="opacity-90">{highlightSnippet(liveComparison.pdfTextLayer, liveComparison.flaggedSnippets)}</div>
             ) : (
               <div className="opacity-50 italic text-center mt-10">PDF daxili mətn qatı tapılmadı</div>
             )}
@@ -249,3 +253,5 @@ export const TextComparisonPage: React.FC = () => {
 };
 
 export default TextComparisonPage;
+
+

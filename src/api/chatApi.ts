@@ -40,6 +40,11 @@ export interface SendMessagePayload {
   screenDestination: ScreenDestination;
   message: string;
   sessionId?: string;
+  documentId?: string;
+  attachedDocument?: {
+    fileName: string;
+    text: string;
+  };
 }
 
 export const chatApi = {

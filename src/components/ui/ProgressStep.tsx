@@ -85,7 +85,14 @@ export const ProgressStep: React.FC<ProgressStepProps> = ({
             {status === 'processing' && 'İcraya alındı...'}
           </span>
         </div>
-        <p className="text-body-md text-on-surface-variant mt-1 leading-relaxed">{description}</p>
+        <p className={clsx(
+          "text-body-md mt-1 leading-relaxed",
+          status === 'completed' && "text-on-surface-variant",
+          status === 'warning' && "text-amber-700 font-medium",
+          status === 'failed' && "text-red-700 font-medium",
+          status === 'processing' && "text-blue-700 font-medium",
+          status === 'pending' && "text-on-surface-variant"
+        )}>{description}</p>
       </div>
     </div>
   );

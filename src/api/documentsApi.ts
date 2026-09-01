@@ -25,6 +25,7 @@ export interface DetailedDocumentReport extends DocumentItem {
     extraTextSegments: string[];
     textDifferenceFound?: boolean;
     differenceSnippet?: string;
+    differenceSnippets?: string[];
     ocrText?: string;
     pdfTextLayer?: string;
     status: string;
@@ -60,6 +61,7 @@ export interface DocumentComparisonData {
   ocrPdfMatch: number;
   hiddenTextDetected: boolean;
   flaggedSnippet?: string;
+  flaggedSnippets?: string[];
   flaggedMetadata?: {
     pageNumber?: number;
     visibilityType?: string;
@@ -75,9 +77,12 @@ export interface CleanInjectionResponse {
 }
 
 export const documentsApi = {
-  async uploadDocument(file: File): Promise<{ success: boolean; document: DocumentItem }> {
+  async uploadDocument(file: File, isConfidential: boolean = false): Promise<{ success: boolean; document: DocumentItem }> {
     const formData = new FormData();
     formData.append('document', file);
+    if (isConfidential) {
+      formData.append('isConfidential', 'true');
+    }
     return apiClient<{ success: boolean; document: DocumentItem }>('/documents/upload', {
       method: 'POST',
       body: formData,
@@ -111,3 +116,4 @@ export const documentsApi = {
     });
   }
 };
+

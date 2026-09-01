@@ -12,7 +12,27 @@ export async function apiClient<T>(endpoint: string, options: RequestInit = {}):
     ...options.headers,
   };
 
-  const response = await fetch(`${BASE_URL}${endpoint.startsWith('/') ? endpoint : '/' + endpoint}`, {
+  const fullUrl = `${BASE_URL}${endpoint.startsWith('/') ? endpoint : '/' + endpoint}`;
+  const method = options.method || 'GET';
+  const startTime = Date.now();
+
+  // === HTTP REQUEST INTERCEPTOR ===
+  console.groupCollapsed(`[HTTP REQUEST] ${method} ${endpoint}`);
+  console.log(`URL:`, fullUrl);
+  console.log(`Headers:`, headers);
+  if (options.body && typeof options.body === 'string') {
+    try {
+      console.log(`Body:`, JSON.parse(options.body));
+    } catch {
+      console.log(`Body:`, options.body);
+    }
+  } else if (options.body instanceof FormData) {
+    console.log(`Body: [FormData]`);
+  }
+  console.groupEnd();
+  // ================================
+
+  const response = await fetch(fullUrl, {
     ...options,
     headers,
   });
@@ -45,9 +65,25 @@ export async function apiClient<T>(endpoint: string, options: RequestInit = {}):
     }
   }
 
+  // Read response text to allow logging and parsing
+  const responseText = await response.text().catch(() => '');
+  let responseData: any = responseText;
+  try {
+    responseData = responseText ? JSON.parse(responseText) : {};
+  } catch (e) {
+    // Not JSON, keep as text
+  }
+
+  // === HTTP RESPONSE INTERCEPTOR ===
+  const duration = Date.now() - startTime;
+  console.groupCollapsed(`[HTTP RESPONSE] ${method} ${endpoint} - Status: ${response.status} [${duration}ms]`);
+  console.log(`Response Data:`, responseData);
+  console.groupEnd();
+  // =================================
+
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
     let defaultMsg = `Xəta baş verdi (${response.status})`;
+    const errorData = responseData || {};
     if (response.status === 401 && endpoint.includes('/auth/login')) {
       defaultMsg = 'FİN kod və ya şifrə yanlışdır.';
     } else if (response.status === 409) {
@@ -58,7 +94,7 @@ export async function apiClient<T>(endpoint: string, options: RequestInit = {}):
     throw new Error(errorData.error || errorData.message || defaultMsg);
   }
 
-  return response.json();
+  return responseData;
 }
 
 export function getAuthToken(): string | null {

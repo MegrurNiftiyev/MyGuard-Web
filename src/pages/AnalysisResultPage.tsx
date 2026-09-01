@@ -29,7 +29,6 @@ export const AnalysisResultPage: React.FC = () => {
   const [isBlocked, setIsBlocked] = useState(false);
   const [actionNotice, setActionNotice] = useState<string | null>(null);
   const [hasReviewed, setHasReviewed] = useState(false);
-  const [isMockupModalOpen, setIsMockupModalOpen] = useState(false);
   const [isCleaning, setIsCleaning] = useState(false);
   const [cleanDownloadUrl, setCleanDownloadUrl] = useState<string | null>(null);
   const [isMounted, setIsMounted] = useState(false);
@@ -68,11 +67,12 @@ export const AnalysisResultPage: React.FC = () => {
               return Math.round(conf);
             })(),
             plainExplanation: liveDoc.layer3_llmReview?.explanation || liveDoc.layer3_llmReview?.message || '',
+            llmUsed: liveDoc.layer3_llmReview?.used !== false,
             
             threats: [], 
             ocrText: liveDoc.layer1_ocrTextMatch?.ocrText || '', 
             pdfTextLayer: liveDoc.layer1_ocrTextMatch?.pdfTextLayer || '',
-            flaggedSnippet: liveDoc.layer1_ocrTextMatch?.extraTextSegments?.[0] || '',
+            flaggedSnippets: liveDoc.layer1_ocrTextMatch?.extraTextSegments || [],
             flaggedMetadata: { 
               pageNumber: undefined, 
               visibilityType: undefined, 
@@ -309,15 +309,17 @@ export const AnalysisResultPage: React.FC = () => {
       )}
 
       {/* AI Explanation */}
-      <section className="bg-surface-container-lowest p-6 md:p-8 rounded-xl ai-gradient-card shadow-l2 flex gap-6 items-start">
-        <div className="bg-brand-blue/10 p-3 rounded-full text-brand-blue shrink-0">
-          <Sparkles className="w-8 h-8" />
-        </div>
-        <div className="flex flex-col gap-3 w-full">
-          <h2 className="text-label-lg font-bold text-brand-blue uppercase tracking-wider">LLM İzahı</h2>
-          <Typewriter text={analysis.plainExplanation} speed={15} className="text-headline-sm text-on-surface leading-relaxed font-medium" />
-        </div>
-      </section>
+      {analysis.llmUsed && analysis.plainExplanation && (
+        <section className="bg-surface-container-lowest p-6 md:p-8 rounded-xl ai-gradient-card shadow-l2 flex gap-6 items-start">
+          <div className="bg-brand-blue/10 p-3 rounded-full text-brand-blue shrink-0">
+            <Sparkles className="w-8 h-8" />
+          </div>
+          <div className="flex flex-col gap-3 w-full">
+            <h2 className="text-label-lg font-bold text-brand-blue uppercase tracking-wider">LLM İzahı</h2>
+            <Typewriter text={analysis.plainExplanation} speed={15} className="text-headline-sm text-on-surface leading-relaxed font-medium" />
+          </div>
+        </section>
+      )}
 
       {/* Human Review Loop UI */}
       {!hasReviewed && (
@@ -334,99 +336,81 @@ export const AnalysisResultPage: React.FC = () => {
         </div>
       )}
 
-      {/* Suspicious Text Highlight */}
-      <section className="flex flex-col gap-4">
-        <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 border-b border-outline-variant/30 pb-4">
-          <div className="flex flex-col gap-4">
-            <h2 className="text-headline-md font-bold text-on-surface flex items-center gap-2">
-              <FileCode className="text-error w-6 h-6" /> Şübhəli Mətn Fraqmenti
-            </h2>
-          </div>
-          <Button
-            variant="primary"
-            size="md"
-            onClick={() => navigate(`/comparison/${analysis.documentId}`)}
-            icon={<FileCode className="w-4 h-4" />}
-            className="shadow-md hover:shadow-lg transition-all"
-          >
-            {t('textComparisonBtn')}
-          </Button>
-        </div>
-        
-        {/* Mock Image Representation */}
-        <div 
-          className="w-full rounded-2xl overflow-hidden border border-outline-variant/60 shadow-md cursor-pointer hover:shadow-lg transition-all hover:ring-2 hover:ring-brand-blue/20"
-          onClick={() => setIsMockupModalOpen(true)}
-        >
-          {/* Top mock header */}
-          <div className="bg-surface-container-lowest px-4 py-3 border-b border-outline-variant/40 flex items-center gap-2">
-            <div className="flex gap-1.5">
-              <div className="w-3 h-3 rounded-full bg-red-400"></div>
-              <div className="w-3 h-3 rounded-full bg-amber-400"></div>
-              <div className="w-3 h-3 rounded-full bg-green-400"></div>
+      {/* Suspicious Text Highlight (Only rendered if snippets exist) */}
+      {analysis.flaggedSnippets && analysis.flaggedSnippets.length > 0 && (
+        <section className="flex flex-col gap-4">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-outline-variant/30 pb-4">
+            <div>
+              <h2 className="text-headline-md font-bold text-on-surface flex items-center gap-2">
+                <FileCode className="text-error w-6 h-6" /> Şübhəli Mətn Fraqmenti
+              </h2>
             </div>
-            <div className="mx-auto bg-surface-container-low px-24 py-1.5 rounded-md text-xs font-medium text-on-surface-variant flex items-center gap-2">
-               Aşkarlandı: Səhifə {analysis.flaggedMetadata.pageNumber}
+            
+            <div className="flex flex-wrap items-center gap-3">
+              <Button
+                variant="outline"
+                size="md"
+                onClick={handleCleanInjection}
+                disabled={isCleaning}
+                icon={isCleaning ? <Sparkles className="w-4 h-4 animate-spin" /> : <Eraser className="w-4 h-4 text-brand-blue" />}
+                className="shadow-sm hover:shadow transition-all"
+              >
+                {isCleaning ? 'Təmizlənir...' : 'Təmizlə'}
+              </Button>
+              <Button
+                variant="outline"
+                size="md"
+                onClick={handleBlock}
+                disabled={isBlocked}
+                icon={<ShieldOff className="w-4 h-4 text-error" />}
+                className="shadow-sm hover:shadow transition-all text-error border-red-200 hover:bg-red-50"
+              >
+                {isBlocked ? 'Bloklandı' : 'Blokla'}
+              </Button>
+              <Button
+                variant="primary"
+                size="md"
+                onClick={() => navigate(`/comparison/${analysis.documentId}`)}
+                icon={<FileCode className="w-4 h-4" />}
+                className="shadow-md hover:shadow-lg transition-all"
+              >
+                {t('textComparisonBtn')}
+              </Button>
             </div>
           </div>
           
-          <div className="bg-[#F8F9FA] p-8 flex justify-center">
-             <div className="bg-white max-w-2xl w-full p-8 shadow-sm rounded-sm border border-gray-200 text-center">
-               
-               <div className="relative inline-block my-2">
-                 <span className="absolute -inset-1 bg-yellow-200/80 skew-x-[-15deg] transform"></span>
-                 <span className="relative font-serif font-bold text-gray-900 text-lg leading-relaxed z-10 px-1">
-                   {analysis.flaggedSnippet}
-                 </span>
-               </div>
-               
-             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Mockup Modal */}
-      {isMockupModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-10" onClick={() => setIsMockupModalOpen(false)}>
-          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm transition-opacity duration-300"></div>
-          <div 
-            className="relative z-10 w-full max-w-5xl max-h-[90vh] overflow-hidden rounded-2xl shadow-2xl animate-in fade-in zoom-in-95 duration-200 cursor-auto"
-            onClick={e => e.stopPropagation()}
-          >
-            <div className="bg-surface-container-lowest px-4 py-3 border-b border-outline-variant/40 flex items-center justify-between">
-              <div className="flex gap-1.5 w-20">
+          {/* Static Representation Card (No Popup/Modal) */}
+          <div className="w-full rounded-2xl overflow-hidden border border-outline-variant/60 shadow-sm bg-white">
+            {/* Top mock header */}
+            <div className="bg-surface-container-lowest px-4 py-3 border-b border-outline-variant/40 flex items-center gap-2">
+              <div className="flex gap-1.5">
                 <div className="w-3 h-3 rounded-full bg-red-400"></div>
                 <div className="w-3 h-3 rounded-full bg-amber-400"></div>
                 <div className="w-3 h-3 rounded-full bg-green-400"></div>
               </div>
-              <div className="bg-surface-container-low px-8 sm:px-24 py-1.5 rounded-md text-xs font-medium text-on-surface-variant flex items-center gap-2">
-                 Aşkarlandı: Səhifə {analysis.flaggedMetadata.pageNumber}
-              </div>
-              <div className="w-20 flex justify-end">
-                <button 
-                  onClick={() => setIsMockupModalOpen(false)}
-                  className="w-8 h-8 rounded-full hover:bg-surface-container-high flex items-center justify-center text-on-surface-variant transition-colors"
-                >
-                  ✕
-                </button>
+              <div className="mx-auto bg-surface-container-low px-24 py-1.5 rounded-md text-xs font-medium text-on-surface-variant flex items-center gap-2">
+                 Aşkarlandı: Səhifə {analysis.flaggedMetadata?.pageNumber || 1}
               </div>
             </div>
             
-            <div className="bg-[#F8F9FA] p-8 md:p-16 flex items-center justify-center flex-1 overflow-y-auto">
-               <div className="bg-white w-full max-w-4xl p-8 md:p-16 shadow-sm rounded-sm border border-gray-200 text-center mx-auto">
-                 <div className="relative inline-block my-2">
-                   <span className="absolute -inset-1 bg-yellow-200/80 skew-x-[-15deg] transform"></span>
-                   <span className="relative font-serif font-bold text-gray-900 text-lg sm:text-xl md:text-2xl leading-relaxed z-10 px-2">
-                     {analysis.flaggedSnippet}
-                   </span>
-                 </div>
+            <div className="bg-[#F8F9FA] p-8 flex justify-center">
+               <div className="bg-white max-w-2xl w-full p-8 shadow-sm rounded-sm border border-gray-200 text-center">
+                 {analysis.flaggedSnippets.map((snippet: string, idx: number) => (
+                    <div key={idx} className="relative inline-block my-2 mx-2">
+                      <span className="absolute -inset-1 bg-yellow-200/80 skew-x-[-15deg] transform"></span>
+                      <span className="relative font-serif font-bold text-gray-900 text-lg leading-relaxed z-10 px-1">
+                        {snippet}
+                      </span>
+                    </div>
+                  ))}
                </div>
             </div>
           </div>
-        </div>
+        </section>
       )}
     </div>
   );
 };
 
 export default AnalysisResultPage;
+

@@ -17,6 +17,48 @@ interface AttachedFile {
   extractedText?: string;
 }
 
+const THINKING_STEPS = [
+  'MyGuard AI sənəd və mətn strukturlarını analiz edir...',
+  'Prompt injection və şübhəli fraqmentlər yoxlanılır...',
+  'Layer 1 OCR və PDF daxili qat fərqlilikləri müqayisə olunur...',
+  'Layer 2 ML classifier təhlükəsizlik qaydalarını qiymətləndirir...',
+  'Layer 3 LLM tərəfindən yekun təhlükəsizlik hesabatı hazırlanır...'
+];
+
+export const ThinkingIndicator: React.FC = () => {
+  const [stepIndex, setStepIndex] = useState(0);
+  const [fade, setFade] = useState(true);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setFade(false);
+      setTimeout(() => {
+        setStepIndex((prev) => (prev + 1) % THINKING_STEPS.length);
+        setFade(true);
+      }, 250);
+    }, 3200);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="flex items-center gap-3 p-4 rounded-2xl bg-surface-container-low border border-outline-variant/60 max-w-lg shadow-sm">
+      <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-brand-blue to-brand-purple p-0.5 shadow-sm shrink-0 animate-spin">
+        <div className="w-full h-full rounded-[10px] bg-white flex items-center justify-center text-brand-blue">
+          <Sparkles className="w-4 h-4 text-brand-blue" />
+        </div>
+      </div>
+      <span
+        className={`text-xs font-semibold text-on-surface-variant transition-opacity duration-300 ${
+          fade ? 'opacity-100' : 'opacity-0'
+        }`}
+      >
+        {THINKING_STEPS[stepIndex]}
+      </span>
+    </div>
+  );
+};
+
 // Global state to persist chat history and session across route changes without a Context provider
 let globalMessages: AiMessage[] = [];
 let globalSessionId: string | undefined = undefined;
@@ -181,7 +223,7 @@ export const AssistantPage: React.FC = () => {
     userScrolledUp.current = false;
     const userBlocks: MessageBlock[] = [];
     
-    let combinedQuery = query;
+    let firstAttachedDoc: { fileName: string; text: string } | undefined = undefined;
 
     if (attachedFiles.length > 0) {
       attachedFiles.forEach((file) => {
@@ -192,8 +234,11 @@ export const AssistantPage: React.FC = () => {
           url: '#'
         });
         
-        if (file.extractedText) {
-            combinedQuery += `\n${file.name}?${file.extractedText}`;
+        if (file.extractedText && !firstAttachedDoc) {
+          firstAttachedDoc = {
+            fileName: file.name,
+            text: file.extractedText
+          };
         }
       });
     }
@@ -225,8 +270,9 @@ export const AssistantPage: React.FC = () => {
       const response = await chatApi.sendMessage({
         chatMode: 'LARGE_CHAT',
         screenDestination: 'AI_SCREEN',
-        message: combinedQuery,
-        sessionId: currentSessionId
+        message: query,
+        sessionId: currentSessionId,
+        attachedDocument: firstAttachedDoc
       });
 
       if (response && response.blocks) {
@@ -346,16 +392,7 @@ export const AssistantPage: React.FC = () => {
             </div>
           ))}
 
-          {isThinking && (
-            <div className="flex items-center gap-3 p-4 rounded-2xl bg-surface-container-low border border-outline-variant/60 max-w-md animate-pulse shadow-xs">
-              <div className="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center text-brand-blue shrink-0">
-                <Sparkles className="w-4 h-4 animate-spin" />
-              </div>
-              <span className="text-xs font-semibold text-on-surface-variant">
-                MyGuard AI analiz edir və hesabat hazırlayır...
-              </span>
-            </div>
-          )}
+          {isThinking && <ThinkingIndicator />}
 
           {/* Spacer to push the scroll target above the floating input bar */}
           <div className="h-40 pointer-events-none" />

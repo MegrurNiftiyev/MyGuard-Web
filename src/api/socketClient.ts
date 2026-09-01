@@ -26,7 +26,7 @@ export type ScanStepName =
   | 'PROMPT_INJECTION_ANALYSIS'
   | 'RISK_ASSESSMENT';
 
-export type StepStatusState = 'pending' | 'active' | 'completed' | 'failed' | 'error';
+export type StepStatusState = 'pending' | 'active' | 'completed' | 'failed' | 'error' | 'warning';
 
 export interface ScanSocketEvent {
   response?: 'success' | 'error';

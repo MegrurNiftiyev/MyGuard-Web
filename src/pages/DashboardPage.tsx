@@ -12,6 +12,15 @@ import { Chip } from '../components/ui/Chip';
 import { documentsApi } from '../api/documentsApi';
 import { chatApi } from '../api/chatApi';
 
+const decodeFileName = (text: string) => {
+  if (!text) return text;
+  try {
+    return decodeURIComponent(escape(text));
+  } catch {
+    return text;
+  }
+};
+
 export const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
@@ -333,21 +342,24 @@ export const DashboardPage: React.FC = () => {
               </div>
               
               <div className="divide-y divide-outline-variant/60">
-                {documents.slice(0, 3).map((doc) => (
+                {documents.slice(0, 5).map((doc) => (
                   <div 
                     key={doc.id} 
                     onClick={() => navigate(`/analysis/${doc.id}`)} 
-                    className="flex flex-col md:grid md:grid-cols-12 gap-3 md:gap-4 px-4 sm:px-6 py-4 items-start md:items-center hover:bg-surface-bright transition-colors cursor-pointer group relative"
+                    className="flex flex-col md:grid md:grid-cols-12 gap-3 md:gap-4 px-4 sm:px-6 py-4 items-start md:items-center hover:bg-surface-container-low transition-colors cursor-pointer group relative"
                   >
-                    {/* Column 1: Document Name & Icon */}
+                    {/* Column 1: Document */}
                     <div className="w-full md:col-span-5 flex items-center justify-between md:justify-start gap-3.5 min-w-0">
                       <div className="flex items-center gap-3.5 min-w-0">
                         <div className="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center shrink-0">
-                          <FileText className="w-5 h-5 text-tertiary group-hover:text-brand-blue transition-colors" />
+                          <FileText className="w-5 h-5 text-on-surface-variant group-hover:text-brand-blue transition-colors" />
                         </div>
                         <div className="min-w-0">
-                          <div className="text-title-md font-medium text-on-surface truncate group-hover:text-brand-blue transition-colors">
-                            {doc.name}
+                          <div className="text-title-lg font-medium text-on-surface truncate group-hover:text-brand-blue transition-colors font-sans" style={{ fontFamily: "'Inter', system-ui, -apple-system, sans-serif" }}>
+                            {decodeFileName(doc.name)}
+                          </div>
+                          <div className="text-label-sm text-on-surface-variant/70">
+                            Category: {doc.category || 'DOCUMENT'}
                           </div>
                         </div>
                       </div>
@@ -357,7 +369,7 @@ export const DashboardPage: React.FC = () => {
                          <Chip status={doc.status} />
                          {doc.riskScore > 0 && (
                            <span className={`font-semibold text-[11px] ${doc.riskScore >= 70 ? 'text-error' : doc.riskScore >= 40 ? 'text-warning' : 'text-success'}`}>
-                             {doc.riskScore}/100
+                             Xal: {doc.riskScore}/100
                            </span>
                          )}
                       </div>
@@ -365,12 +377,17 @@ export const DashboardPage: React.FC = () => {
 
                     {/* Column 2: Date & Time (Desktop) */}
                     <div className="hidden md:block col-span-3 text-label-md text-on-surface-variant">
+                      <div className="font-medium text-on-surface">{(doc as any).department || 'Təhlükəsizlik İdarəsi'}</div>
                       <div className="text-label-sm text-on-surface-variant/70">{doc.uploadTime}</div>
                     </div>
 
                     {/* Mobile-only additional details row */}
                     <div className="flex md:hidden items-center gap-3 text-xs text-on-surface-variant/80 pl-[54px] w-full mt-1">
                       <span>{doc.uploadTime}</span>
+                      <span>•</span>
+                      <span className="truncate">{(doc as any).department || 'Təhlükəsizlik'}</span>
+                      <span>•</span>
+                      <span>{doc.size}</span>
                     </div>
 
                     {/* Column 3: Status (Desktop) */}

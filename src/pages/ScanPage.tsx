@@ -50,6 +50,7 @@ export const ScanPage: React.FC = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const dragCounter = useRef(0);
+  const [isConfidential, setIsConfidential] = useState(false);
 
   const [steps, setSteps] = useState(
     globalSteps || DEFAULT_SCAN_STEPS.map((s, i) => ({
@@ -79,7 +80,7 @@ export const ScanPage: React.FC = () => {
   const processFile = async (file: File) => {
     setIsUploading(true);
     try {
-      const res = await documentsApi.uploadDocument(file);
+      const res = await documentsApi.uploadDocument(file, isConfidential);
       const newDocId = res.document?.id || `doc-${Date.now()}`;
       navigate(`/scan?docId=${newDocId}&name=${encodeURIComponent(file.name)}`);
     } catch (err) {
@@ -136,7 +137,7 @@ export const ScanPage: React.FC = () => {
       window.removeEventListener('dragover', handleDragOver);
       window.removeEventListener('drop', handleDrop);
     };
-  }, []);
+  }, [isConfidential]);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -177,27 +178,55 @@ export const ScanPage: React.FC = () => {
         const activeIdx = stepNameMap[data.step] ?? currentStepIndex;
         setCurrentStepIndex(activeIdx);
 
-        if (activeIdx >= 6 || data.fileData?.currentStep === 'COMPLETED') {
-          setIsScanning(false);
-        }
+        setSteps((prevSteps) => {
+          let isFinished = false;
+          if (data.step === 'COMPLETED' || data.fileData?.currentStep === 'COMPLETED') {
+            isFinished = true;
+          }
 
-        setSteps((prevSteps) =>
-          prevSteps.map((step, idx) => {
+          const newSteps = prevSteps.map((step, idx) => {
             if (idx < activeIdx) {
-              return { ...step, status: 'completed' as StepStatus };
+              let newStatus = step.status;
+              if (newStatus !== 'warning' && newStatus !== 'failed') {
+                newStatus = 'completed';
+              }
+              return { ...step, status: newStatus as StepStatus };
             }
             if (idx === activeIdx) {
               let status: StepStatus = 'processing';
               if (data.fileData?.stepStatus === 'failed') {
                 status = 'failed';
+              } else if (data.response === 'error' || data.fileData?.stepStatus === 'warning') {
+                status = 'warning';
               } else if (data.fileData?.stepStatus === 'completed' || data.fileData?.currentStep === 'COMPLETED') {
-                status = 'completed';
+                if (data.step === 'TEXT_COMPARISON' && data.fileData?.layer1_ocrTextMatch?.status === 'suspicious') {
+                  status = 'warning';
+                } else if (data.step === 'HIDDEN_TEXT_DETECTION' && data.fileData?.layer1_ocrTextMatch?.hiddenTextDetected) {
+                  status = 'warning';
+                } else if (data.step === 'PROMPT_INJECTION_ANALYSIS' && (data.fileData?.layer2_classification?.label === 'suspicious' || data.fileData?.layer2_classification?.label === 'injection' || data.fileData?.isContainInjection)) {
+                  status = 'warning';
+                } else if (data.step === 'RISK_ASSESSMENT' && (data.fileData?.finalStatus === 'suspicious' || data.fileData?.finalStatus === 'high_risk')) {
+                  status = 'warning';
+                } else {
+                  status = 'completed';
+                }
               }
+
+              if (idx === 6 && (status === 'completed' || status === 'warning' || status === 'failed')) {
+                isFinished = true;
+              }
+
               return { ...step, status, description: data.message || step.description };
             }
             return { ...step, status: 'pending' as StepStatus };
-          })
-        );
+          });
+
+          if (isFinished) {
+            setIsScanning(false);
+          }
+
+          return newSteps;
+        });
       }
     });
 
@@ -240,12 +269,29 @@ export const ScanPage: React.FC = () => {
 
         {/* Header spanning full width */}
         <header className="lg:col-span-12 mb-2">
-          <h1 className="text-headline-lg-mobile md:text-headline-lg font-bold text-on-surface mb-2">
-            {t('scanTitle') || 'Real-Time Sənəd Skanı'}
-          </h1>
-          <p className="text-body-md text-on-surface-variant">
-            Skan ediləcək sənədi seçin və 7 mərhələli təhlükəsizlik borusunun fəaliyyətini izləyin
-          </p>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+             <div>
+               <h1 className="text-headline-lg-mobile md:text-headline-lg font-bold text-on-surface mb-2">
+                 {t('scanTitle') || 'Real-Time Sənəd Skanı'}
+               </h1>
+               <p className="text-body-md text-on-surface-variant">
+                 Skan ediləcək sənədi seçin və 7 mərhələli təhlükəsizlik borusunun fəaliyyətini izləyin
+               </p>
+             </div>
+             
+             <div className="flex items-center gap-2 bg-surface-container-low px-4 py-2 rounded-xl border border-outline-variant shadow-sm hover:shadow transition-shadow">
+                <input 
+                  type="checkbox" 
+                  id="confidential-switch" 
+                  checked={isConfidential}
+                  onChange={(e) => setIsConfidential(e.target.checked)}
+                  className="w-5 h-5 accent-brand-blue cursor-pointer rounded"
+                />
+                <label htmlFor="confidential-switch" className="text-label-md font-bold text-on-surface cursor-pointer select-none">
+                  Məxfi Sənəd
+                </label>
+             </div>
+          </div>
         </header>
 
         {/* Left Column: Upload Target Card */}
@@ -410,7 +456,7 @@ export const ScanPage: React.FC = () => {
           </div>
 
           <div className="mt-10 flex justify-end gap-4 border-t border-outline-variant pt-6">
-            <Button variant="outline" size="md" onClick={() => navigate('/documents')}>
+            <Button variant="outline" size="md" onClick={clearGlobalState}>
               Ləğv Et
             </Button>
             {!isScanning && (

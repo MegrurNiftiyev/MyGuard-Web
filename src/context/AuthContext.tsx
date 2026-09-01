@@ -57,7 +57,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, []);
 
   const login = async (payload: LoginPayload) => {
-    setIsLoading(true);
     try {
       const res = await authApi.login(payload);
       if (res && res.token && res.user) {
@@ -70,13 +69,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       console.warn('Backend login error:', err);
       // Re-throw so LoginPage handles and displays the error message banner
       throw err;
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const register = async (payload: RegisterPayload) => {
-    setIsLoading(true);
     try {
       const res = await authApi.register(payload);
       if (res && res.token && res.user) {
@@ -89,8 +85,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       console.warn('Backend register error:', err);
       // Re-throw so LoginPage handles and displays the error message banner
       throw err;
-    } finally {
-      setIsLoading(false);
     }
   };
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Cpu, Server, CheckCircle2, Lock, Globe, RefreshCw } from 'lucide-react';
+import { Cpu, Server, CheckCircle2, Lock, Globe, RefreshCw, Sparkles } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { mockModelConfigs, mockPipelines } from '../data/mockData';
@@ -28,6 +28,23 @@ export const ModelManagementPage: React.FC = () => {
     fetchModels();
   }, []);
 
+  const [isTraining, setIsTraining] = useState(false);
+  const [trainingNotice, setTrainingNotice] = useState<string | null>(null);
+
+  const handleTrainModel = async () => {
+    setIsTraining(true);
+    setTrainingNotice(null);
+    try {
+      const res = await adminApi.triggerModelTraining();
+      setTrainingNotice(res.message || 'Model təlimi uğurla başladıldı.');
+    } catch (err: any) {
+      console.warn('Model training error:', err);
+      setTrainingNotice(err.message || 'Model təlimini başlatmaq mümkün olmadı.');
+    } finally {
+      setIsTraining(false);
+    }
+  };
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -51,6 +68,16 @@ export const ModelManagementPage: React.FC = () => {
           </span>
         </div>
       </div>
+
+      {trainingNotice && (
+        <div className="p-4 rounded-xl bg-blue-50 border border-blue-200 text-blue-900 text-body-md flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-brand-blue" />
+            <span>{trainingNotice}</span>
+          </div>
+          <button onClick={() => setTrainingNotice(null)} className="text-xs font-bold hover:underline">Bağla</button>
+        </div>
+      )}
 
       {/* Operating Mode Selector */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -216,9 +243,14 @@ export const ModelManagementPage: React.FC = () => {
             <h3 className="text-title-lg font-bold text-on-surface">Mövcud AI Modellər və Server Statusları</h3>
             <p className="text-label-md text-on-surface-variant">Sənəd emal mühərriklərinin texniki göstəriciləri</p>
           </div>
-          <Button variant="outline" size="sm" icon={<RefreshCw className="w-4 h-4" />} onClick={fetchModels}>
-            Statusları Yoxla
-          </Button>
+          <div className="flex items-center gap-3">
+            <Button variant="outline" size="sm" icon={<Sparkles className="w-4 h-4 text-brand-blue" />} onClick={handleTrainModel} disabled={isTraining}>
+              {isTraining ? 'Təlim Başladılır...' : 'Modeli Təlim Et'}
+            </Button>
+            <Button variant="outline" size="sm" icon={<RefreshCw className="w-4 h-4" />} onClick={fetchModels}>
+              Statusları Yoxla
+            </Button>
+          </div>
         </div>
 
         <div className="divide-y divide-outline-variant">

@@ -1,5 +1,5 @@
-import React from 'react';
-import { ShieldAlert, Shield, User, Sparkles, Home } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ShieldAlert, Shield, User, Sparkles, Home, Smartphone } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
@@ -17,6 +17,33 @@ export const TopBar: React.FC = () => {
       .join('')
       .substring(0, 2)
       .toUpperCase();
+  };
+
+  const [deferredPrompt, setDeferredPrompt] = React.useState<any>(null);
+  const [isInstallable, setIsInstallable] = React.useState(false);
+
+  React.useEffect(() => {
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setIsInstallable(true);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setIsInstallable(false);
+    }
+    setDeferredPrompt(null);
   };
 
   return (
@@ -37,6 +64,17 @@ export const TopBar: React.FC = () => {
 
         {/* Right: Controls & Profile Settings */}
         <div className="flex items-center gap-3">
+          {/* PWA Install App Button */}
+          {isInstallable && (
+            <button
+              onClick={handleInstallClick}
+              className="flex items-center gap-1.5 bg-gradient-to-r from-brand-blue to-brand-purple text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-md hover:opacity-95 transition-all cursor-pointer animate-pulse"
+              title="Tətbiqi Telefona / Kompüterə Yüklə"
+            >
+              <Smartphone className="w-4 h-4" />
+              <span>Tətbiqi Yüklə</span>
+            </button>
+          )}
 
           {/* AI Assistant / Home Button (Mobile Only) */}
           {location.pathname.startsWith('/assistant') ? (

@@ -74,6 +74,7 @@ export interface DetailedAnalysis {
   ocrText: string;
   pdfTextLayer: string;
   flaggedSnippet: string;
+  flaggedSnippets?: string[];
   flaggedMetadata: {
     pageNumber: number;
     visibilityType: string;
@@ -247,3 +248,4 @@ export interface Intervention {
 
 export type AiMessage = ChatMessage;
 export type AiMessageBlock = MessageBlock;
+
