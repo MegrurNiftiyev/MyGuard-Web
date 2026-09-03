@@ -144,39 +144,75 @@ export const AnalysisResultPage: React.FC = () => {
     return { text: 'text-emerald-500', bg: 'bg-emerald-100', border: 'border-emerald-500', borderT: 'border-t-emerald-500' };
   };
 
-  const highlightSnippet = (fullText: string, snippets?: string[]) => {
-    if (!fullText) return <span className="opacity-50 italic">Mətn tapılmadı</span>;
-    if (!snippets || snippets.length === 0) return <span>{fullText}</span>;
+  const highlightDiff = (ocrText: string, pdfText: string, snippets?: string[]) => {
+    if (!pdfText) return <span className="opacity-50 italic">PDF daxili mətn qatı mövcud deyil</span>;
 
-    const validSnippets = snippets.filter(s => s && s.trim().length > 0);
-    if (validSnippets.length === 0) return <span>{fullText}</span>;
+    const validSnippets = (snippets || []).filter(s => s && s.trim().length > 0 && s.trim() !== pdfText.trim());
 
-    let elements: (string | React.ReactNode)[] = [fullText];
+    if (validSnippets.length > 0) {
+      let elements: (string | React.ReactNode)[] = [pdfText];
 
-    validSnippets.forEach((snippet) => {
-      const nextElements: (string | React.ReactNode)[] = [];
-      elements.forEach((item) => {
-        if (typeof item !== 'string') {
-          nextElements.push(item);
-          return;
-        }
-
-        const parts = item.split(snippet);
-        parts.forEach((part, i) => {
-          if (part) nextElements.push(part);
-          if (i < parts.length - 1) {
-            nextElements.push(
-              <mark key={`${i}-${snippet.slice(0, 5)}`} className="bg-yellow-300 text-gray-900 font-bold px-1.5 py-0.5 rounded shadow-2xs inline leading-relaxed">
-                {snippet}
-              </mark>
-            );
+      validSnippets.forEach((snippet) => {
+        const nextElements: (string | React.ReactNode)[] = [];
+        elements.forEach((item) => {
+          if (typeof item !== 'string') {
+            nextElements.push(item);
+            return;
           }
-        });
-      });
-      elements = nextElements;
-    });
 
-    return <>{elements}</>;
+          const parts = item.split(snippet);
+          parts.forEach((part, i) => {
+            if (part) nextElements.push(part);
+            if (i < parts.length - 1) {
+              nextElements.push(
+                <mark key={`${i}-${snippet.slice(0, 5)}`} className="bg-yellow-300 text-gray-900 font-bold px-1.5 py-0.5 rounded shadow-2xs inline leading-relaxed">
+                  {snippet}
+                </mark>
+              );
+            }
+          });
+        });
+        elements = nextElements;
+      });
+
+      return <>{elements}</>;
+    }
+
+    if (!ocrText || ocrText.trim() === pdfText.trim()) {
+      return <span>{pdfText}</span>;
+    }
+
+    const ocrCleanWords = new Set(
+      ocrText
+        .toLowerCase()
+        .replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, "")
+        .split(/\s+/)
+        .filter(Boolean)
+    );
+
+    const pdfTokens = pdfText.split(/(\s+)/);
+
+    return (
+      <>
+        {pdfTokens.map((token, idx) => {
+          const cleanToken = token.toLowerCase().replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, "").trim();
+
+          if (!cleanToken) {
+            return <React.Fragment key={idx}>{token}</React.Fragment>;
+          }
+
+          if (ocrCleanWords.has(cleanToken)) {
+            return <React.Fragment key={idx}>{token}</React.Fragment>;
+          }
+
+          return (
+            <mark key={idx} className="bg-yellow-300 text-gray-900 font-bold px-1.5 py-0.5 rounded shadow-2xs inline">
+              {token}
+            </mark>
+          );
+        })}
+      </>
+    );
   };
 
   if (isLoading) {
@@ -476,7 +512,7 @@ export const AnalysisResultPage: React.FC = () => {
             </div>
             <div className="p-5 rounded-xl bg-[#F8F9FA] border border-error/20 font-serif text-sm text-gray-800 whitespace-pre-wrap leading-relaxed min-h-[220px] max-h-[360px] overflow-y-auto">
               {analysis.pdfTextLayer ? (
-                <div className="opacity-90">{highlightSnippet(analysis.pdfTextLayer, analysis.flaggedSnippets)}</div>
+                <div className="opacity-90">{highlightDiff(analysis.ocrText, analysis.pdfTextLayer, analysis.flaggedSnippets)}</div>
               ) : (
                 <div className="opacity-50 italic text-center py-10">PDF daxili mətn qatı mövcud deyil</div>
               )}

@@ -46,39 +46,75 @@ export const TextComparisonPage: React.FC = () => {
     fetchComparison();
   }, [id]);
 
-  const highlightSnippet = (fullText: string, snippets?: string[]) => {
-    if (!fullText) return <span className="opacity-50 italic">Mətn tapılmadı</span>;
-    if (!snippets || snippets.length === 0) return <span>{fullText}</span>;
-    
-    const validSnippets = snippets.filter(s => s && s.trim().length > 0);
-    if (validSnippets.length === 0) return <span>{fullText}</span>;
+  const highlightDiff = (ocrText: string, pdfText: string, snippets?: string[]) => {
+    if (!pdfText) return <span className="opacity-50 italic">PDF daxili mətn qatı mövcud deyil</span>;
 
-    let elements: (string | React.ReactNode)[] = [fullText];
+    const validSnippets = (snippets || []).filter(s => s && s.trim().length > 0 && s.trim() !== pdfText.trim());
 
-    validSnippets.forEach((snippet) => {
-      const nextElements: (string | React.ReactNode)[] = [];
-      elements.forEach((item) => {
-        if (typeof item !== 'string') {
-          nextElements.push(item);
-          return;
-        }
+    if (validSnippets.length > 0) {
+      let elements: (string | React.ReactNode)[] = [pdfText];
 
-        const parts = item.split(snippet);
-        parts.forEach((part, i) => {
-          if (part) nextElements.push(part);
-          if (i < parts.length - 1) {
-            nextElements.push(
-              <mark key={`${i}-${snippet.slice(0, 5)}`} className="bg-yellow-300 text-gray-900 font-bold px-1.5 py-0.5 rounded shadow-2xs inline leading-relaxed">
-                {snippet}
-              </mark>
-            );
+      validSnippets.forEach((snippet) => {
+        const nextElements: (string | React.ReactNode)[] = [];
+        elements.forEach((item) => {
+          if (typeof item !== 'string') {
+            nextElements.push(item);
+            return;
           }
-        });
-      });
-      elements = nextElements;
-    });
 
-    return <>{elements}</>;
+          const parts = item.split(snippet);
+          parts.forEach((part, i) => {
+            if (part) nextElements.push(part);
+            if (i < parts.length - 1) {
+              nextElements.push(
+                <mark key={`${i}-${snippet.slice(0, 5)}`} className="bg-yellow-300 text-gray-900 font-bold px-1.5 py-0.5 rounded shadow-2xs inline leading-relaxed">
+                  {snippet}
+                </mark>
+              );
+            }
+          });
+        });
+        elements = nextElements;
+      });
+
+      return <>{elements}</>;
+    }
+
+    if (!ocrText || ocrText.trim() === pdfText.trim()) {
+      return <span>{pdfText}</span>;
+    }
+
+    const ocrCleanWords = new Set(
+      ocrText
+        .toLowerCase()
+        .replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, "")
+        .split(/\s+/)
+        .filter(Boolean)
+    );
+
+    const pdfTokens = pdfText.split(/(\s+)/);
+
+    return (
+      <>
+        {pdfTokens.map((token, idx) => {
+          const cleanToken = token.toLowerCase().replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, "").trim();
+
+          if (!cleanToken) {
+            return <React.Fragment key={idx}>{token}</React.Fragment>;
+          }
+
+          if (ocrCleanWords.has(cleanToken)) {
+            return <React.Fragment key={idx}>{token}</React.Fragment>;
+          }
+
+          return (
+            <mark key={idx} className="bg-yellow-300 text-gray-900 font-bold px-1.5 py-0.5 rounded shadow-2xs inline">
+              {token}
+            </mark>
+          );
+        })}
+      </>
+    );
   };
 
   const handleReviewFeedback = async (isInjection: boolean) => {
@@ -251,7 +287,7 @@ export const TextComparisonPage: React.FC = () => {
                 <div className="h-4 bg-error/10 rounded w-2/3"></div>
               </div>
             ) : liveComparison?.pdfTextLayer ? (
-              <div className="opacity-90">{highlightSnippet(liveComparison.pdfTextLayer, liveComparison.flaggedSnippets)}</div>
+              <div className="opacity-90">{highlightDiff(liveComparison.ocrText || '', liveComparison.pdfTextLayer, liveComparison.flaggedSnippets)}</div>
             ) : (
               <div className="opacity-50 italic text-center mt-10">PDF daxili mətn qatı tapılmadı</div>
             )}
