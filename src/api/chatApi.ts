@@ -67,9 +67,45 @@ export const chatApi = {
   },
 
   async sendMessage(payload: SendMessagePayload): Promise<ChatMessage> {
-    return apiClient<ChatMessage>('/chat/message', {
+    const rawRes = await apiClient<any>('/chat/message', {
       method: 'POST',
       body: JSON.stringify(payload),
     });
+
+    // 1) Handle nested data wrapper if present
+    const data = rawRes?.data || (rawRes?.message && typeof rawRes.message === 'object' ? rawRes.message : rawRes);
+
+    // 2) If response already contains structured blocks array, return formatted ChatMessage
+    if (data?.blocks && Array.isArray(data.blocks) && data.blocks.length > 0) {
+      return {
+        id: data.id || `msg-${Date.now()}`,
+        sender: data.sender || 'assistant',
+        timestamp: data.timestamp || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        blocks: data.blocks
+      };
+    }
+
+    // 3) Extract text string from backend response keys: text, message, reply, content, answer
+    const textContent =
+      (typeof data?.text === 'string' && data.text) ||
+      (typeof data?.message === 'string' && data.message) ||
+      (typeof data?.reply === 'string' && data.reply) ||
+      (typeof data?.content === 'string' && data.content) ||
+      (typeof data?.answer === 'string' && data.answer) ||
+      (typeof rawRes?.text === 'string' && rawRes.text) ||
+      (typeof rawRes?.message === 'string' && rawRes.message) ||
+      'Sistem sorğunuzu emal etdi.';
+
+    return {
+      id: rawRes?.id || `msg-${Date.now()}`,
+      sender: 'assistant',
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      blocks: [
+        {
+          type: 'text',
+          content: textContent
+        }
+      ]
+    };
   }
 };

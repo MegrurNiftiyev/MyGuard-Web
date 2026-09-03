@@ -277,10 +277,8 @@ export const AssistantPage: React.FC = () => {
         attachedDocument: firstAttachedDoc
       });
 
-      if (response && response.blocks) {
+      if (response && response.blocks && response.blocks.length > 0) {
         setMessages((prev) => [...prev, response as unknown as AiMessage]);
-      } else {
-        throw new Error('Səhv və ya boş cavab strukturu alındı.');
       }
     } catch (err: any) {
       console.warn('Live chat request failed:', err);

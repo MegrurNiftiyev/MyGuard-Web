@@ -150,10 +150,8 @@ export const DashboardPage: React.FC = () => {
         screenDestination: 'HOME_SCREEN',
         message: text
       });
-      if (liveRes && liveRes.blocks) {
+      if (liveRes && liveRes.blocks && liveRes.blocks.length > 0) {
         setMessages(prev => [...prev, liveRes as unknown as AiMessage]);
-      } else {
-        throw new Error('Etibarsız cavab alındı');
       }
     } catch (err: any) {
       console.warn('Live chat response error on dashboard:', err);

@@ -81,10 +81,8 @@ export const FloatingAiAssistant: React.FC = () => {
         sessionId: currentSessionId
       });
 
-      if (response && response.blocks) {
+      if (response && response.blocks && response.blocks.length > 0) {
         setMessages((prev) => [...prev, response as unknown as AiMessage]);
-      } else {
-        throw new Error('Səhv və ya boş cavab alındı');
       }
     } catch (err) {
       const fallbackAiMsg: AiMessage = {
