@@ -101,6 +101,53 @@ export const AssistantPage: React.FC = () => {
     scrollToBottom();
   }, [messages, isThinking]);
 
+const extractCleanTextFromFile = async (file: File): Promise<string> => {
+  const ext = file.name.split('.').pop()?.toLowerCase() || '';
+
+  if (['txt', 'json', 'csv', 'md', 'html', 'xml', 'log', 'js', 'ts', 'py', 'css'].includes(ext)) {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        resolve(result || file.name);
+      };
+      reader.onerror = () => resolve(file.name);
+      reader.readAsText(file);
+    });
+  }
+
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const buffer = e.target?.result as ArrayBuffer;
+      if (!buffer) {
+        resolve(file.name);
+        return;
+      }
+
+      const decoder = new TextDecoder('utf-8', { fatal: false });
+      const rawText = decoder.decode(buffer);
+
+      const cleanTokens = rawText
+        .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]/g, ' ')
+        .replace(/<xml[\s\S]*?>/gi, ' ')
+        .replace(/<[^>]+>/g, ' ')
+        .split(/\s+/)
+        .filter((word) => word.length > 1 && !/^[\x00-\x1F\x7F-\xFF]+$/.test(word) && /[\p{L}\p{N}]/u.test(word));
+
+      const extracted = cleanTokens.join(' ').trim();
+      
+      if (extracted.length > 20) {
+        resolve(extracted);
+      } else {
+        resolve(`${file.name} sənədinin daxili mətni (Ölçü: ${(file.size / 1024).toFixed(1)} KB)`);
+      }
+    };
+    reader.onerror = () => resolve(file.name);
+    reader.readAsArrayBuffer(file);
+  });
+};
+
   const formatFileSize = (bytes: number) => {
     if (bytes < 1024) return bytes + ' B';
     if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
@@ -125,12 +172,9 @@ export const AssistantPage: React.FC = () => {
 
     newItems.forEach((item) => {
       if (item.fileObj) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const text = e.target?.result as string;
-          setAttachedFiles(prev => prev.map(f => f.id === item.id ? { ...f, extractedText: text } : f));
-        };
-        reader.readAsText(item.fileObj);
+        extractCleanTextFromFile(item.fileObj).then((cleanText) => {
+          setAttachedFiles(prev => prev.map(f => f.id === item.id ? { ...f, extractedText: cleanText } : f));
+        });
       }
 
       let currentProgress = 15;
