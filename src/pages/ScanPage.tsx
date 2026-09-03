@@ -475,7 +475,7 @@ export const ScanPage: React.FC = () => {
 
           <div className="mt-10 flex justify-end gap-4 border-t border-outline-variant pt-6">
             <Button variant="outline" size="md" onClick={clearGlobalState}>
-              Ləğv Et
+              {isScanning ? 'Ləğv Et' : 'Təmizlə'}
             </Button>
             {!isScanning && (
               <Button variant="primary" size="md" onClick={() => navigate(`/analysis/${activeDocId}`)}>
