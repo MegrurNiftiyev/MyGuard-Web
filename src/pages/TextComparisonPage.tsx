@@ -60,9 +60,9 @@ export const TextComparisonPage: React.FC = () => {
         res.push(part);
         if (i < parts.length - 1) {
           res.push(
-            <span key={i + '-' + snippet.substring(0, 5)} className="relative inline-block mx-1">
-              <span className="absolute -inset-1 bg-red-200/80 skew-x-[-15deg] transform rounded"></span>
-              <span className="relative font-bold text-red-900 z-10 px-1">{snippet}</span>
+            <span key={i + '-' + snippet.substring(0, 5)} className="relative inline-block mx-1.5 my-0.5">
+              <span className="absolute -inset-1 bg-yellow-200/90 skew-x-[-15deg] transform rounded-sm shadow-2xs"></span>
+              <span className="relative font-serif font-bold text-gray-900 z-10 px-1.5">{snippet}</span>
             </span>
           );
         }

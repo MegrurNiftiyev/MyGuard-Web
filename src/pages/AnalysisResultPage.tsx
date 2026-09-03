@@ -32,9 +32,9 @@ const highlightSnippet = (fullText: string, snippets?: string[]) => {
       res.push(part);
       if (i < parts.length - 1) {
         res.push(
-          <span key={i + '-' + snippet.substring(0, 5)} className="relative inline-block mx-1">
-            <span className="absolute -inset-1 bg-red-200/80 skew-x-[-15deg] transform rounded"></span>
-            <span className="relative font-bold text-red-900 z-10 px-1">{snippet}</span>
+          <span key={i + '-' + snippet.substring(0, 5)} className="relative inline-block mx-1.5 my-0.5">
+            <span className="absolute -inset-1 bg-yellow-200/90 skew-x-[-15deg] transform rounded-sm shadow-2xs"></span>
+            <span className="relative font-serif font-bold text-gray-900 z-10 px-1.5">{snippet}</span>
           </span>
         );
       }
@@ -489,16 +489,31 @@ export const AnalysisResultPage: React.FC = () => {
               </div>
             </div>
             
-            <div className="bg-[#F8F9FA] p-6 sm:p-8 flex justify-center">
-               <div className="bg-white max-w-2xl w-full p-6 sm:p-8 shadow-sm rounded-sm border border-gray-200 text-center">
+            <div className="bg-[#F8F9FA] p-6 sm:p-10 flex justify-center">
+               <div className="bg-white max-w-3xl w-full p-8 sm:p-10 shadow-sm rounded-sm border border-gray-200 text-center">
+                 <div className="mb-4 h-3 w-3/4 bg-gray-100 rounded mx-auto"></div>
+                 <div className="mb-6 h-3 w-1/2 bg-gray-100 rounded mx-auto"></div>
+
+                 <p className="font-serif text-gray-700 text-sm sm:text-base leading-relaxed mb-4">
+                   ...sənədin daxili mətn qatında aşkar olunmuş şübhəli fraqment:
+                 </p>
+
                  {analysis.flaggedSnippets.map((snippet: string, idx: number) => (
-                    <div key={idx} className="relative inline-block my-2 mx-2">
-                      <span className="absolute -inset-1 bg-yellow-200/80 skew-x-[-15deg] transform"></span>
-                      <span className="relative font-serif font-bold text-gray-900 text-lg leading-relaxed z-10 px-1">
+                    <div key={idx} className="relative inline-block my-3 mx-2">
+                      {/* Realistic Yellow Highlighter Effect */}
+                      <span className="absolute -inset-1.5 bg-yellow-200/90 skew-x-[-15deg] transform rounded-sm shadow-2xs"></span>
+                      <span className="relative font-serif font-bold text-gray-900 text-lg sm:text-xl leading-relaxed z-10 px-2">
                         {snippet}
                       </span>
                     </div>
                   ))}
+
+                 <p className="font-serif text-gray-700 text-sm sm:text-base leading-relaxed mt-4">
+                   Sənəddən bu gizli fraqmentləri təmizləmək üçün "Təmizlə" düyməsini sıxa bilərsiniz.
+                 </p>
+
+                 <div className="mt-6 h-3 w-2/3 bg-gray-100 rounded mx-auto"></div>
+                 <div className="mt-3 h-3 w-1/3 bg-gray-100 rounded mx-auto"></div>
                </div>
             </div>
           </div>
