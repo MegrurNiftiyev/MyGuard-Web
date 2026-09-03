@@ -11,14 +11,25 @@ import { joinDocumentScanRoom, leaveDocumentScanRoom, ScanEventData } from '../a
 import { documentsApi } from '../api/documentsApi';
 
 const DEFAULT_SCAN_STEPS = [
-  { stepNumber: 1, title: 'Sənəd yükləndi', description: 'Fayl təhlükəsiz sandbox mühitinə daxil olur' },
-  { stepNumber: 2, title: 'PDF Text Extraction', description: 'Daxili mətn qatı və strukturu oxunur' },
-  { stepNumber: 3, title: 'OCR Analysis', description: 'Vizual görüntüdən oxunmuş mətn çıxarılır' },
-  { stepNumber: 4, title: 'Text Comparison', description: 'OCR və PDF mətn qatları fərqləri analiz edilir' },
-  { stepNumber: 5, title: 'Hidden Text Detection', description: 'Görünməyən şrift ölçüləri və opacity 0% mətnlər tapılır' },
-  { stepNumber: 6, title: 'Prompt Injection Analysis', description: 'ML/AI detector tərəfindən override cəhdləri yoxlanılır' },
-  { stepNumber: 7, title: 'Risk Assessment', description: 'Risk balı hesablanır və sənəd statusu müəyyən edilir' }
+  { stepNumber: 1, title: 'Sənədin Yüklənməsi', description: 'Fayl təhlükəsiz sandbox mühitinə daxil edilir...' },
+  { stepNumber: 2, title: 'PDF Mətninin Çıxarılması', description: 'Daxili mətn qatı və strukturu oxunur...' },
+  { stepNumber: 3, title: 'OCR Vizual Analiz', description: 'Vizual görüntüdən insan tərəfindən görünən mətn çıxarılır...' },
+  { stepNumber: 4, title: 'Mətn Müqayisəsi', description: 'OCR və PDF mətn qatları fərqləri analiz edilir...' },
+  { stepNumber: 5, title: 'Gizli Mətn Aşkarlanması', description: 'Görünməyən şrift ölçüləri və opacity 0% mətnləri yoxlanılır...' },
+  { stepNumber: 6, title: 'Prompt Injection Analizi', description: 'ML/AI detektoru tərəfindən override cəhdləri yoxlanılır...' },
+  { stepNumber: 7, title: 'Risk Qiymətləndirilməsi', description: 'Risk balı hesablanır və sənəd statusu müəyyən edilir...' }
 ];
+
+const formatActiveMessage = (msg?: string) => {
+  if (!msg) return msg;
+  return msg
+    .replace(/çıxarıldı/g, 'çıxarılır...')
+    .replace(/oxundu/g, 'oxunur...')
+    .replace(/daxil oldu/g, 'daxil edilir...')
+    .replace(/analiz edildi/g, 'analiz edilir...')
+    .replace(/yoxlanıldı/g, 'yoxlanılır...')
+    .replace(/hesablandı/g, 'hesablanır...');
+};
 
 // Global state to persist scan pipeline across route changes
 let globalDocId: string | null = null;
@@ -216,7 +227,7 @@ export const ScanPage: React.FC = () => {
                 isFinished = true;
               }
 
-              return { ...step, status, description: data.message || step.description };
+              return { ...step, status, description: formatActiveMessage(data.message) || step.description };
             }
             return { ...step, status: 'pending' as StepStatus };
           });
@@ -298,7 +309,7 @@ export const ScanPage: React.FC = () => {
         <div className="lg:col-span-5 flex flex-col gap-6">
           <Card padding="lg" className="shadow-l1 flex flex-col items-center text-center space-y-6">
             <div className="flex items-center justify-between w-full">
-              <h2 className="text-title-lg font-bold text-on-surface">Target File</h2>
+              <h2 className="text-title-lg font-bold text-on-surface">Hədəf Sənəd</h2>
               <span className="bg-surface-container-high text-on-surface-variant text-label-sm px-3 py-1 rounded-full border border-outline-variant font-medium">
                 Gözləmə Rejimi
               </span>
@@ -339,9 +350,9 @@ export const ScanPage: React.FC = () => {
             <div>
               <div className="flex items-center justify-between mb-6 pb-3 border-b border-outline-variant/50">
                 <h2 className="text-title-lg font-bold text-on-surface">
-                  {t('pipelineTitle') || '7 Addımlı Skan Borusu (Pipeline)'}
+                  {t('pipelineTitle') || 'Skan Borusu (7 Mərhələ)'}
                 </h2>
-                <span className="text-label-sm text-on-surface-variant font-mono">Status: İdle</span>
+                <span className="text-label-sm text-on-surface-variant font-mono">Status: Gözləmədə</span>
               </div>
 
               <div className="pl-2 space-y-4">
@@ -398,9 +409,9 @@ export const ScanPage: React.FC = () => {
       <div className="lg:col-span-5 flex flex-col gap-6">
         <Card padding="lg" className="ai-gradient-card shadow-l1 flex flex-col">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-title-lg font-medium text-on-surface">Target File</h2>
+            <h2 className="text-title-lg font-medium text-on-surface">Hədəf Sənəd</h2>
             <span className="bg-primary-container text-on-primary-container text-label-sm px-3 py-1 rounded-full border border-primary-fixed-dim">
-              {isScanning ? 'Real-Time Scanning' : 'Analysis Complete'}
+              {isScanning ? 'Canlı Skan Edilir...' : 'Skan Tamamlandı'}
             </span>
           </div>
           
@@ -425,13 +436,13 @@ export const ScanPage: React.FC = () => {
           <div className="flex flex-col gap-2 mt-auto">
             <div className="flex justify-between items-center">
               <span className="text-label-md font-medium text-on-surface truncate max-w-[200px]">{activeFileName}</span>
-              <span className="text-label-sm text-on-surface-variant">Socket.IO Live</span>
+              <span className="text-label-sm text-on-surface-variant">Canlı Əlaqə</span>
             </div>
             <div className="w-full bg-surface-variant rounded-full h-2 overflow-hidden">
               <div className="bg-brand-blue h-2 rounded-full transition-all duration-500" style={{ width: `${Math.round(((currentStepIndex + 1) / steps.length) * 100)}%` }}></div>
             </div>
             <div className="text-label-sm text-brand-blue text-right mt-1">
-              {Math.round(((currentStepIndex + 1) / steps.length) * 100)}% Complete
+              {Math.round(((currentStepIndex + 1) / steps.length) * 100)}% Tamamlandı
             </div>
           </div>
         </Card>

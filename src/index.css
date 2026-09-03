@@ -150,6 +150,23 @@
   animation: breatheGlow 3s ease-in-out infinite;
 }
 
+/* Gentle Breathe / Pulse Animation for Icon */
+@keyframes iconBreathe {
+  0%, 100% {
+    transform: scale(0.92);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+}
+
+.animate-icon-breathe {
+  animation: iconBreathe 2s ease-in-out infinite;
+}
+
+
 /* AI Gradient Border Card Utility */
 .ai-gradient-card {
   position: relative;

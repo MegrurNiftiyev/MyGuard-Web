@@ -41,6 +41,8 @@ export const ProgressStep: React.FC<ProgressStepProps> = ({
         return 'bg-red-50 border-red-200 text-red-900';
       case 'processing':
         return 'bg-blue-50 border-brand-blue/30 text-blue-900 ring-2 ring-brand-blue/20';
+      default:
+        return 'bg-surface-container-low border-outline-variant text-on-surface-variant';
     }
   };
 
@@ -76,13 +78,15 @@ export const ProgressStep: React.FC<ProgressStepProps> = ({
               status === 'completed' && 'bg-emerald-100 text-emerald-800',
               status === 'warning' && 'bg-amber-100 text-amber-800',
               status === 'failed' && 'bg-red-100 text-red-800',
-              status === 'processing' && 'bg-blue-100 text-blue-800'
+              status === 'processing' && 'bg-blue-100 text-blue-800',
+              status === 'pending' && 'bg-gray-100 text-gray-600'
             )}
           >
             {status === 'completed' && 'Tamamlandı'}
             {status === 'warning' && 'Xəbərdarlıq'}
             {status === 'failed' && 'Xəta'}
-            {status === 'processing' && 'İcraya alındı...'}
+            {status === 'processing' && 'İcraya Alındı...'}
+            {status === 'pending' && 'Gözləyir'}
           </span>
         </div>
         <p className={clsx(

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { FileText, Send, Sparkles, Plus, X, Mic, CheckCircle2, FileCode } from 'lucide-react';
+import { FileText, Send, Sparkles, Plus, X, CheckCircle2, FileCode } from 'lucide-react';
 import { AiMessageWrapper } from '../components/assistant/AiMessageWrapper';
 import { AiMessageRenderer } from '../components/assistant/AiMessageRenderer';
 import { AiMessage, MessageBlock } from '../types';
@@ -42,12 +42,8 @@ export const ThinkingIndicator: React.FC = () => {
   }, []);
 
   return (
-    <div className="flex items-center gap-3 p-4 rounded-2xl bg-surface-container-low border border-outline-variant/60 max-w-lg shadow-sm">
-      <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-brand-blue to-brand-purple p-0.5 shadow-sm shrink-0 animate-spin">
-        <div className="w-full h-full rounded-[10px] bg-white flex items-center justify-center text-brand-blue">
-          <Sparkles className="w-4 h-4 text-brand-blue" />
-        </div>
-      </div>
+    <div className="flex items-center gap-2.5 py-2 px-1 max-w-lg">
+      <Sparkles className="w-5 h-5 text-brand-blue animate-icon-breathe shrink-0" />
       <span
         className={`text-xs font-semibold text-on-surface-variant transition-opacity duration-300 ${
           fade ? 'opacity-100' : 'opacity-0'
@@ -267,11 +263,17 @@ export const AssistantPage: React.FC = () => {
         setSessionId(newSession.id);
       }
 
+      const filesArray = attachedFiles
+        .filter((f) => f.extractedText)
+        .map((f) => ({ name: f.name, content: f.extractedText || '' }));
+
       const response = await chatApi.sendMessage({
         chatMode: 'LARGE_CHAT',
         screenDestination: 'AI_SCREEN',
         message: query,
+        userMessage: query,
         sessionId: currentSessionId,
+        files: filesArray.length > 0 ? filesArray : undefined,
         attachedDocument: firstAttachedDoc
       });
 
@@ -487,13 +489,6 @@ export const AssistantPage: React.FC = () => {
                 }
                 className="flex-1 min-w-0 py-2 sm:py-3 px-1 sm:px-2 bg-transparent text-sm sm:text-body-md text-on-surface focus:outline-none placeholder:text-on-surface-variant/60"
               />
-
-              <button
-                type="button"
-                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full hover:bg-surface-container-high/70 text-on-surface-variant flex items-center justify-center transition-colors shrink-0 cursor-pointer"
-              >
-                <Mic className="w-4 h-4 sm:w-5 sm:h-5" />
-              </button>
 
               <button
                 type="submit"

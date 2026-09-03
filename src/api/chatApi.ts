@@ -39,8 +39,13 @@ export interface SendMessagePayload {
   chatMode: ChatMode;
   screenDestination: ScreenDestination;
   message: string;
+  userMessage?: string;
   sessionId?: string;
   documentId?: string;
+  files?: Array<{
+    name: string;
+    content: string;
+  }>;
   attachedDocument?: {
     fileName: string;
     text: string;

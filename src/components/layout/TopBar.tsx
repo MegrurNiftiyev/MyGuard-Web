@@ -1,13 +1,33 @@
 import React, { useState, useEffect } from 'react';
-import { ShieldAlert, Shield, User, Sparkles, Home, Smartphone } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Shield, Sparkles, Home, Save, X } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
 
 export const TopBar: React.FC = () => {
   const navigate = useNavigate();
-  const { t, lang, setLang } = useLanguage();
+  const location = useLocation();
+  const { t } = useLanguage();
   const { user } = useAuth();
+  const [isSettingsDirty, setIsSettingsDirty] = useState(false);
+
+  useEffect(() => {
+    const handleDirtyChange = (e: Event) => {
+      const customEvent = e as CustomEvent<{ isDirty: boolean }>;
+      if (customEvent.detail && typeof customEvent.detail.isDirty === 'boolean') {
+        setIsSettingsDirty(customEvent.detail.isDirty);
+      }
+    };
+    window.addEventListener('settings-dirty-changed', handleDirtyChange);
+    return () => window.removeEventListener('settings-dirty-changed', handleDirtyChange);
+  }, []);
+
+  // Reset dirty indicator if navigating away from settings
+  useEffect(() => {
+    if (location.pathname !== '/settings') {
+      setIsSettingsDirty(false);
+    }
+  }, [location.pathname]);
 
   const getInitials = (name?: string) => {
     if (!name) return 'SƏ';
@@ -17,33 +37,6 @@ export const TopBar: React.FC = () => {
       .join('')
       .substring(0, 2)
       .toUpperCase();
-  };
-
-  const [deferredPrompt, setDeferredPrompt] = React.useState<any>(null);
-  const [isInstallable, setIsInstallable] = React.useState(false);
-
-  React.useEffect(() => {
-    const handleBeforeInstallPrompt = (e: Event) => {
-      e.preventDefault();
-      setDeferredPrompt(e);
-      setIsInstallable(true);
-    };
-
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-
-    return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    };
-  }, []);
-
-  const handleInstallClick = async () => {
-    if (!deferredPrompt) return;
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === 'accepted') {
-      setIsInstallable(false);
-    }
-    setDeferredPrompt(null);
   };
 
   return (
@@ -64,18 +57,27 @@ export const TopBar: React.FC = () => {
 
         {/* Right: Controls & Profile Settings */}
         <div className="flex items-center gap-3">
-          {/* PWA Install App Button */}
-          {isInstallable && (
-            <button
-              onClick={handleInstallClick}
-              className="flex items-center gap-1.5 bg-gradient-to-r from-brand-blue to-brand-purple text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-md hover:opacity-95 transition-all cursor-pointer animate-pulse"
-              title="Tətbiqi Telefona / Kompüterə Yüklə"
-            >
-              <Smartphone className="w-4 h-4" />
-              <span>Tətbiqi Yüklə</span>
-            </button>
+          {/* Settings Actions: Cancel (X) & Save Icon Buttons (Only visible on /settings route when modified) */}
+          {location.pathname === '/settings' && isSettingsDirty && (
+            <div className="flex items-center gap-1.5 animate-in fade-in zoom-in-95 duration-200">
+              <button
+                type="button"
+                onClick={() => window.dispatchEvent(new Event('trigger-settings-reset'))}
+                className="w-8 h-8 rounded-full bg-surface-container-low hover:bg-red-50 text-on-surface-variant hover:text-red-600 border border-outline-variant/70 flex items-center justify-center transition-all active:scale-95 cursor-pointer shrink-0"
+                title="Dəyişiklikləri ləğv et"
+              >
+                <X className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => window.dispatchEvent(new Event('trigger-settings-save'))}
+                className="w-8 h-8 rounded-full bg-brand-blue hover:bg-brand-blue/90 text-white flex items-center justify-center shadow-xs active:scale-95 transition-all cursor-pointer shrink-0"
+                title={t('saveBtn') || 'Yadda Saxla'}
+              >
+                <Save className="w-4 h-4" />
+              </button>
+            </div>
           )}
-
           {/* AI Assistant / Home Button (Mobile Only) */}
           {location.pathname.startsWith('/assistant') ? (
             <button
@@ -115,3 +117,4 @@ export const TopBar: React.FC = () => {
     </header>
   );
 };
+

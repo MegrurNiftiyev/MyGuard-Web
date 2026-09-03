@@ -7,6 +7,7 @@ export interface DocumentItem {
   fileSizeBytes?: number;
   fileType?: string;
   uploadUrl?: string;
+  isConfidential?: boolean;
   uploadedAt: string;
   currentStep?: string;
   stepStatus?: string;

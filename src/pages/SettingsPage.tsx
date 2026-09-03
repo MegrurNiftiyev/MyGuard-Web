@@ -1,36 +1,70 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sliders, Lock, Bell, CheckCircle, Save, Quote, Globe, Mail, LogOut, LogIn, Fingerprint } from 'lucide-react';
+import { Sliders, Lock, Bell, CheckCircle2, Save, Quote, Globe, Mail, LogOut, LogIn, Fingerprint } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { CustomSwitch } from '../components/ui/CustomSwitch';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 
+const INITIAL_SETTINGS = {
+  ocrThreshold: 95,
+  sensitivity: 'High' as const,
+  autoScan: true,
+  allowExternalAi: false,
+  confidentialMode: true,
+};
+
 export const SettingsPage: React.FC = () => {
   const navigate = useNavigate();
   const { lang, setLang, t } = useLanguage();
   const { user, isAuthenticated, logout } = useAuth();
 
-  const [ocrThreshold, setOcrThreshold] = useState(95);
-  const [sensitivity, setSensitivity] = useState<'Low' | 'Medium' | 'High'>('High');
-  const [autoScan, setAutoScan] = useState(true);
-  const [allowExternalAi, setAllowExternalAi] = useState(false);
-  const [confidentialMode, setConfidentialMode] = useState(true);
+  const [ocrThreshold, setOcrThreshold] = useState(INITIAL_SETTINGS.ocrThreshold);
+  const [sensitivity, setSensitivity] = useState<'Low' | 'Medium' | 'High'>(INITIAL_SETTINGS.sensitivity);
+  const [autoScan, setAutoScan] = useState(INITIAL_SETTINGS.autoScan);
+  const [allowExternalAi, setAllowExternalAi] = useState(INITIAL_SETTINGS.allowExternalAi);
+  const [confidentialMode, setConfidentialMode] = useState(INITIAL_SETTINGS.confidentialMode);
 
   // State to track if any setting has been modified
   const [isDirty, setIsDirty] = useState(false);
   const [savedToast, setSavedToast] = useState(false);
 
+  const updateDirty = (dirty: boolean) => {
+    setIsDirty(dirty);
+    window.dispatchEvent(new CustomEvent('settings-dirty-changed', { detail: { isDirty: dirty } }));
+  };
+
   const markDirty = () => {
-    if (!isDirty) setIsDirty(true);
+    if (!isDirty) updateDirty(true);
   };
 
   const handleSave = () => {
-    setIsDirty(false);
+    updateDirty(false);
     setSavedToast(true);
     setTimeout(() => setSavedToast(false), 3000);
   };
+
+  const handleReset = () => {
+    setOcrThreshold(INITIAL_SETTINGS.ocrThreshold);
+    setSensitivity(INITIAL_SETTINGS.sensitivity);
+    setAutoScan(INITIAL_SETTINGS.autoScan);
+    setAllowExternalAi(INITIAL_SETTINGS.allowExternalAi);
+    setConfidentialMode(INITIAL_SETTINGS.confidentialMode);
+    updateDirty(false);
+  };
+
+  useEffect(() => {
+    const handleSaveTrigger = () => handleSave();
+    const handleResetTrigger = () => handleReset();
+
+    window.addEventListener('trigger-settings-save', handleSaveTrigger);
+    window.addEventListener('trigger-settings-reset', handleResetTrigger);
+    return () => {
+      window.removeEventListener('trigger-settings-save', handleSaveTrigger);
+      window.removeEventListener('trigger-settings-reset', handleResetTrigger);
+    };
+  }, [ocrThreshold, sensitivity, autoScan, allowExternalAi, confidentialMode]);
 
   const handleLogout = () => {
     logout();
@@ -39,6 +73,17 @@ export const SettingsPage: React.FC = () => {
 
   return (
     <div className="max-w-4xl mx-auto space-y-12 pb-24 relative">
+      {/* Bottom Right Theme-Styled Sliding Toast / Snackbar Notification */}
+      {savedToast && (
+        <div className="fixed bottom-8 right-8 z-[100] pointer-events-none animate-in fade-in slide-in-from-right-8 duration-300">
+          <div className="bg-surface-container-lowest/95 backdrop-blur-xl border border-emerald-500/40 text-on-surface rounded-2xl px-4 py-3 shadow-[0_16px_40px_rgba(0,102,255,0.15)] flex items-center gap-3 text-xs font-bold">
+            <div className="w-7 h-7 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-500/20">
+              <CheckCircle2 className="w-4 h-4" />
+            </div>
+            <span>{t('settingsSaved') || 'Parametrlər uğurla yadda saxlanıldı.'}</span>
+          </div>
+        </div>
+      )}
       {/* SECTION 1: Profil və Autentifikasiya Sessiyası */}
       <section className="space-y-6">
 
@@ -314,33 +359,6 @@ export const SettingsPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Floating Bottom Right Save Action Bar — Appears ONLY when isDirty is true */}
-      {isDirty && (
-        <div className="fixed bottom-24 right-8 z-50 animate-in fade-in slide-in-from-bottom-5 duration-300">
-          <div className="bg-white/90 backdrop-blur-2xl border border-brand-blue/40 rounded-full p-2.5 shadow-[0_12px_40px_rgba(0,102,255,0.25)] flex items-center gap-3">
-            <span className="text-xs font-bold text-on-surface pl-3">Dəyişikliklər edildi</span>
-            <Button
-              variant="primary"
-              size="md"
-              onClick={handleSave}
-              className="px-6 !bg-brand-blue hover:!bg-brand-blue-hover text-white shadow-md rounded-full font-bold transition-all cursor-pointer"
-              icon={<Save className="w-4 h-4" />}
-            >
-              {t('saveBtn') || 'Yadda Saxla'}
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* Bottom Floating Toast Notification — Appears for 3 seconds after saving */}
-      {savedToast && (
-        <div className="fixed bottom-24 right-8 z-50 animate-in fade-in slide-in-from-bottom-5 duration-300">
-          <div className="bg-emerald-600 text-white rounded-2xl px-6 py-3.5 shadow-2xl flex items-center gap-3 font-semibold text-sm border border-emerald-400">
-            <CheckCircle className="w-5 h-5 text-white shrink-0" />
-            <span>{t('settingsSaved') || 'Parametrlər uğurla yadda saxlanıldı.'}</span>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
