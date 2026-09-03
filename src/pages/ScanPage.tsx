@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { FileText, ArrowRight, UploadCloud, ShieldAlert, Sparkles, FileCode } from 'lucide-react';
+import { FileText, ArrowRight, UploadCloud, ShieldAlert, Sparkles, FileCode, Loader2 } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { ProgressStep } from '../components/ui/ProgressStep';
@@ -92,11 +92,16 @@ export const ScanPage: React.FC = () => {
     setIsUploading(true);
     try {
       const res = await documentsApi.uploadDocument(file, isConfidential);
-      const newDocId = res.document?.id || `doc-${Date.now()}`;
-      navigate(`/scan?docId=${newDocId}&name=${encodeURIComponent(file.name)}`);
+      const newDocId = res.document?.id;
+      if (newDocId) {
+        globalDocId = newDocId;
+        globalFileName = file.name;
+        navigate(`/scan?docId=${newDocId}&name=${encodeURIComponent(file.name)}`);
+      } else {
+        throw new Error('Upload returned invalid document object');
+      }
     } catch (err) {
-      console.warn('Scan page file upload fallback:', err);
-      navigate(`/scan?docId=doc-${Date.now()}&name=${encodeURIComponent(file.name)}`);
+      console.warn('Scan page file upload failed:', err);
     } finally {
       setIsUploading(false);
     }
@@ -310,8 +315,8 @@ export const ScanPage: React.FC = () => {
           <Card padding="lg" className="shadow-l1 flex flex-col items-center text-center space-y-6">
             <div className="flex items-center justify-between w-full">
               <h2 className="text-title-lg font-bold text-on-surface">Hədəf Sənəd</h2>
-              <span className="bg-surface-container-high text-on-surface-variant text-label-sm px-3 py-1 rounded-full border border-outline-variant font-medium">
-                Gözləmə Rejimi
+              <span className={`text-label-sm px-3 py-1 rounded-full border font-medium ${isUploading ? 'bg-blue-50 text-brand-blue border-blue-200 animate-pulse' : 'bg-surface-container-high text-on-surface-variant border-outline-variant'}`}>
+                {isUploading ? 'Yüklənir...' : 'Gözləmə Rejimi'}
               </span>
             </div>
 
@@ -329,16 +334,16 @@ export const ScanPage: React.FC = () => {
                 disabled={isUploading}
               />
               <div className="w-16 h-16 rounded-full bg-blue-50 border border-brand-blue/30 flex items-center justify-center text-brand-blue shadow-md mb-4 group-hover:scale-110 group-hover:bg-blue-100 transition-transform">
-                <UploadCloud className="w-8 h-8 text-brand-blue" />
+                {isUploading ? <Loader2 className="w-8 h-8 text-brand-blue animate-spin" /> : <UploadCloud className="w-8 h-8 text-brand-blue" />}
               </div>
               <p className="text-title-md font-bold text-on-surface mb-1">
-                {isUploading ? 'Fayl yüklənir...' : 'Hələ ki skan edilən sənəd yoxdur'}
+                {isUploading ? 'Fayl serverə yüklənir...' : 'Hələ ki skan edilən sənəd yoxdur'}
               </p>
               <p className="text-body-sm text-on-surface-variant max-w-xs mb-4">
-                Skan etmək istədiyiniz PDF və ya DOCX faylını bura sürükləyin və ya seçin
+                {isUploading ? 'Sənəd təhlükəsiz sandbox mühitinə göndərilir, backend cavabı gözlənilir...' : 'Skan etmək istədiyiniz PDF və ya DOCX faylını bura sürükləyin və ya seçin'}
               </p>
-              <Button variant="primary" size="md" className="pointer-events-none shadow-sm">
-                Sənəd Seçin
+              <Button variant="primary" size="md" className="pointer-events-none shadow-sm" disabled={isUploading}>
+                {isUploading ? 'Yüklənir...' : 'Sənəd Seçin'}
               </Button>
             </label>
           </Card>
@@ -352,7 +357,9 @@ export const ScanPage: React.FC = () => {
                 <h2 className="text-title-lg font-bold text-on-surface">
                   {t('pipelineTitle') || 'Skan Borusu (7 Mərhələ)'}
                 </h2>
-                <span className="text-label-sm text-on-surface-variant font-mono">Status: Gözləmədə</span>
+                <span className={`text-label-sm font-mono ${isUploading ? 'text-brand-blue font-bold animate-pulse' : 'text-on-surface-variant'}`}>
+                  {isUploading ? 'Status: Fayl Yüklənir...' : 'Status: Gözləmədə'}
+                </span>
               </div>
 
               <div className="pl-2 space-y-4">
@@ -362,7 +369,7 @@ export const ScanPage: React.FC = () => {
                     stepNumber={step.stepNumber}
                     title={step.title}
                     description={step.description}
-                    status="pending"
+                    status={isUploading && idx === 0 ? 'processing' : 'pending'}
                     isLast={idx === steps.length - 1}
                   />
                 ))}
@@ -371,7 +378,7 @@ export const ScanPage: React.FC = () => {
 
             <div className="mt-8 pt-4 border-t border-outline-variant text-center">
               <p className="text-xs text-on-surface-variant font-medium">
-                ⓘ Sənəd yükləndikdən sonra 7 mərhələli analiz borusu avtomatik başladılacaqdır.
+                {isUploading ? '⏳ Fayl serverə yüklənir. Yükləmə tamamlandıqdan sonra 7 mərhələli canlı skan avtomatik başlayacaqdır.' : 'ⓘ Sənəd yükləndikdən sonra 7 mərhələli analiz borusu avtomatik başladılacaqdır.'}
               </p>
             </div>
           </Card>
