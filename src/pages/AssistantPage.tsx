@@ -36,16 +36,20 @@ export const ThinkingIndicator: React.FC = () => {
         setStepIndex((prev) => (prev + 1) % THINKING_STEPS.length);
         setFade(true);
       }, 250);
-    }, 3200);
+    }, 3000);
 
     return () => clearInterval(interval);
   }, []);
 
   return (
-    <div className="flex items-center gap-1.5 px-4 py-3 bg-white border border-outline-variant/60 text-brand-blue rounded-2xl rounded-tl-xs w-fit shadow-2xs">
-      <span className="w-2.5 h-2.5 rounded-full bg-brand-blue animate-bounce [animation-delay:-0.3s]"></span>
-      <span className="w-2.5 h-2.5 rounded-full bg-brand-blue animate-bounce [animation-delay:-0.15s]"></span>
-      <span className="w-2.5 h-2.5 rounded-full bg-brand-blue animate-bounce"></span>
+    <div className="flex items-center gap-3.5 px-5 py-3.5 bg-white border border-brand-blue/25 text-brand-blue rounded-2xl rounded-tl-xs shadow-sm w-fit my-2">
+      <div className="relative flex items-center justify-center shrink-0">
+        <Sparkles className="w-5 h-5 text-brand-blue animate-spin [animation-duration:4s]" />
+        <span className="absolute w-7 h-7 rounded-full bg-brand-blue/20 animate-ping"></span>
+      </div>
+      <span className={`text-sm font-medium text-on-surface transition-opacity duration-300 ${fade ? 'opacity-100' : 'opacity-0'}`}>
+        {THINKING_STEPS[stepIndex]}
+      </span>
     </div>
   );
 };
