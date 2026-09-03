@@ -200,32 +200,41 @@ export const ScanPage: React.FC = () => {
             isFinished = true;
           }
 
+          const getStepFinalStatus = (stepIdx: number): StepStatus => {
+            const fd = data.fileData;
+            if (!fd) return 'completed';
+
+            if (stepIdx === 3) {
+              return fd.layer1_ocrTextMatch?.status === 'suspicious' ? 'warning' : 'completed';
+            }
+            if (stepIdx === 4) {
+              return Boolean(fd.layer1_ocrTextMatch?.hiddenTextDetected) ? 'warning' : 'completed';
+            }
+            if (stepIdx === 5) {
+              const label = fd.layer2_classification?.label?.toLowerCase();
+              const isThreat = label === 'injection' || label === 'suspicious' || Boolean(fd.isContainInjection);
+              return isThreat ? 'warning' : 'completed';
+            }
+            if (stepIdx === 6) {
+              const finalStatus = fd.finalStatus?.toLowerCase();
+              const isHighRisk = finalStatus === 'high_risk' || finalStatus === 'suspicious' || (fd.finalRiskScore ?? 0) >= 30;
+              return isHighRisk ? 'warning' : 'completed';
+            }
+            return 'completed';
+          };
+
           const newSteps = prevSteps.map((step, idx) => {
             if (idx < activeIdx) {
-              let newStatus = step.status;
-              if (newStatus !== 'warning' && newStatus !== 'failed') {
-                newStatus = 'completed';
-              }
-              return { ...step, status: newStatus as StepStatus };
+              return { ...step, status: getStepFinalStatus(idx) };
             }
             if (idx === activeIdx) {
               let status: StepStatus = 'processing';
               if (data.fileData?.stepStatus === 'failed') {
                 status = 'failed';
-              } else if (data.response === 'error' || data.fileData?.stepStatus === 'warning') {
+              } else if (data.response === 'error') {
                 status = 'warning';
-              } else if (data.fileData?.stepStatus === 'completed' || data.fileData?.currentStep === 'COMPLETED') {
-                if (data.step === 'TEXT_COMPARISON' && data.fileData?.layer1_ocrTextMatch?.status === 'suspicious') {
-                  status = 'warning';
-                } else if (data.step === 'HIDDEN_TEXT_DETECTION' && data.fileData?.layer1_ocrTextMatch?.hiddenTextDetected) {
-                  status = 'warning';
-                } else if (data.step === 'PROMPT_INJECTION_ANALYSIS' && (data.fileData?.layer2_classification?.label === 'suspicious' || data.fileData?.layer2_classification?.label === 'injection' || data.fileData?.isContainInjection)) {
-                  status = 'warning';
-                } else if (data.step === 'RISK_ASSESSMENT' && (data.fileData?.finalStatus === 'suspicious' || data.fileData?.finalStatus === 'high_risk')) {
-                  status = 'warning';
-                } else {
-                  status = 'completed';
-                }
+              } else if (data.fileData?.stepStatus === 'completed' || data.fileData?.currentStep === 'COMPLETED' || isFinished) {
+                status = getStepFinalStatus(idx);
               }
 
               if (idx === 6 && (status === 'completed' || status === 'warning' || status === 'failed')) {
