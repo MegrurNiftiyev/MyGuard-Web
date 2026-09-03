@@ -259,6 +259,13 @@ export const AnalysisResultPage: React.FC = () => {
             >
               <ShieldOff className="w-4 h-4" />
             </button>
+            <button
+              onClick={() => navigate(`/comparison/${analysis.documentId}`)}
+              title="Tam Ekran Müqayisə"
+              className="w-10 h-10 rounded-xl flex items-center justify-center bg-surface-container-high text-on-surface border border-outline-variant hover:bg-brand-blue hover:text-white transition-all shadow-sm cursor-pointer"
+            >
+              <Eye className="w-4 h-4" />
+            </button>
           </div>
 
           <div className="flex flex-col items-center justify-center ml-2">
@@ -508,6 +515,15 @@ export const AnalysisResultPage: React.FC = () => {
                 className="shadow-sm hover:shadow transition-all text-error border-red-200 hover:bg-red-50"
               >
                 {isBlocked ? 'Bloklandı' : 'Blokla'}
+              </Button>
+              <Button
+                variant="outline"
+                size="md"
+                onClick={() => navigate(`/comparison/${analysis.documentId}`)}
+                icon={<Eye className="w-4 h-4 text-brand-blue" />}
+                className="shadow-sm hover:shadow transition-all"
+              >
+                Tam Ekran Müqayisə
               </Button>
             </div>
           </div>
