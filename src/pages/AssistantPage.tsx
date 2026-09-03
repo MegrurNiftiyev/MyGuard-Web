@@ -262,15 +262,23 @@ export const AssistantPage: React.FC = () => {
         setSessionId(newSession.id);
       }
 
-      const filesArray = attachedFiles
-        .filter((f) => f.extractedText)
-        .map((f) => ({ name: f.name, content: f.extractedText || '' }));
+      const filesArray = attachedFiles.map((f) => ({
+        name: f.name,
+        content: (f.extractedText && f.extractedText.trim().length > 0)
+          ? f.extractedText
+          : `${f.name} sənədinin mətni analiz üçün ötürülmüşdür.`
+      }));
+
+      const firstAttachedDoc = attachedFiles.length > 0 ? {
+        fileName: attachedFiles[0].name,
+        text: attachedFiles[0].extractedText || attachedFiles[0].name
+      } : undefined;
 
       const response = await chatApi.sendMessage({
         chatMode: 'LARGE_CHAT',
         screenDestination: 'AI_SCREEN',
-        message: query,
-        userMessage: query,
+        message: query || 'Qoşulmuş sənədləri analiz et',
+        userMessage: query || 'Qoşulmuş sənədləri analiz et',
         sessionId: currentSessionId,
         files: filesArray.length > 0 ? filesArray : undefined,
         attachedDocument: firstAttachedDoc
