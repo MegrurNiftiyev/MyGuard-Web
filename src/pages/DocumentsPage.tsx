@@ -249,20 +249,20 @@ export const DocumentsPage: React.FC = () => {
       {/* Floating Custom Right-Click Context Menu */}
       {contextMenu && (
         <div
-          className="fixed inset-0 z-50 pointer-events-auto"
+          className="fixed inset-0 z-[100] pointer-events-auto"
           onClick={() => setContextMenu(null)}
           onContextMenu={(e) => { e.preventDefault(); setContextMenu(null); }}
         >
           <div
-            className="fixed z-50 bg-white/95 backdrop-blur-md border border-outline-variant/80 rounded-2xl shadow-xl p-1.5 min-w-[190px] animate-in fade-in zoom-in-95 duration-150"
+            className="fixed z-[101] bg-white/95 backdrop-blur-md border border-outline-variant/80 rounded-2xl shadow-xl p-1.5 min-w-[190px] animate-in fade-in zoom-in-95 duration-150"
             style={{
-              left: Math.min(contextMenu.x, window.innerWidth - 210),
-              top: Math.min(contextMenu.y, window.innerHeight - 130),
+              left: `${Math.max(10, Math.min(contextMenu.x, window.innerWidth - 200))}px`,
+              top: `${Math.max(10, Math.min(contextMenu.y, window.innerHeight - 130))}px`,
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="px-3 py-1.5 text-[11px] font-bold text-on-surface-variant uppercase tracking-wider border-b border-outline-variant/40 mb-1 truncate max-w-[180px]">
-              {decodeFileName(contextMenu.docName)}
+            <div className="px-3 py-1.5 text-[11px] font-bold text-brand-blue uppercase tracking-wider border-b border-outline-variant/40 mb-1 select-none">
+              {t('docActionsTitle') || 'Əməliyyatlar'}
             </div>
 
             <button
@@ -274,7 +274,7 @@ export const DocumentsPage: React.FC = () => {
               className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-on-surface hover:bg-surface-container-high rounded-xl transition-colors cursor-pointer"
             >
               <Eye className="w-4 h-4 text-brand-blue" />
-              <span>Sənədə bax</span>
+              <span>{t('viewDocument') || 'Sənədə bax'}</span>
             </button>
 
             <button
@@ -286,7 +286,7 @@ export const DocumentsPage: React.FC = () => {
               className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-error hover:bg-red-50 rounded-xl transition-colors cursor-pointer"
             >
               <Trash2 className="w-4 h-4 text-error" />
-              <span>Sil</span>
+              <span>{t('deleteDocument') || 'Sil'}</span>
             </button>
           </div>
         </div>

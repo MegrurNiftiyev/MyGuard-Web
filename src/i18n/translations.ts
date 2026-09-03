@@ -108,6 +108,9 @@ export const translations = {
     layer3: 'Layer 3: LLM Review (External)',
 
     // Additional Static Localization
+    docActionsTitle: 'Əməliyyatlar',
+    viewDocument: 'Sənədə bax',
+    deleteDocument: 'Sil',
     documentsPageTitle: 'Sənəd İdarəetmə Mərkəzi',
     documentsPageSubtitle: 'Skan edilmiş korporativ sənədlərin siyahısı, risk dərəcələri və təhlükəsizlik statusları',
     newDocumentScan: 'Yeni Sənəd Skan Et',
@@ -248,6 +251,9 @@ export const translations = {
     layer3: 'Layer 3: LLM Review (External)',
 
     // Additional Static Localization
+    docActionsTitle: 'Actions',
+    viewDocument: 'View Document',
+    deleteDocument: 'Delete',
     documentsPageTitle: 'Document Management Center',
     documentsPageSubtitle: 'List of scanned corporate documents, risk levels, and security statuses',
     newDocumentScan: 'Scan New Document',
