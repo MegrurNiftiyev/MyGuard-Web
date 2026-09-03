@@ -43,6 +43,13 @@ const highlightSnippet = (fullText: string, snippets?: string[]) => {
   }, fullText);
 };
 
+const formatFileSize = (bytes?: number): string => {
+  if (!bytes || bytes <= 0) return '2.4 MB';
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+};
+
 export const AnalysisResultPage: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -74,6 +81,7 @@ export const AnalysisResultPage: React.FC = () => {
             documentId: liveDoc.id,
             documentName: liveDoc.fileName,
             fileType: liveDoc.fileType,
+            fileSizeBytes: liveDoc.fileSizeBytes,
             uploadTime: liveDoc.uploadedAt,
             isConfidential: Boolean(liveDoc.isConfidential),
             riskStatus: liveDoc.finalStatus,
@@ -96,7 +104,13 @@ export const AnalysisResultPage: React.FC = () => {
             threats: [], 
             ocrText: liveDoc.layer1_ocrTextMatch?.ocrText || '', 
             pdfTextLayer: liveDoc.layer1_ocrTextMatch?.pdfTextLayer || '',
-            flaggedSnippets: liveDoc.layer1_ocrTextMatch?.extraTextSegments || [],
+            flaggedSnippets: (liveDoc.layer1_ocrTextMatch?.extraTextSegments && liveDoc.layer1_ocrTextMatch.extraTextSegments.length > 0)
+              ? liveDoc.layer1_ocrTextMatch.extraTextSegments
+              : (liveDoc.layer1_ocrTextMatch?.differenceSnippets && liveDoc.layer1_ocrTextMatch.differenceSnippets.length > 0)
+              ? liveDoc.layer1_ocrTextMatch.differenceSnippets
+              : liveDoc.layer1_ocrTextMatch?.differenceSnippet
+              ? [liveDoc.layer1_ocrTextMatch.differenceSnippet]
+              : [],
             flaggedMetadata: { 
               pageNumber: undefined, 
               visibilityType: undefined, 
@@ -262,7 +276,7 @@ export const AnalysisResultPage: React.FC = () => {
             <div className="flex items-center gap-2 mt-1 text-xs text-on-surface-variant font-medium flex-wrap">
               <span>{analysis.fileType?.toUpperCase()}</span>
               <span>•</span>
-              <span>2.4 MB</span>
+              <span>{formatFileSize(analysis.fileSizeBytes)}</span>
               <span>•</span>
               <span>Yüklənmə tarixi: {new Date(analysis.uploadTime).toLocaleDateString('az-AZ', { day: 'numeric', month: 'short', year: 'numeric' })}, {new Date(analysis.uploadTime).toLocaleTimeString('az-AZ', { hour: '2-digit', minute: '2-digit' })}</span>
               {analysis.isConfidential && (
