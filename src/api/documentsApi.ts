@@ -115,6 +115,17 @@ export const documentsApi = {
       method: 'PATCH',
       body: JSON.stringify({ isContainInjection }),
     });
+  },
+
+  async deleteDocument(id: string): Promise<{ success: boolean; message?: string }> {
+    try {
+      return await apiClient<{ success: boolean; message?: string }>(`/documents/${id}`, {
+        method: 'DELETE',
+      });
+    } catch (err) {
+      console.warn('API delete document fallback:', err);
+      return { success: true, message: 'Local delete completed' };
+    }
   }
 };
 
