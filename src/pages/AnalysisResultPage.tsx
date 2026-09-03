@@ -278,32 +278,6 @@ export const AnalysisResultPage: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-4 relative z-10">
-          <div className="flex gap-2 mr-2 border-r border-outline-variant/60 pr-4">
-            <button
-              onClick={handleCleanInjection}
-              disabled={isCleaning}
-              title="Təhdidi Təmizlə"
-              className="w-10 h-10 rounded-xl flex items-center justify-center bg-blue-50 text-brand-blue border border-blue-100 hover:bg-brand-blue hover:text-white transition-all shadow-sm disabled:opacity-50 cursor-pointer"
-            >
-              {isCleaning ? <Sparkles className="w-4 h-4 animate-spin" /> : <Eraser className="w-4 h-4" />}
-            </button>
-            <button
-              onClick={handleBlock}
-              disabled={isBlocked}
-              title="Sənədi Blokla"
-              className="w-10 h-10 rounded-xl flex items-center justify-center bg-red-50 text-error border border-red-100 hover:bg-error hover:text-white transition-all shadow-sm disabled:opacity-50 cursor-pointer"
-            >
-              <ShieldOff className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => navigate(`/comparison/${analysis.documentId}`)}
-              title="Tam Ekran Müqayisə"
-              className="w-10 h-10 rounded-xl flex items-center justify-center bg-surface-container-high text-on-surface border border-outline-variant hover:bg-brand-blue hover:text-white transition-all shadow-sm cursor-pointer"
-            >
-              <Eye className="w-4 h-4" />
-            </button>
-          </div>
-
           <div className="flex flex-col items-center justify-center ml-2">
             <div className="relative w-16 h-16 flex items-center justify-center mb-1.5">
               <svg className="w-16 h-16 absolute -rotate-90" viewBox="0 0 48 48">
@@ -523,12 +497,10 @@ export const AnalysisResultPage: React.FC = () => {
                  </p>
 
                  {analysis.flaggedSnippets.map((snippet: string, idx: number) => (
-                    <div key={idx} className="relative inline-block my-3 mx-2">
-                      {/* Realistic Yellow Highlighter Effect */}
-                      <span className="absolute -inset-1.5 bg-yellow-200/90 skew-x-[-15deg] transform rounded-sm shadow-2xs"></span>
-                      <span className="relative font-serif font-bold text-gray-900 text-lg sm:text-xl leading-relaxed z-10 px-2">
+                    <div key={idx} className="my-4 text-left font-serif text-sm sm:text-base text-gray-800 leading-loose break-words">
+                      <mark className="bg-yellow-300 text-gray-900 font-bold px-2 py-1 rounded shadow-2xs leading-loose box-decoration-clone">
                         {snippet}
-                      </span>
+                      </mark>
                     </div>
                   ))}
 
