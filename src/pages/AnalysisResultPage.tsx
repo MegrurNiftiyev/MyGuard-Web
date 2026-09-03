@@ -458,70 +458,7 @@ export const AnalysisResultPage: React.FC = () => {
         </div>
       )}
 
-      {/* OCR ↔ PDF Text Comparison Section (Always visible on Analysis Page!) */}
-      <section className="space-y-4 pt-2">
-        <div className="flex items-center justify-between border-b border-outline-variant/30 pb-3">
-          <div className="flex items-center gap-3">
-            <FileCode className="text-brand-blue w-6 h-6" />
-            <h2 className="text-headline-md font-bold text-on-surface">
-              OCR ↔ PDF Mətn Müqayisəsi
-            </h2>
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigate(`/comparison/${analysis.documentId}`)}
-            icon={<Eye className="w-4 h-4" />}
-            className="text-xs font-bold shadow-2xs"
-          >
-            Tam Ekran Müqayisə
-          </Button>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
-          {/* Left Column: OCR Extracted Text (Human Visible) */}
-          <Card padding="lg" className="border border-emerald-200/60 shadow-sm flex flex-col gap-3 bg-white">
-            <div className="flex items-center justify-between pb-3 border-b border-outline-variant/40">
-              <div className="flex items-center gap-2.5">
-                <Eye className="w-5 h-5 text-emerald-600" />
-                <h3 className="text-title-md font-bold text-on-surface">OCR Vizual Mətn</h3>
-              </div>
-              <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full uppercase">
-                Görünən Mətn
-              </span>
-            </div>
-            <div className="p-5 rounded-xl bg-[#F8F9FA] border border-outline-variant/30 font-serif text-sm text-gray-800 whitespace-pre-wrap leading-relaxed min-h-[220px] max-h-[360px] overflow-y-auto">
-              {analysis.ocrText ? (
-                <div className="opacity-90">{analysis.ocrText}</div>
-              ) : (
-                <div className="opacity-50 italic text-center py-10">OCR mətni mövcud deyil</div>
-              )}
-            </div>
-          </Card>
-
-          {/* Right Column: PDF Text Layer (With Hidden Payload Highlighted) */}
-          <Card padding="lg" className="border border-error/20 bg-error/5 shadow-sm flex flex-col gap-3">
-            <div className="flex items-center justify-between pb-3 border-b border-error/10">
-              <div className="flex items-center gap-2.5">
-                <ShieldAlert className="w-5 h-5 text-error" />
-                <h3 className="text-title-md font-bold text-on-surface">PDF Kod Qatı (Text Layer)</h3>
-              </div>
-              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${analysis.flaggedSnippets && analysis.flaggedSnippets.length > 0 ? 'bg-red-100 text-error border border-red-200' : 'bg-emerald-100 text-emerald-700 border border-emerald-200'}`}>
-                {analysis.flaggedSnippets && analysis.flaggedSnippets.length > 0 ? 'Təhdid Tapıldı' : 'Təhlükəsiz'}
-              </span>
-            </div>
-            <div className="p-5 rounded-xl bg-[#F8F9FA] border border-error/20 font-serif text-sm text-gray-800 whitespace-pre-wrap leading-relaxed min-h-[220px] max-h-[360px] overflow-y-auto">
-              {analysis.pdfTextLayer ? (
-                <div className="opacity-90">{highlightDiff(analysis.ocrText, analysis.pdfTextLayer, analysis.flaggedSnippets)}</div>
-              ) : (
-                <div className="opacity-50 italic text-center py-10">PDF daxili mətn qatı mövcud deyil</div>
-              )}
-            </div>
-          </Card>
-        </div>
-      </section>
-
-      {/* Flagged Snippet Detail Box (If exists) */}
+      {/* Flagged Snippet Detail Box (Paper Document Presentation Card) */}
       {analysis.flaggedSnippets && analysis.flaggedSnippets.length > 0 && (
         <section className="flex flex-col gap-4 pt-2">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-outline-variant/30 pb-4">
@@ -564,15 +501,45 @@ export const AnalysisResultPage: React.FC = () => {
             </div>
           </div>
           
-          <div className="p-4 rounded-xl bg-red-50/60 border border-red-200/80 space-y-2">
-            {analysis.flaggedSnippets.map((snippet: string, idx: number) => (
-              <div key={idx} className="flex items-start gap-2 text-xs font-mono text-gray-900 bg-white p-3 rounded-lg border border-red-100 shadow-2xs">
-                <span className="font-bold text-error shrink-0">#{idx + 1}</span>
-                <mark className="bg-yellow-300 text-gray-900 font-bold px-1.5 py-0.5 rounded inline leading-relaxed break-all">
-                  {snippet}
-                </mark>
+          <div className="w-full rounded-2xl overflow-hidden border border-outline-variant/60 shadow-sm bg-white">
+            <div className="bg-surface-container-lowest px-4 py-3 border-b border-outline-variant/40 flex items-center gap-2">
+              <div className="flex gap-1.5">
+                <div className="w-3 h-3 rounded-full bg-red-400"></div>
+                <div className="w-3 h-3 rounded-full bg-amber-400"></div>
+                <div className="w-3 h-3 rounded-full bg-green-400"></div>
               </div>
-            ))}
+              <div className="mx-auto bg-surface-container-low px-8 sm:px-24 py-1.5 rounded-md text-xs font-medium text-on-surface-variant flex items-center gap-2">
+                 Aşkarlandı: Səhifə {analysis.flaggedMetadata?.pageNumber || 1}
+              </div>
+            </div>
+            
+            <div className="bg-[#F8F9FA] p-6 sm:p-10 flex justify-center">
+               <div className="bg-white max-w-3xl w-full p-8 sm:p-10 shadow-sm rounded-sm border border-gray-200 text-center">
+                 <div className="mb-4 h-3 w-3/4 bg-gray-100 rounded mx-auto"></div>
+                 <div className="mb-6 h-3 w-1/2 bg-gray-100 rounded mx-auto"></div>
+
+                 <p className="font-serif text-gray-700 text-sm sm:text-base leading-relaxed mb-4">
+                   ...sənədin daxili mətn qatında aşkar olunmuş şübhəli fraqment:
+                 </p>
+
+                 {analysis.flaggedSnippets.map((snippet: string, idx: number) => (
+                    <div key={idx} className="relative inline-block my-3 mx-2">
+                      {/* Realistic Yellow Highlighter Effect */}
+                      <span className="absolute -inset-1.5 bg-yellow-200/90 skew-x-[-15deg] transform rounded-sm shadow-2xs"></span>
+                      <span className="relative font-serif font-bold text-gray-900 text-lg sm:text-xl leading-relaxed z-10 px-2">
+                        {snippet}
+                      </span>
+                    </div>
+                  ))}
+
+                 <p className="font-serif text-gray-700 text-sm sm:text-base leading-relaxed mt-4">
+                   Sənəddən bu gizli fraqmentləri təmizləmək üçün "Təmizlə" düyməsini sıxa bilərsiniz.
+                 </p>
+
+                 <div className="mt-6 h-3 w-2/3 bg-gray-100 rounded mx-auto"></div>
+                 <div className="mt-3 h-3 w-1/3 bg-gray-100 rounded mx-auto"></div>
+               </div>
+            </div>
           </div>
         </section>
       )}
