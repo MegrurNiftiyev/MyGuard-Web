@@ -144,6 +144,41 @@ export const AnalysisResultPage: React.FC = () => {
     return { text: 'text-emerald-500', bg: 'bg-emerald-100', border: 'border-emerald-500', borderT: 'border-t-emerald-500' };
   };
 
+  const highlightSnippet = (fullText: string, snippets?: string[]) => {
+    if (!fullText) return <span className="opacity-50 italic">Mətn tapılmadı</span>;
+    if (!snippets || snippets.length === 0) return <span>{fullText}</span>;
+
+    const validSnippets = snippets.filter(s => s && s.trim().length > 0);
+    if (validSnippets.length === 0) return <span>{fullText}</span>;
+
+    let elements: (string | React.ReactNode)[] = [fullText];
+
+    validSnippets.forEach((snippet) => {
+      const nextElements: (string | React.ReactNode)[] = [];
+      elements.forEach((item) => {
+        if (typeof item !== 'string') {
+          nextElements.push(item);
+          return;
+        }
+
+        const parts = item.split(snippet);
+        parts.forEach((part, i) => {
+          if (part) nextElements.push(part);
+          if (i < parts.length - 1) {
+            nextElements.push(
+              <mark key={`${i}-${snippet.slice(0, 5)}`} className="bg-yellow-300 text-gray-900 font-bold px-1.5 py-0.5 rounded shadow-2xs inline leading-relaxed">
+                {snippet}
+              </mark>
+            );
+          }
+        });
+      });
+      elements = nextElements;
+    });
+
+    return <>{elements}</>;
+  };
+
   if (isLoading) {
     return (
       <div className="space-y-8 pb-12 animate-fade-in relative max-w-5xl mx-auto">
@@ -477,45 +512,15 @@ export const AnalysisResultPage: React.FC = () => {
             </div>
           </div>
           
-          <div className="w-full rounded-2xl overflow-hidden border border-outline-variant/60 shadow-sm bg-white">
-            <div className="bg-surface-container-lowest px-4 py-3 border-b border-outline-variant/40 flex items-center gap-2">
-              <div className="flex gap-1.5">
-                <div className="w-3 h-3 rounded-full bg-red-400"></div>
-                <div className="w-3 h-3 rounded-full bg-amber-400"></div>
-                <div className="w-3 h-3 rounded-full bg-green-400"></div>
+          <div className="p-4 rounded-xl bg-red-50/60 border border-red-200/80 space-y-2">
+            {analysis.flaggedSnippets.map((snippet: string, idx: number) => (
+              <div key={idx} className="flex items-start gap-2 text-xs font-mono text-gray-900 bg-white p-3 rounded-lg border border-red-100 shadow-2xs">
+                <span className="font-bold text-error shrink-0">#{idx + 1}</span>
+                <mark className="bg-yellow-300 text-gray-900 font-bold px-1.5 py-0.5 rounded inline leading-relaxed break-all">
+                  {snippet}
+                </mark>
               </div>
-              <div className="mx-auto bg-surface-container-low px-8 sm:px-24 py-1.5 rounded-md text-xs font-medium text-on-surface-variant flex items-center gap-2">
-                 Aşkarlandı: Səhifə {analysis.flaggedMetadata?.pageNumber || 1}
-              </div>
-            </div>
-            
-            <div className="bg-[#F8F9FA] p-6 sm:p-10 flex justify-center">
-               <div className="bg-white max-w-3xl w-full p-8 sm:p-10 shadow-sm rounded-sm border border-gray-200 text-center">
-                 <div className="mb-4 h-3 w-3/4 bg-gray-100 rounded mx-auto"></div>
-                 <div className="mb-6 h-3 w-1/2 bg-gray-100 rounded mx-auto"></div>
-
-                 <p className="font-serif text-gray-700 text-sm sm:text-base leading-relaxed mb-4">
-                   ...sənədin daxili mətn qatında aşkar olunmuş şübhəli fraqment:
-                 </p>
-
-                 {analysis.flaggedSnippets.map((snippet: string, idx: number) => (
-                    <div key={idx} className="relative inline-block my-3 mx-2">
-                      {/* Realistic Yellow Highlighter Effect */}
-                      <span className="absolute -inset-1.5 bg-yellow-200/90 skew-x-[-15deg] transform rounded-sm shadow-2xs"></span>
-                      <span className="relative font-serif font-bold text-gray-900 text-lg sm:text-xl leading-relaxed z-10 px-2">
-                        {snippet}
-                      </span>
-                    </div>
-                  ))}
-
-                 <p className="font-serif text-gray-700 text-sm sm:text-base leading-relaxed mt-4">
-                   Sənəddən bu gizli fraqmentləri təmizləmək üçün "Təmizlə" düyməsini sıxa bilərsiniz.
-                 </p>
-
-                 <div className="mt-6 h-3 w-2/3 bg-gray-100 rounded mx-auto"></div>
-                 <div className="mt-3 h-3 w-1/3 bg-gray-100 rounded mx-auto"></div>
-               </div>
-            </div>
+            ))}
           </div>
         </section>
       )}

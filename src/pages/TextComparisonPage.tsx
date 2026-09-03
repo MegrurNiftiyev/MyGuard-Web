@@ -46,29 +46,39 @@ export const TextComparisonPage: React.FC = () => {
     fetchComparison();
   }, [id]);
 
-    const highlightSnippet = (fullText: string, snippets?: string[]) => {
+  const highlightSnippet = (fullText: string, snippets?: string[]) => {
     if (!fullText) return <span className="opacity-50 italic">Mətn tapılmadı</span>;
     if (!snippets || snippets.length === 0) return <span>{fullText}</span>;
     
-    return snippets.reduce((acc: any, snippet) => {
-      if (!snippet) return acc;
-      const parts = typeof acc === 'string' ? acc.split(snippet) : acc;
-      if (typeof parts === 'string') return parts;
-      
-      const res: any[] = [];
-      parts.forEach((part: any, i: number) => {
-        res.push(part);
-        if (i < parts.length - 1) {
-          res.push(
-            <span key={i + '-' + snippet.substring(0, 5)} className="relative inline-block mx-1.5 my-0.5">
-              <span className="absolute -inset-1 bg-yellow-200/90 skew-x-[-15deg] transform rounded-sm shadow-2xs"></span>
-              <span className="relative font-serif font-bold text-gray-900 z-10 px-1.5">{snippet}</span>
-            </span>
-          );
+    const validSnippets = snippets.filter(s => s && s.trim().length > 0);
+    if (validSnippets.length === 0) return <span>{fullText}</span>;
+
+    let elements: (string | React.ReactNode)[] = [fullText];
+
+    validSnippets.forEach((snippet) => {
+      const nextElements: (string | React.ReactNode)[] = [];
+      elements.forEach((item) => {
+        if (typeof item !== 'string') {
+          nextElements.push(item);
+          return;
         }
+
+        const parts = item.split(snippet);
+        parts.forEach((part, i) => {
+          if (part) nextElements.push(part);
+          if (i < parts.length - 1) {
+            nextElements.push(
+              <mark key={`${i}-${snippet.slice(0, 5)}`} className="bg-yellow-300 text-gray-900 font-bold px-1.5 py-0.5 rounded shadow-2xs inline leading-relaxed">
+                {snippet}
+              </mark>
+            );
+          }
+        });
       });
-      return res;
-    }, fullText);
+      elements = nextElements;
+    });
+
+    return <>{elements}</>;
   };
 
   const handleReviewFeedback = async (isInjection: boolean) => {
