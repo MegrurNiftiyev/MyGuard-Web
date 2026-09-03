@@ -15,12 +15,12 @@ import {
   AiQuoteBlock
 } from './blocks';
 
-function renderBlock(block: MessageBlock, key: number) {
+function renderBlock(block: MessageBlock, key: number, animate: boolean = true, onTyping?: () => void) {
   switch (block.type) {
     case 'header':
       return <AiHeaderBlock key={key} title={block.title || ''} subtitle={block.subtitle} />;
     case 'text':
-      return <AiTextBlock key={key} content={block.content || ''} />;
+      return <AiTextBlock key={key} content={block.content || ''} animate={animate} onTyping={onTyping} />;
     case 'callout':
       return <AiCalloutBlock key={key} tone={block.tone || 'info'} title={block.title} content={block.content || ''} />;
     case 'table':
@@ -72,7 +72,11 @@ function renderBlock(block: MessageBlock, key: number) {
   }
 }
 
-export const AiMessageRenderer: React.FC<{ message: AiMessage }> = ({ message }) => {
+export const AiMessageRenderer: React.FC<{ message: AiMessage; animate?: boolean; onTyping?: () => void }> = ({
+  message,
+  animate = true,
+  onTyping
+}) => {
   return (
     <div className="flex flex-col gap-4 w-full text-left">
       {(message.blocks || []).map((b: MessageBlock, i: number) => (
@@ -81,7 +85,7 @@ export const AiMessageRenderer: React.FC<{ message: AiMessage }> = ({ message })
           className="animate-in fade-in slide-in-from-bottom-4 duration-600 ease-out fill-mode-both"
           style={{ animationDelay: `${i * 140}ms` }}
         >
-          {renderBlock(b, i)}
+          {renderBlock(b, i, animate, onTyping)}
         </div>
       ))}
     </div>

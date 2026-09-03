@@ -144,15 +144,16 @@ export const FloatingAiAssistant: React.FC = () => {
                 {msg.sender === 'user' ? (
                   msg.blocks?.[0]?.content || msg.text || ''
                 ) : (
-                  <AiMessageRenderer message={msg} />
+                  <AiMessageRenderer message={msg} onTyping={scrollToBottom} />
                 )}
               </div>
             ))}
 
             {isThinking && (
-              <div className="flex items-center gap-2 py-1 px-2 text-[11px] font-semibold text-brand-blue">
-                <Sparkles className="w-3.5 h-3.5 animate-icon-breathe shrink-0" />
-                <span>AI analiz edir...</span>
+              <div className="flex items-center gap-1.5 px-3 py-2.5 bg-white border border-outline-variant/60 text-brand-blue rounded-2xl rounded-tl-xs w-fit shadow-2xs">
+                <span className="w-2 h-2 rounded-full bg-brand-blue animate-bounce [animation-delay:-0.3s]"></span>
+                <span className="w-2 h-2 rounded-full bg-brand-blue animate-bounce [animation-delay:-0.15s]"></span>
+                <span className="w-2 h-2 rounded-full bg-brand-blue animate-bounce"></span>
               </div>
             )}
             <div ref={messagesEndRef} />

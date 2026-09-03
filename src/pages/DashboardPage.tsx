@@ -11,6 +11,7 @@ import { AiMessage, DocumentItem, RiskStatus } from '../types';
 import { Chip } from '../components/ui/Chip';
 import { documentsApi } from '../api/documentsApi';
 import { chatApi } from '../api/chatApi';
+import { AiMessageRenderer } from '../components/assistant/AiMessageRenderer';
 
 const decodeFileName = (text: string) => {
   if (!text) return text;
@@ -26,9 +27,11 @@ export const DashboardPage: React.FC = () => {
   const { t } = useLanguage();
   const [aiInput, setAiInput] = useState('');
   const [messages, setMessages] = useState<AiMessage[]>([]);
+  const [isAiThinking, setIsAiThinking] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const dragCounter = useRef(0);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
 
   const [documents, setDocuments] = useState<DocumentItem[]>([]);
   const [isLoadingDocs, setIsLoadingDocs] = useState<boolean>(true);
@@ -149,9 +152,22 @@ export const DashboardPage: React.FC = () => {
     };
   }, []);
 
+  const scrollToBottomChat = () => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTo({
+        top: chatContainerRef.current.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  useEffect(() => {
+    scrollToBottomChat();
+  }, [messages, isAiThinking]);
+
   const handleAiChatSubmit = async (queryOverride?: string) => {
     const text = queryOverride || aiInput;
-    if (!text.trim()) return;
+    if (!text.trim() || isAiThinking) return;
 
     const userMsg: AiMessage = {
       id: `msg-${Date.now()}`,
@@ -162,6 +178,7 @@ export const DashboardPage: React.FC = () => {
     
     setMessages(prev => [...prev, userMsg]);
     if (!queryOverride) setAiInput('');
+    setIsAiThinking(true);
 
     try {
       const liveRes = await chatApi.sendMessage({
@@ -181,6 +198,8 @@ export const DashboardPage: React.FC = () => {
         blocks: [{ type: 'text', content: 'AI xidməti ilə əlaqə qurularkən xəta baş verdi.' }]
       };
       setMessages(prev => [...prev, errorMsg]);
+    } finally {
+      setIsAiThinking(false);
     }
   };
 
@@ -272,7 +291,7 @@ export const DashboardPage: React.FC = () => {
             </div>
             
             {/* Scrollable Internal Message Body */}
-            <div className="flex-1 overflow-y-auto pr-1 space-y-3 custom-scrollbar">
+            <div ref={chatContainerRef} className="flex-1 overflow-y-auto pr-1 space-y-3 custom-scrollbar">
               {messages.length === 0 ? (
                 <div className="h-full flex flex-col justify-center items-center gap-2 text-center p-2">
                   <p className="text-xs font-semibold text-on-surface-variant mb-2">Tez-tez soruşulan suallar:</p>
@@ -293,20 +312,24 @@ export const DashboardPage: React.FC = () => {
                 messages.map((msg, idx) => (
                   <div key={idx} className="flex flex-col gap-1 w-full">
                     {msg.sender === 'user' ? (
-                      <div className="bg-brand-blue text-white p-3 rounded-2xl text-xs font-semibold self-end max-w-[85%] shadow-xs">
+                      <div className="bg-brand-blue text-white p-3 rounded-2xl text-xs font-semibold self-end max-w-[85%] shadow-xs rounded-tr-xs">
                         {msg.blocks?.[0]?.content || (msg as any).text || ''}
                       </div>
                     ) : (
-                      <div className="bg-surface-container-low border border-outline-variant/60 text-on-surface p-3.5 rounded-2xl text-xs leading-relaxed space-y-1.5 max-w-[95%] shadow-2xs self-start">
-                        <div className="flex items-center gap-1.5 text-brand-purple font-bold text-[11px]">
-                          <Sparkles className="w-3.5 h-3.5 shrink-0" />
-                          <span>MyGuard AI Xülasə</span>
-                        </div>
-                        <p className="whitespace-pre-line text-on-surface-variant font-normal">{msg.blocks?.[0]?.content || (msg as any).text || ''}</p>
+                      <div className="bg-surface-container-low border border-outline-variant/50 text-on-surface p-3 rounded-2xl rounded-tl-xs text-xs leading-relaxed max-w-[92%] shadow-2xs self-start">
+                        <AiMessageRenderer message={msg} onTyping={scrollToBottomChat} />
                       </div>
                     )}
                   </div>
                 ))
+              )}
+
+              {isAiThinking && (
+                <div className="flex items-center gap-1.5 px-3 py-2.5 bg-surface-container-low border border-outline-variant/50 text-brand-blue rounded-2xl rounded-tl-xs w-fit shadow-2xs self-start">
+                  <span className="w-2 h-2 rounded-full bg-brand-blue animate-bounce [animation-delay:-0.3s]"></span>
+                  <span className="w-2 h-2 rounded-full bg-brand-blue animate-bounce [animation-delay:-0.15s]"></span>
+                  <span className="w-2 h-2 rounded-full bg-brand-blue animate-bounce"></span>
+                </div>
               )}
             </div>
             

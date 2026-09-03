@@ -42,15 +42,10 @@ export const ThinkingIndicator: React.FC = () => {
   }, []);
 
   return (
-    <div className="flex items-center gap-2.5 py-2 px-1 max-w-lg">
-      <Sparkles className="w-5 h-5 text-brand-blue animate-icon-breathe shrink-0" />
-      <span
-        className={`text-xs font-semibold text-on-surface-variant transition-opacity duration-300 ${
-          fade ? 'opacity-100' : 'opacity-0'
-        }`}
-      >
-        {THINKING_STEPS[stepIndex]}
-      </span>
+    <div className="flex items-center gap-1.5 px-4 py-3 bg-white border border-outline-variant/60 text-brand-blue rounded-2xl rounded-tl-xs w-fit shadow-2xs">
+      <span className="w-2.5 h-2.5 rounded-full bg-brand-blue animate-bounce [animation-delay:-0.3s]"></span>
+      <span className="w-2.5 h-2.5 rounded-full bg-brand-blue animate-bounce [animation-delay:-0.15s]"></span>
+      <span className="w-2.5 h-2.5 rounded-full bg-brand-blue animate-bounce"></span>
     </div>
   );
 };
@@ -386,7 +381,7 @@ export const AssistantPage: React.FC = () => {
                 </div>
               ) : (
                 <AiMessageWrapper timestamp={msg.timestamp}>
-                  <AiMessageRenderer message={msg} />
+                  <AiMessageRenderer message={msg} onTyping={scrollToBottom} />
                 </AiMessageWrapper>
               )}
             </div>
