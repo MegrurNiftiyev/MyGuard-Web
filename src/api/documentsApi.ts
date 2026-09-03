@@ -100,7 +100,31 @@ export const documentsApi = {
   },
 
   async getDocumentComparison(id: string): Promise<DocumentComparisonData> {
-    return apiClient<DocumentComparisonData>(`/documents/${id}/comparison`);
+    try {
+      const comp = await apiClient<DocumentComparisonData>(`/documents/${id}/comparison`);
+      if (comp && (comp.ocrText || comp.pdfTextLayer)) {
+        return comp;
+      }
+      throw new Error('Comparison fallback needed');
+    } catch {
+      const doc = await this.getDocumentById(id);
+      return {
+        documentId: doc.id,
+        documentName: doc.fileName,
+        ocrText: doc.layer1_ocrTextMatch?.ocrText || '',
+        pdfTextLayer: doc.layer1_ocrTextMatch?.pdfTextLayer || '',
+        ocrPdfMatch: doc.layer1_ocrTextMatch?.matchPercent ?? 100,
+        hiddenTextDetected: Boolean(doc.layer1_ocrTextMatch?.hiddenTextDetected),
+        flaggedSnippets: (doc.layer1_ocrTextMatch?.extraTextSegments && doc.layer1_ocrTextMatch.extraTextSegments.length > 0)
+          ? doc.layer1_ocrTextMatch.extraTextSegments
+          : (doc.layer1_ocrTextMatch?.differenceSnippets && doc.layer1_ocrTextMatch.differenceSnippets.length > 0)
+          ? doc.layer1_ocrTextMatch.differenceSnippets
+          : doc.layer1_ocrTextMatch?.differenceSnippet
+          ? [doc.layer1_ocrTextMatch.differenceSnippet]
+          : [],
+        flaggedMetadata: { pageNumber: 1 }
+      };
+    }
   },
 
   async cleanInjection(id: string, preserveFormatting: boolean = true): Promise<CleanInjectionResponse> {
