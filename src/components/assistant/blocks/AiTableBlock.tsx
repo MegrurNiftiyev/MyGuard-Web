@@ -66,76 +66,105 @@ export const AiTableBlock: React.FC<AiTableBlockProps> = (props) => {
     return null;
   }
 
-  const renderCellContent = (cell: string | number) => {
+  const renderCellContent = (cell: string | number, headerName?: string) => {
+    if (cell === null || cell === undefined) return '';
+
     const cellStr = String(cell).trim();
     const lower = cellStr.toLowerCase();
+    const headerLower = (headerName || '').toLowerCase();
 
-    // Risk Status Badges
+    // 1. Prompt / Code / Index Snippets (e.g., "'Ignore previous instructions...'")
+    if (
+      cellStr.startsWith("'") || 
+      cellStr.startsWith('"') || 
+      headerLower.includes('indeks') || 
+      headerLower.includes('snippet') || 
+      headerLower.includes('prompt') || 
+      headerLower.includes('kod')
+    ) {
+      return (
+        <code className="inline-block max-w-[300px] font-mono text-[11px] bg-red-50/80 text-red-700 border border-red-200/60 px-2.5 py-1 rounded-lg truncate align-middle" title={cellStr}>
+          {cellStr}
+        </code>
+      );
+    }
+
+    // 2. Risk Status Indicators (Clean text with subtle dot indicator instead of heavy chip badge)
     if (lower.includes('yüksək risk') || lower.includes('high_risk') || lower.includes('high risk') || lower.includes('blocked')) {
       return (
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-red-50 text-red-700 border border-red-200 shadow-2xs">
-          <ShieldAlert className="w-3.5 h-3.5 text-red-600" />
+        <span className="inline-flex items-center gap-1.5 font-semibold text-red-700 text-xs">
+          <span className="w-2 h-2 rounded-full bg-red-600 shrink-0 animate-pulse" />
           <span>{cellStr}</span>
         </span>
       );
     }
     if (lower.includes('şübhəli') || lower.includes('suspicious') || lower.includes('warning')) {
       return (
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200 shadow-2xs">
-          <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
+        <span className="inline-flex items-center gap-1.5 font-semibold text-amber-700 text-xs">
+          <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0" />
           <span>{cellStr}</span>
         </span>
       );
     }
     if (lower.includes('təhlükəsiz') || lower.includes('safe') || lower.includes('clean')) {
       return (
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-2xs">
-          <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+        <span className="inline-flex items-center gap-1.5 font-semibold text-emerald-700 text-xs">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
           <span>{cellStr}</span>
         </span>
       );
     }
 
-    // File name format with truncation
-    if (lower.endsWith('.docx') || lower.endsWith('.pdf') || lower.endsWith('.txt')) {
+    // 3. File Names (Clean icon + truncated text)
+    if (lower.endsWith('.docx') || lower.endsWith('.pdf') || lower.endsWith('.txt') || lower.endsWith('.doc')) {
+      const displayName = cellStr.replace(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}-/i, '');
       return (
-        <span className="inline-flex items-center gap-2 max-w-[280px] font-medium text-on-surface truncate" title={cellStr}>
-          <FileText className="w-4 h-4 text-brand-blue shrink-0" />
-          <span className="truncate">{cellStr}</span>
+        <span className="inline-flex items-center gap-2 max-w-[240px] font-medium text-on-surface text-xs" title={cellStr}>
+          <FileText className="w-3.5 h-3.5 text-brand-blue shrink-0" />
+          <span className="truncate">{displayName}</span>
         </span>
       );
     }
 
-    // Risk Score Numbers
-    if (typeof cell === 'number' || (!isNaN(Number(cellStr)) && cellStr !== '')) {
+    // 4. Numeric Risk Scores / Percentages (Clean colored text without chip background box)
+    if (typeof cell === 'number' || (!isNaN(Number(cellStr)) && cellStr !== '' && !cellStr.includes('-') && !cellStr.includes(':'))) {
       const num = Number(cellStr);
-      if (num >= 70) {
-        return <span className="font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded">{num}</span>;
+      if (headerLower.includes('skor') || headerLower.includes('ehtimal') || headerLower.includes('faiz') || headerLower.includes('risk') || headerLower.includes('score')) {
+        const colorClass = num >= 70 ? 'text-red-600' : num >= 30 ? 'text-amber-600' : 'text-emerald-600';
+        const hasPercent = headerLower.includes('%') || headerLower.includes('faiz') || headerLower.includes('ehtimal');
+        return (
+          <span className={`font-bold font-mono text-xs ${colorClass}`}>
+            {num}{hasPercent ? '%' : ''}
+          </span>
+        );
       }
-      if (num >= 30) {
-        return <span className="font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded">{num}</span>;
-      }
-      return <span className="font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">{num}</span>;
+      return <span className="font-mono text-xs font-semibold text-on-surface">{cellStr}</span>;
     }
 
-    return cellStr;
+    // 5. Date / Time
+    if (cellStr.match(/^\d{4}-\d{2}-\d{2}/)) {
+      return <span className="font-mono text-[11px] text-on-surface-variant/80">{cellStr}</span>;
+    }
+
+    // Default clean text
+    return <span className="text-xs text-on-surface">{cellStr}</span>;
   };
 
   return (
-    <div className="w-full bg-surface-container-lowest border border-outline-variant/60 rounded-3xl p-5 shadow-xs my-3 overflow-hidden animate-in fade-in duration-300">
+    <div className="w-full bg-surface-container-lowest border border-outline-variant/60 rounded-3xl p-4 sm:p-5 shadow-xs my-3 overflow-hidden animate-in fade-in duration-300">
       {title && (
-        <div className="flex items-center gap-2 mb-4 pb-2 border-b border-outline-variant/30">
-          <FileText className="w-5 h-5 text-brand-blue" />
+        <div className="flex items-center gap-2 mb-3.5 pb-2.5 border-b border-outline-variant/30">
+          <FileText className="w-4.5 h-4.5 text-brand-blue" />
           <h3 className="text-title-md font-bold text-on-surface">{title}</h3>
         </div>
       )}
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse min-w-[550px]">
+      <div className="overflow-x-auto custom-scrollbar -mx-1 px-1">
+        <table className="w-full text-left border-collapse min-w-max">
           <thead>
-            <tr className="border-b border-outline-variant/50 bg-surface-container-low/50">
+            <tr className="border-b border-outline-variant/50 bg-surface-container-low/60">
               {headers.map((h, i) => (
-                <th key={i} className="px-4 py-3 text-label-sm font-bold text-on-surface uppercase tracking-wider">
+                <th key={i} className="px-3.5 py-2.5 text-[11px] font-bold text-on-surface-variant uppercase tracking-wider whitespace-nowrap">
                   {h}
                 </th>
               ))}
@@ -145,8 +174,8 @@ export const AiTableBlock: React.FC<AiTableBlockProps> = (props) => {
             {rows.map((row, i) => (
               <tr key={i} className="hover:bg-surface-container-low/40 transition-colors">
                 {row.map((cell, j) => (
-                  <td key={j} className="px-4 py-3 text-body-sm text-on-surface whitespace-nowrap">
-                    {renderCellContent(cell)}
+                  <td key={j} className="px-3.5 py-2.5 text-xs text-on-surface whitespace-nowrap align-middle">
+                    {renderCellContent(cell, headers[j])}
                   </td>
                 ))}
               </tr>
