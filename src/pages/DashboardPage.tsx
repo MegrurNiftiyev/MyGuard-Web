@@ -376,7 +376,7 @@ export const DashboardPage: React.FC = () => {
               {/* Desktop Header */}
               <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-3.5 bg-surface-container-low border-b border-outline-variant text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
                 <div className="col-span-6">Sənəd Adı</div>
-                <div className="col-span-4">Departament və Tarix</div>
+                <div className="col-span-4">Yüklənmə Tarixi</div>
                 <div className="col-span-2 text-right">Risk Balı</div>
               </div>
               
@@ -399,40 +399,38 @@ export const DashboardPage: React.FC = () => {
                             {decodeFileName(doc.name || (doc as any).fileName)}
                           </div>
                           <div className="text-label-sm text-on-surface-variant/70">
-                            {doc.uploadTime}
+                            {doc.fileType} • {doc.size}
                           </div>
                         </div>
                       </div>
                       
-                      {/* Mobile-only risk score percentage */}
+                      {/* Mobile-only risk score */}
                       <div className="flex md:hidden flex-col items-end shrink-0">
                          {doc.riskScore > 0 && (
                            <span className={`font-semibold text-xs ${doc.riskScore >= 70 ? 'text-error' : doc.riskScore >= 40 ? 'text-warning' : 'text-success'}`}>
-                             {doc.riskScore}%
+                             {doc.riskScore}/100
                            </span>
                          )}
                       </div>
                     </div>
 
-                    {/* Column 2: Dept & Time (Desktop) */}
+                    {/* Column 2: Upload Time (Desktop) */}
                     <div className="hidden md:block col-span-4 text-label-md text-on-surface-variant">
-                      <div className="font-semibold text-on-surface truncate">{(doc as any).department || 'İT və Kibertəhlükəsizlik'}</div>
+                      <div className="font-semibold text-on-surface truncate">{doc.uploadTime}</div>
                     </div>
 
                     {/* Mobile-only additional details row */}
                     <div className="flex md:hidden items-center gap-3 text-xs text-on-surface-variant/80 pl-[54px] w-full mt-1">
                       <span>{doc.uploadTime}</span>
                       <span>•</span>
-                      <span className="truncate">{(doc as any).department || 'İT və Kibertəhlükəsizlik'}</span>
-                      <span>•</span>
                       <span>{doc.size}</span>
                     </div>
 
-                    {/* Column 3: Risk Percentage (Desktop) */}
+                    {/* Column 3: Risk Score /100 (Desktop) */}
                     <div className="hidden md:flex col-span-2 items-center justify-end gap-2">
                       {doc.riskScore > 0 ? (
                         <span className={`font-semibold ${doc.riskScore >= 70 ? 'text-error border-l-4 border-error pl-2' : doc.riskScore >= 40 ? 'text-warning border-l-4 border-warning pl-2' : 'text-success border-l-4 border-success pl-2'}`}>
-                          {doc.riskScore}%
+                          {doc.riskScore}/100
                         </span>
                       ) : (
                         <span className="text-on-surface-variant font-semibold">-</span>

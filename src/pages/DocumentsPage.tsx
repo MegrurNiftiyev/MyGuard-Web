@@ -149,7 +149,7 @@ export const DocumentsPage: React.FC = () => {
         {/* Table Header (Desktop Only) */}
         <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-3.5 bg-surface-container-low border-b border-outline-variant text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
           <div className="col-span-5">Sənəd</div>
-          <div className="col-span-3">Departament</div>
+          <div className="col-span-3">Yüklənmə Tarixi</div>
           <div className="col-span-2">Tip / Həcm</div>
           <div className="col-span-2 text-right">Risk Balı</div>
         </div>
@@ -187,23 +187,23 @@ export const DocumentsPage: React.FC = () => {
                         {decodeFileName(doc.name)}
                       </div>
                       <div className="text-label-sm text-on-surface-variant/70">
-                        {doc.uploadTime}
+                        {doc.fileType} • {doc.size}
                       </div>
                     </div>
                   </div>
-                  {/* Mobile-only risk score percentage */}
+                  {/* Mobile-only risk score */}
                   <div className="flex md:hidden flex-col items-end shrink-0">
                      {doc.riskScore > 0 && (
                        <span className={`font-semibold text-xs ${doc.riskScore >= 70 ? 'text-error' : doc.riskScore >= 40 ? 'text-warning' : 'text-success'}`}>
-                         {doc.riskScore}%
+                         {doc.riskScore}/100
                        </span>
                      )}
                   </div>
                 </div>
 
-                {/* Column 2: Dept (Desktop) */}
+                {/* Column 2: Upload Time (Desktop) */}
                 <div className="hidden md:block col-span-3 text-label-md text-on-surface-variant">
-                  <div className="font-semibold text-on-surface truncate" title={doc.department}>{doc.department}</div>
+                  <div className="font-semibold text-on-surface truncate">{doc.uploadTime}</div>
                 </div>
 
                 {/* Column 3: Type / Size (Desktop) */}
@@ -214,18 +214,16 @@ export const DocumentsPage: React.FC = () => {
 
                 {/* Mobile-only additional details row */}
                 <div className="flex md:hidden items-center gap-3 text-xs text-on-surface-variant/80 pl-[54px] w-full mt-1">
-                  <span>{doc.uploadTime.split(' ')[0]}</span>
-                  <span>•</span>
-                  <span className="truncate">{doc.department}</span>
+                  <span>{doc.uploadTime}</span>
                   <span>•</span>
                   <span>{doc.size}</span>
                 </div>
 
-                {/* Column 4: Risk Percentage (Desktop) */}
+                {/* Column 4: Risk Score /100 (Desktop) */}
                 <div className="hidden md:flex col-span-2 items-center justify-end gap-2">
                   {doc.riskScore > 0 ? (
                     <span className={`font-semibold ${doc.riskScore >= 70 ? 'text-error border-l-4 border-error pl-2' : doc.riskScore >= 40 ? 'text-warning border-l-4 border-warning pl-2' : 'text-success border-l-4 border-success pl-2'}`}>
-                      {doc.riskScore}%
+                      {doc.riskScore}/100
                     </span>
                   ) : (
                     <span className="text-on-surface-variant font-semibold">-</span>
