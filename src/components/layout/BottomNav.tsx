@@ -107,59 +107,64 @@ export const BottomNav: React.FC<SideNavProps> = ({ disableFixed = false }) => {
   const DesktopNav = (
     <nav
       ref={navRef}
-      className={`hidden md:flex relative flex-col gap-2 p-2 bg-surface-container-lowest/90 backdrop-blur-xl border border-outline-variant/70 shadow-lg rounded-[28px] transition-all duration-300 ease-in-out ${
-        isExpanded ? 'w-52 items-start' : 'w-16 items-center'
+      className={`hidden md:flex relative flex-col gap-2 p-2 bg-surface-container-lowest/90 backdrop-blur-xl border border-outline-variant/70 shadow-lg transition-all duration-300 ease-in-out ${
+        isExpanded ? 'w-52 items-start rounded-3xl p-3' : 'w-16 items-center rounded-full py-3'
       }`}
     >
-      {/* Sidebar Expand / Collapse Toggle Button */}
+      {/* Right Side Toggle Arrow Button */}
       <button
         type="button"
         onClick={toggleExpand}
-        className={`w-full flex items-center justify-center p-2 rounded-2xl text-on-surface-variant hover:text-brand-blue hover:bg-surface-container-high/60 transition-colors cursor-pointer mb-1 border-b border-outline-variant/30 ${
-          isExpanded ? 'justify-between px-3.5' : 'justify-center'
-        }`}
+        className="absolute -right-3.5 top-7 z-30 w-7 h-7 rounded-full bg-white border border-outline-variant/80 shadow-md flex items-center justify-center text-brand-blue hover:bg-surface-container-high hover:scale-110 active:scale-95 transition-all cursor-pointer"
         title={isExpanded ? 'Menyunu sıxlaşdır' : 'Menyunu genişləndir'}
       >
-        {isExpanded && <span className="text-xs font-bold text-on-surface uppercase tracking-wider">Menyu</span>}
-        {isExpanded ? <PanelLeftClose className="w-5 h-5 text-brand-blue" /> : <PanelLeftOpen className="w-5 h-5 text-brand-blue" />}
+        {isExpanded ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
       </button>
-
-      {/* Sliding Active Pill Background */}
-      <div
-        className="absolute rounded-full bg-brand-blue shadow-md ring-2 ring-brand-blue/30 transition-all duration-300 ease-out z-0"
-        style={{
-          top: `${indicatorStyle.top}px`,
-          left: `${indicatorStyle.left}px`,
-          width: `${indicatorStyle.width}px`,
-          height: `${indicatorStyle.height}px`,
-          opacity: indicatorStyle.opacity,
-        }}
-      />
 
       {navItems.map((item, index) => {
         const Icon = item.icon;
         const isActive = activeIndex === index;
 
+        if (isExpanded) {
+          return (
+            <NavLink
+              key={item.id}
+              to={item.path}
+              ref={(el) => { itemRefs.current[index] = el; }}
+              className={`relative z-10 flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl transition-all duration-200 select-none overflow-hidden ${
+                isActive
+                  ? 'text-brand-blue font-bold bg-blue-50/70 border border-brand-blue/15'
+                  : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high/50 font-medium'
+              }`}
+            >
+              <Icon className={`w-5 h-5 shrink-0 ${isActive ? 'text-brand-blue' : ''}`} />
+              <span className="text-sm truncate font-sans">
+                {item.label}
+              </span>
+              {isActive && (
+                <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1.5 h-6 bg-brand-blue rounded-l-full shadow-2xs" />
+              )}
+            </NavLink>
+          );
+        }
+
         return (
           <NavLink
             key={item.id}
             to={item.path}
-            title={isExpanded ? undefined : item.label}
+            title={item.label}
             ref={(el) => { itemRefs.current[index] = el; }}
-            className={`relative z-10 flex items-center gap-3 rounded-full transition-colors duration-200 select-none ${
-              isExpanded ? 'w-full px-4 py-3 justify-start' : 'p-3 justify-center'
-            } ${
-              isActive
-                ? '!text-white font-bold'
-                : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high/60'
-            }`}
+            className="relative z-10 p-0.5 flex items-center justify-center transition-all duration-200 select-none"
           >
-            <Icon className={`w-5 h-5 shrink-0 ${isActive ? '!text-white' : ''}`} />
-            {isExpanded && (
-              <span className={`text-sm truncate ${isActive ? '!text-white font-bold' : 'font-medium'}`}>
-                {item.label}
-              </span>
-            )}
+            <div
+              className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 ${
+                isActive
+                  ? 'bg-brand-blue text-white shadow-xs scale-105'
+                  : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high/70'
+              }`}
+            >
+              <Icon className="w-5 h-5 shrink-0" />
+            </div>
           </NavLink>
         );
       })}
