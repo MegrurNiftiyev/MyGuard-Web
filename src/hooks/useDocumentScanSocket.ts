@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { ScanSocketEvent } from '../api/socketClient';
 
-const SOCKET_SERVER_URL = import.meta.env.VITE_SOCKET_URL || 'https://mygurad-backend-v2.onrender.com';
+const SOCKET_SERVER_URL = (import.meta.env.VITE_SOCKET_URL || 'https://mygurad-backend-v2.onrender.com').replace(/\/+$/, '');
+
 
 export function useDocumentScanSocket(documentId: string | null) {
   const [scanData, setScanData] = useState<ScanSocketEvent | null>(null);

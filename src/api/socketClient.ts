@@ -1,6 +1,7 @@
 import { io, Socket } from 'socket.io-client';
 
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'https://mygurad-backend-v2.onrender.com';
+const SOCKET_URL = (import.meta.env.VITE_SOCKET_URL || 'https://mygurad-backend-v2.onrender.com').replace(/\/+$/, '');
+
 
 let socket: Socket | null = null;
 

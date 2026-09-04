@@ -10,7 +10,7 @@ export const AiTextBlock: React.FC<{ content: string; animate?: boolean; onTypin
   const [isDone, setIsDone] = useState(!animate);
 
   return (
-    <div className="font-body-md text-body-md text-on-surface leading-relaxed [&>p]:mb-2 [&>ul]:list-disc [&>ul]:pl-5 [&>ul]:mb-2 [&>ol]:list-decimal [&>ol]:pl-5 [&>ol]:mb-2 [&_strong]:font-bold [&_strong]:text-on-surface [&_a]:text-brand-blue [&_a]:underline">
+    <div className="text-inherit text-on-surface leading-relaxed [&>p]:mb-2 [&>p:last-child]:mb-0 [&>ul]:list-disc [&>ul]:pl-5 [&>ul]:mb-2 [&>ol]:list-decimal [&>ol]:pl-5 [&>ol]:mb-2 [&_strong]:font-bold [&_strong]:text-on-surface [&_a]:text-brand-blue [&_a]:underline">
       {animate && !isDone ? (
         <Typewriter
           text={content}

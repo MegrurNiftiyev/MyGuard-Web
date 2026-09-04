@@ -44,8 +44,9 @@ export const ThinkingIndicator: React.FC = () => {
   return (
     <div className="flex items-center gap-3.5 px-5 py-3.5 bg-white border border-brand-blue/25 text-brand-blue rounded-2xl rounded-tl-xs shadow-sm w-fit my-2">
       <div className="relative flex items-center justify-center shrink-0">
-        <Sparkles className="w-5 h-5 text-brand-blue animate-spin [animation-duration:4s]" />
         <span className="absolute w-7 h-7 rounded-full bg-brand-blue/20 animate-ping"></span>
+        <span className="absolute w-8 h-8 rounded-full bg-brand-purple/15 animate-breathe"></span>
+        <Sparkles className="w-5 h-5 text-brand-blue animate-icon-breathe relative z-10" />
       </div>
       <span className={`text-sm font-medium text-on-surface transition-opacity duration-300 ${fade ? 'opacity-100' : 'opacity-0'}`}>
         {THINKING_STEPS[stepIndex]}
@@ -437,7 +438,9 @@ const extractCleanTextFromFile = async (file: File): Promise<string> => {
                 </div>
               ) : (
                 <AiMessageWrapper timestamp={msg.timestamp}>
-                  <AiMessageRenderer message={msg} onTyping={scrollToBottom} />
+                  <div className="text-body-md w-full">
+                    <AiMessageRenderer message={msg} onTyping={scrollToBottom} />
+                  </div>
                 </AiMessageWrapper>
               )}
             </div>
