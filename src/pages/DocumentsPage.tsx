@@ -10,6 +10,8 @@ import { RiskStatus } from '../types';
 import { useLanguage } from '../context/LanguageContext';
 import { documentsApi, DocumentItem } from '../api/documentsApi';
 
+import { formatUploadDate } from '../utils/dateFormatter';
+
 const decodeFileName = (text: string) => {
   if (!text) return text;
   try {
@@ -56,7 +58,7 @@ export const DocumentsPage: React.FC = () => {
             id: d.id,
             name: d.fileName || 'Sənəd.pdf',
             category: d.fileType?.toUpperCase() || 'DOCUMENT',
-            uploadTime: d.uploadedAt ? new Date(d.uploadedAt).toLocaleString('az-AZ') : 'İndi',
+            uploadTime: formatUploadDate(d.uploadedAt),
             department: 'Təhlükəsizlik İdarəsi',
             size: d.fileSizeBytes ? `${(d.fileSizeBytes / (1024 * 1024)).toFixed(1)} MB` : '1.2 MB',
             status: (d.finalStatus as RiskStatus) || (d.isContainInjection ? 'high_risk' : 'safe'),

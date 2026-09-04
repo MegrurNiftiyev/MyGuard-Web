@@ -66,7 +66,7 @@ export const DashboardPage: React.FC = () => {
             name: d.fileName || 'Sənəd.pdf',
             fileType: d.fileType?.toUpperCase() || 'PDF',
             size: d.fileSizeBytes ? `${(d.fileSizeBytes / 1024).toFixed(1)} KB` : '1.2 MB',
-            uploadTime: d.uploadedAt ? new Date(d.uploadedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'İndi',
+            uploadTime: formatUploadDate(d.uploadedAt),
             riskScore: d.finalRiskScore || 0,
             status: (d.finalStatus as RiskStatus) || 'safe',
             ocrPdfMatch: 95,

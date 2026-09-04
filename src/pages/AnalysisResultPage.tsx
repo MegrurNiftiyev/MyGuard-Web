@@ -7,7 +7,7 @@ import { Chip } from '../components/ui/Chip';
 import { HumanReviewBox } from '../components/ui/HumanReviewBox';
 import { Typewriter } from '../components/ui/Typewriter';
 import { documentsApi, DetailedDocumentReport } from '../api/documentsApi';
-import { useLanguage } from '../context/LanguageContext';
+import { formatUploadDate } from '../utils/dateFormatter';
 
 const decodeFileName = (text: string) => {
   if (!text) return text;
@@ -293,7 +293,7 @@ export const AnalysisResultPage: React.FC = () => {
               <span>•</span>
               <span className="font-semibold text-on-surface">Dep: {analysis.department || 'İT və Kibertəhlükəsizlik'}</span>
               <span>•</span>
-              <span>Yüklənmə tarixi: {new Date(analysis.uploadTime).toLocaleDateString('az-AZ', { day: 'numeric', month: 'short', year: 'numeric' })}, {new Date(analysis.uploadTime).toLocaleTimeString('az-AZ', { hour: '2-digit', minute: '2-digit' })}</span>
+              <span>Yüklənmə tarixi: {formatUploadDate(analysis.uploadTime)}</span>
               {analysis.isConfidential && (
                 <>
                   <span>•</span>
