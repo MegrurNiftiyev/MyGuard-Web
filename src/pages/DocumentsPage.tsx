@@ -149,10 +149,9 @@ export const DocumentsPage: React.FC = () => {
         {/* Table Header (Desktop Only) */}
         <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-3.5 bg-surface-container-low border-b border-outline-variant text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
           <div className="col-span-5">Sənəd</div>
-          <div className="col-span-2">Departament</div>
+          <div className="col-span-3">Departament</div>
           <div className="col-span-2">Tip / Həcm</div>
-          <div className="col-span-1 text-center">Risk</div>
-          <div className="col-span-2 text-right">Status</div>
+          <div className="col-span-2 text-right">Risk Balı</div>
         </div>
 
         {/* Rows */}
@@ -192,19 +191,18 @@ export const DocumentsPage: React.FC = () => {
                       </div>
                     </div>
                   </div>
-                  {/* Mobile-only status & risk block to save space */}
-                  <div className="flex md:hidden flex-col items-end gap-1.5 shrink-0">
-                     <Chip status={doc.status} />
+                  {/* Mobile-only risk score percentage */}
+                  <div className="flex md:hidden flex-col items-end shrink-0">
                      {doc.riskScore > 0 && (
-                       <span className={`font-semibold text-[11px] ${doc.riskScore >= 70 ? 'text-error' : doc.riskScore >= 40 ? 'text-warning' : 'text-success'}`}>
-                         Xal: {doc.riskScore}/100
+                       <span className={`font-bold font-mono text-xs px-2 py-0.5 rounded-full ${doc.riskScore >= 70 ? 'bg-red-50 text-red-600 border border-red-200' : doc.riskScore >= 30 ? 'bg-amber-50 text-amber-600 border border-amber-200' : 'bg-emerald-50 text-emerald-600 border border-emerald-200'}`}>
+                         {doc.riskScore}%
                        </span>
                      )}
                   </div>
                 </div>
 
                 {/* Column 2: Dept (Desktop) */}
-                <div className="hidden md:block col-span-2 text-label-md text-on-surface-variant">
+                <div className="hidden md:block col-span-3 text-label-md text-on-surface-variant">
                   <div className="font-semibold text-on-surface truncate" title={doc.department}>{doc.department}</div>
                 </div>
 
@@ -223,20 +221,15 @@ export const DocumentsPage: React.FC = () => {
                   <span>{doc.size}</span>
                 </div>
 
-                {/* Column 4: Risk (Desktop) */}
-                <div className="hidden md:flex col-span-1 items-center justify-center">
+                {/* Column 4: Risk Percentage (Desktop) */}
+                <div className="hidden md:flex col-span-2 items-center justify-end gap-2">
                   {doc.riskScore > 0 ? (
-                    <span className={`font-semibold ${doc.riskScore >= 70 ? 'text-error border-l-4 border-error pl-2' : doc.riskScore >= 40 ? 'text-warning border-l-4 border-warning pl-2' : 'text-success border-l-4 border-success pl-2'}`}>
-                      {doc.riskScore}/100
+                    <span className={`font-bold font-mono text-sm px-2.5 py-1 rounded-full ${doc.riskScore >= 70 ? 'bg-red-50 text-red-600 border border-red-200/80' : doc.riskScore >= 30 ? 'bg-amber-50 text-amber-600 border border-amber-200/80' : 'bg-emerald-50 text-emerald-600 border border-emerald-200/80'}`}>
+                      {doc.riskScore}%
                     </span>
                   ) : (
                     <span className="text-on-surface-variant font-semibold">-</span>
                   )}
-                </div>
-
-                {/* Column 5: Status (Desktop) */}
-                <div className="hidden md:flex col-span-2 items-center justify-end gap-3">
-                  <Chip status={doc.status} />
                   <ArrowRight className="w-4 h-4 text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
               </div>
