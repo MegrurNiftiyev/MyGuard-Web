@@ -24,7 +24,7 @@ export const mockDocuments: DocumentItem[] = [
     ocrPdfMatch: 72,
     hiddenTextDetected: true,
     promptInjectionProb: 94,
-    department: 'HR Screening',
+    department: 'İnsan Resursları (HR)',
     flaggedCount: 3,
     category: 'İnsan Resursları'
   },
@@ -39,7 +39,7 @@ export const mockDocuments: DocumentItem[] = [
     ocrPdfMatch: 98,
     hiddenTextDetected: false,
     promptInjectionProb: 2,
-    department: 'Maliyyə',
+    department: 'Maliyyə və İqtisadiyyat',
     flaggedCount: 0,
     category: 'Maliyyə Hesabatı'
   },
@@ -54,7 +54,7 @@ export const mockDocuments: DocumentItem[] = [
     ocrPdfMatch: 81,
     hiddenTextDetected: true,
     promptInjectionProb: 65,
-    department: 'Müqavilələr',
+    department: 'Hüquq və Komplaens',
     flaggedCount: 2,
     category: 'Tədarük və Tender'
   },
@@ -69,7 +69,7 @@ export const mockDocuments: DocumentItem[] = [
     ocrPdfMatch: 45,
     hiddenTextDetected: true,
     promptInjectionProb: 99,
-    department: 'Müdafiə',
+    department: 'Strateji İnkişaf və Layihələr',
     flaggedCount: 5,
     category: 'Konfidensial'
   },
@@ -84,7 +84,7 @@ export const mockDocuments: DocumentItem[] = [
     ocrPdfMatch: 99,
     hiddenTextDetected: false,
     promptInjectionProb: 1,
-    department: 'HR Screening',
+    department: 'İnsan Resursları (HR)',
     flaggedCount: 0,
     category: 'İnsan Resursları'
   },
@@ -99,7 +99,7 @@ export const mockDocuments: DocumentItem[] = [
     ocrPdfMatch: 77,
     hiddenTextDetected: true,
     promptInjectionProb: 82,
-    department: 'Kommersiya',
+    department: 'Əməliyyatlar və Logistika',
     flaggedCount: 2,
     category: 'Təkliflər'
   }

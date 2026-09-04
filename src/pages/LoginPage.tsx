@@ -25,6 +25,7 @@ export const LoginPage: React.FC = () => {
     fullName?: string;
     email?: string;
     phone?: string;
+    department?: string;
     rememberMe?: boolean;
   }) => {
     setIsSubmitting(true);
@@ -43,7 +44,7 @@ export const LoginPage: React.FC = () => {
           email: formData.email || `${formData.finCode.toLowerCase()}@soc.gov.az`,
           phone: formData.phone,
           password: formData.password,
-          department: 'İnformasiya Təhlükəsizliyi',
+          department: formData.department || 'İnformasiya Texnologiyaları və Kibertəhlükəsizlik',
         });
       }
       navigate('/');
@@ -100,6 +101,8 @@ export const LoginPage: React.FC = () => {
             <AuthForm mode={mode} onSubmitData={handleFormSubmit} isSubmitting={isSubmitting} />
           </div>
 
+          {/* SIMA və myGov giriş düymələri - Müvəqqəti rəy sətirinə alındı */}
+          {/* 
           <div className="relative my-6 text-center">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-outline-variant/60" />
@@ -110,6 +113,7 @@ export const LoginPage: React.FC = () => {
           </div>
 
           <NationalAuthProviders onSelectProvider={handleProviderSelect} />
+          */}
         </Card>
       </div>
 

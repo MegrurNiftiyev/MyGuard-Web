@@ -149,7 +149,7 @@ export const DocumentsPage: React.FC = () => {
         {/* Table Header (Desktop Only) */}
         <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-3.5 bg-surface-container-low border-b border-outline-variant text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
           <div className="col-span-5">Sənəd</div>
-          <div className="col-span-2">Tarix & Departament</div>
+          <div className="col-span-2">Departament</div>
           <div className="col-span-2">Tip / Həcm</div>
           <div className="col-span-1 text-center">Risk</div>
           <div className="col-span-2 text-right">Status</div>
@@ -188,7 +188,7 @@ export const DocumentsPage: React.FC = () => {
                         {decodeFileName(doc.name)}
                       </div>
                       <div className="text-label-sm text-on-surface-variant/70">
-                        Category: {doc.category}
+                        {doc.uploadTime}
                       </div>
                     </div>
                   </div>
@@ -203,10 +203,9 @@ export const DocumentsPage: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Column 2: Date & Dept (Desktop) */}
+                {/* Column 2: Dept (Desktop) */}
                 <div className="hidden md:block col-span-2 text-label-md text-on-surface-variant">
-                  <div className="font-medium text-on-surface">{doc.department}</div>
-                  <div className="text-label-sm text-on-surface-variant/70">{doc.uploadTime}</div>
+                  <div className="font-semibold text-on-surface truncate" title={doc.department}>{doc.department}</div>
                 </div>
 
                 {/* Column 3: Type / Size (Desktop) */}

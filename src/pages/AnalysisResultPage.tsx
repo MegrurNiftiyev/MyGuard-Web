@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ShieldAlert, AlertTriangle, CheckCircle, Ban, Sparkles, Eye, FileCode, CheckCircle2, Download, Eraser, ShieldOff, FileText, FileArchive, FileImage, File, Lock } from 'lucide-react';
+import { ShieldAlert, AlertTriangle, CheckCircle, Ban, Sparkles, Eye, FileCode, CheckCircle2, Download, Eraser, ShieldOff, FileText, FileArchive, FileImage, File, Lock, ArrowLeft } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Chip } from '../components/ui/Chip';
@@ -260,6 +260,19 @@ export const AnalysisResultPage: React.FC = () => {
 
   return (
     <div className="space-y-8 pb-12 animate-fade-in relative max-w-5xl mx-auto">
+      {/* Top Back Action Bar */}
+      <div className="flex items-center justify-between">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => navigate(-1)}
+          icon={<ArrowLeft className="w-4 h-4 text-brand-blue" />}
+          className="rounded-full px-4 py-2 font-bold text-xs shadow-2xs hover:shadow transition-all bg-white cursor-pointer"
+        >
+          Geri
+        </Button>
+      </div>
+
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white p-6 rounded-2xl border border-outline-variant/60 shadow-sm relative overflow-hidden">
         <div className="flex items-center gap-4 relative z-10">
           <div className="w-14 h-14 rounded-2xl bg-blue-50 text-brand-blue flex items-center justify-center shrink-0 shadow-sm border border-blue-100">
@@ -277,6 +290,8 @@ export const AnalysisResultPage: React.FC = () => {
               <span>{analysis.fileType?.toUpperCase()}</span>
               <span>•</span>
               <span>{formatFileSize(analysis.fileSizeBytes)}</span>
+              <span>•</span>
+              <span className="font-semibold text-on-surface">Dep: {analysis.department || 'İT və Kibertəhlükəsizlik'}</span>
               <span>•</span>
               <span>Yüklənmə tarixi: {new Date(analysis.uploadTime).toLocaleDateString('az-AZ', { day: 'numeric', month: 'short', year: 'numeric' })}, {new Date(analysis.uploadTime).toLocaleTimeString('az-AZ', { hour: '2-digit', minute: '2-digit' })}</span>
               {analysis.isConfidential && (

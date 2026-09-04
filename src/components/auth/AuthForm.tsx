@@ -1,6 +1,16 @@
 import React, { useState } from 'react';
-import { Mail, Lock, User, Fingerprint, Eye, EyeOff, Smartphone } from 'lucide-react';
+import { Mail, Lock, User, Fingerprint, Eye, EyeOff, Smartphone, Building2 } from 'lucide-react';
 import { Button } from '../ui/Button';
+
+export const DEPARTMENTS = [
+  'İnformasiya Texnologiyaları və Kibertəhlükəsizlik',
+  'Maliyyə və İqtisadiyyat',
+  'Hüquq və Komplaens',
+  'İnsan Resursları (HR)',
+  'Əməliyyatlar və Logistika',
+  'Strateji İnkişaf və Layihələr',
+  'Ümumi Şöbə və Dəftərxana'
+] as const;
 
 export interface AuthFormProps {
   mode: 'login' | 'register';
@@ -10,6 +20,7 @@ export interface AuthFormProps {
     fullName?: string;
     email?: string;
     phone?: string;
+    department?: string;
     rememberMe?: boolean;
   }) => void;
   isSubmitting?: boolean;
@@ -22,6 +33,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ mode, onSubmitData, isSubmit
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [fin, setFin] = useState('');
+  const [department, setDepartment] = useState<string>(DEPARTMENTS[0]);
   const [rememberMe, setRememberMe] = useState(true);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -33,6 +45,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ mode, onSubmitData, isSubmit
         fullName: name,
         email,
         phone,
+        department,
         rememberMe,
       });
     }
@@ -56,6 +69,26 @@ export const AuthForm: React.FC<AuthFormProps> = ({ mode, onSubmitData, isSubmit
                 placeholder="Samir Əliyev"
                 className="w-full pl-11 pr-4 py-3 rounded-2xl bg-surface-container border border-outline-variant/80 text-sm text-on-surface focus:outline-none focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 transition-all"
               />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-on-surface-variant mb-1.5 uppercase tracking-wider">
+              Departament Seçin
+            </label>
+            <div className="relative">
+              <Building2 className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-purple" />
+              <select
+                value={department}
+                onChange={(e) => setDepartment(e.target.value)}
+                className="w-full pl-11 pr-8 py-3 rounded-2xl bg-surface-container border border-outline-variant/80 text-sm font-semibold text-on-surface focus:outline-none focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 transition-all appearance-none cursor-pointer"
+              >
+                {DEPARTMENTS.map((dept) => (
+                  <option key={dept} value={dept}>
+                    {dept}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 
