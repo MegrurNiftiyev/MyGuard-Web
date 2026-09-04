@@ -168,6 +168,7 @@ export interface ChatMessage {
   text?: string;
   structuredAnalysis?: StructuredAiAnalysis;
   blocks?: MessageBlock[];
+  isAnimationFinished?: boolean;
 }
 
 export interface ModelConfig {

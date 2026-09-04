@@ -15,12 +15,18 @@ import {
   AiQuoteBlock
 } from './blocks';
 
-function renderBlock(block: MessageBlock, key: number, animate: boolean = true, onTyping?: () => void) {
+function renderBlock(
+  block: MessageBlock, 
+  key: number, 
+  animate: boolean = true, 
+  onTyping?: () => void,
+  onComplete?: () => void
+) {
   switch (block.type) {
     case 'header':
       return <AiHeaderBlock key={key} title={block.title || ''} subtitle={block.subtitle} />;
     case 'text':
-      return <AiTextBlock key={key} content={block.content || ''} animate={animate} onTyping={onTyping} />;
+      return <AiTextBlock key={key} content={block.content || ''} animate={animate} onTyping={onTyping} onComplete={onComplete} />;
     case 'callout':
       return <AiCalloutBlock key={key} tone={block.tone || 'info'} title={block.title} content={block.content || ''} />;
     case 'table':
@@ -72,20 +78,28 @@ function renderBlock(block: MessageBlock, key: number, animate: boolean = true, 
   }
 }
 
-export const AiMessageRenderer: React.FC<{ message: AiMessage; animate?: boolean; onTyping?: () => void }> = ({
+export const AiMessageRenderer: React.FC<{ 
+  message: AiMessage; 
+  animate?: boolean; 
+  onTyping?: () => void;
+  onComplete?: () => void;
+}> = ({
   message,
   animate = true,
-  onTyping
+  onTyping,
+  onComplete
 }) => {
+  const shouldAnimate = animate && !message.isAnimationFinished;
+
   return (
     <div className="flex flex-col gap-4 w-full text-left">
       {(message.blocks || []).map((b: MessageBlock, i: number) => (
         <div
           key={i}
-          className="animate-in fade-in slide-in-from-bottom-4 duration-600 ease-out fill-mode-both"
-          style={{ animationDelay: `${i * 140}ms` }}
+          className={shouldAnimate ? "animate-in fade-in slide-in-from-bottom-4 duration-600 ease-out fill-mode-both" : ""}
+          style={shouldAnimate ? { animationDelay: `${i * 140}ms` } : undefined}
         >
-          {renderBlock(b, i, animate, onTyping)}
+          {renderBlock(b, i, shouldAnimate, onTyping, onComplete)}
         </div>
       ))}
     </div>

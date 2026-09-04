@@ -42,13 +42,15 @@ export const ThinkingIndicator: React.FC = () => {
   }, []);
 
   return (
-    <div className="flex items-center gap-3.5 px-5 py-3.5 bg-white border border-brand-blue/25 text-brand-blue rounded-2xl rounded-tl-xs shadow-sm w-fit my-2">
-      <div className="relative flex items-center justify-center shrink-0">
+    <div className="flex items-start gap-3.5 w-full my-3.5">
+      <div className="relative flex items-center justify-center shrink-0 mt-0.5">
         <span className="absolute w-7 h-7 rounded-full bg-brand-blue/20 animate-ping"></span>
         <span className="absolute w-8 h-8 rounded-full bg-brand-purple/15 animate-breathe"></span>
-        <Sparkles className="w-5 h-5 text-brand-blue animate-icon-breathe relative z-10" />
+        <div className="w-8 h-8 rounded-full bg-blue-50 border border-brand-blue/30 text-brand-blue flex items-center justify-center shadow-xs z-10">
+          <Sparkles className="w-4 h-4 text-brand-blue animate-icon-breathe" />
+        </div>
       </div>
-      <span className={`text-sm font-medium text-on-surface transition-opacity duration-300 ${fade ? 'opacity-100' : 'opacity-0'}`}>
+      <span className={`text-sm font-medium text-on-surface transition-opacity duration-300 mt-1.5 ${fade ? 'opacity-100' : 'opacity-0'}`}>
         {THINKING_STEPS[stepIndex]}
       </span>
     </div>
@@ -96,6 +98,16 @@ export const AssistantPage: React.FC = () => {
     if (!userScrolledUp.current) {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
+  };
+
+  const handleMessageComplete = (messageId: string) => {
+    setMessages((prev) => {
+      const updated = prev.map((msg) =>
+        msg.id === messageId ? { ...msg, isAnimationFinished: true } : msg
+      );
+      globalMessages = updated;
+      return updated;
+    });
   };
 
   useEffect(() => {
@@ -437,9 +449,13 @@ const extractCleanTextFromFile = async (file: File): Promise<string> => {
                   </div>
                 </div>
               ) : (
-                <AiMessageWrapper timestamp={msg.timestamp}>
+                <AiMessageWrapper timestamp={msg.timestamp} isAnimating={!msg.isAnimationFinished}>
                   <div className="text-body-md w-full">
-                    <AiMessageRenderer message={msg} onTyping={scrollToBottom} />
+                    <AiMessageRenderer
+                      message={msg}
+                      onTyping={scrollToBottom}
+                      onComplete={() => handleMessageComplete(msg.id)}
+                    />
                   </div>
                 </AiMessageWrapper>
               )}
