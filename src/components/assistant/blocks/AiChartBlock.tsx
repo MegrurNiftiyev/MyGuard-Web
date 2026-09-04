@@ -57,13 +57,33 @@ export const AiChartBlock: React.FC<AiChartBlockProps> = ({
     resolvedColor: resolveColor(dk.tone || (dk as any).color, idx)
   }));
 
-  const totalSum = data.reduce((acc, curr) => acc + (curr[valueKey] || curr.count || curr.value || 0), 0);
+  // Donut data transformation supporting both single and multi-series keys
+  const donutData = React.useMemo(() => {
+    if (chartKeys?.dataKeys && chartKeys.dataKeys.length > 1) {
+      return dataKeys.map((dk) => {
+        const sum = data.reduce((acc, curr) => acc + (Number(curr[dk.key]) || 0), 0);
+        return {
+          name: dk.label || dk.key,
+          value: sum,
+          color: dk.resolvedColor
+        };
+      });
+    }
+    return data.map((item, index) => ({
+      name: String(item[nameKey] || item.type || item.name || `Element ${index + 1}`),
+      value: Number(item[valueKey] || item.count || item.value || 0),
+      color: resolveColor(item.tone || item.color, index),
+      percentage: item.percentage
+    }));
+  }, [data, dataKeys, chartKeys, nameKey, valueKey]);
+
+  const totalSum = donutData.reduce((acc, curr) => acc + (curr.value || 0), 0);
 
   return (
     <div className="w-full bg-surface-container-lowest border border-outline-variant/60 rounded-3xl p-5 shadow-xs my-3 transition-all">
       {/* Header with Title, Subtitle and View Toggle Buttons */}
       {(title || subtitle) && (
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 pb-3 border-b border-outline-variant/30">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-outline-variant/30">
           <div>
             {title && <h3 className="text-title-md font-bold text-on-surface flex items-center gap-2">{title}</h3>}
             {subtitle && <p className="text-body-sm text-on-surface-variant/80 mt-0.5">{subtitle}</p>}
@@ -174,10 +194,10 @@ export const AiChartBlock: React.FC<AiChartBlockProps> = ({
       )}
 
       {/* Chart View Content */}
-      <div key={activeType} className="w-full min-h-[260px] h-[280px] animate-in fade-in zoom-in-95 duration-400">
+      <div key={activeType} className="w-full min-h-[260px] animate-in fade-in duration-300">
         {activeType === 'horizontal_bar' ? (
           /* Düz Xətli Sütunlar (Straight Horizontal Bar View) */
-          <div className="flex flex-col justify-center space-y-4 h-full py-2">
+          <div className="flex flex-col justify-center space-y-4 py-2">
             {data.map((item, index) => {
               const val = item[valueKey] || item.count || item.value || 0;
               const maxVal = Math.max(...data.map(d => d[valueKey] || d.count || d.value || 1));
@@ -204,28 +224,28 @@ export const AiChartBlock: React.FC<AiChartBlockProps> = ({
             })}
           </div>
         ) : activeType === 'donut' ? (
-          /* Donut / Pie Chart View */
-          <div className="w-full h-full flex flex-col sm:flex-row items-center justify-center gap-6">
-            <div className="relative w-[200px] h-[200px] shrink-0">
+          /* Donut / Pie Chart View with Bottom Responsive Grid Legend */
+          <div className="w-full flex flex-col items-center justify-center pt-1">
+            <div className="relative w-[180px] h-[180px] sm:w-[200px] sm:h-[200px] shrink-0 my-1">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
-                    data={data}
+                    data={donutData}
                     cx="50%"
                     cy="50%"
                     innerRadius={60}
                     outerRadius={85}
                     paddingAngle={4}
-                    dataKey={valueKey}
-                    nameKey={nameKey}
+                    dataKey="value"
+                    nameKey="name"
                     isAnimationActive={true}
                     animationDuration={800}
                     animationEasing="ease-out"
                   >
-                    {data.map((entry, index) => (
+                    {donutData.map((entry, index) => (
                       <Cell
                         key={`cell-${index}`}
-                        fill={resolveColor(entry.tone || entry.color, index)}
+                        fill={entry.color}
                       />
                     ))}
                   </Pie>
@@ -241,92 +261,94 @@ export const AiChartBlock: React.FC<AiChartBlockProps> = ({
               </div>
             </div>
 
-            {/* Legend Column */}
-            <div className="flex-1 grid grid-cols-1 gap-2.5 max-h-[220px] overflow-y-auto pr-1">
-              {data.map((item, index) => {
-                const color = resolveColor(item.tone || item.color, index);
-                const val = item[valueKey] || item.count || item.value || 0;
-                return (
-                  <div key={index} className="flex items-center justify-between text-xs p-2 rounded-xl bg-surface-container-low/50 border border-outline-variant/30 animate-in fade-in slide-in-from-right-3 duration-500" style={{ animationDelay: `${index * 80}ms` }}>
-                    <div className="flex items-center gap-2 truncate">
-                      <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: color }} />
-                      <span className="font-semibold text-on-surface truncate">{item[nameKey] || item.type}</span>
-                    </div>
-                    <span className="font-bold text-on-surface font-mono shrink-0 ml-2">{item.percentage ? `${item.percentage}%` : val}</span>
+            {/* Bottom Responsive Legend Breakdown Grid */}
+            <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 mt-3 pt-3 border-t border-outline-variant/30">
+              {donutData.map((item, index) => (
+                <div key={index} className="flex items-center justify-between text-xs p-2 rounded-xl bg-surface-container-low/60 border border-outline-variant/30 animate-in fade-in slide-in-from-bottom-2 duration-400">
+                  <div className="flex items-center gap-2 truncate">
+                    <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
+                    <span className="font-semibold text-on-surface truncate">{item.name}</span>
                   </div>
-                );
-              })}
+                  <span className="font-bold text-on-surface font-mono shrink-0 ml-2">{item.percentage ? `${item.percentage}%` : item.value}</span>
+                </div>
+              ))}
             </div>
           </div>
         ) : activeType === 'bar' ? (
-          /* Vertical Bar Chart */
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-              <XAxis dataKey={nameKey} axisLine={false} tickLine={false} tick={{ fill: '#64748B', fontSize: 11 }} />
-              <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748B', fontSize: 11 }} />
-              <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
-              <Legend wrapperStyle={{ fontSize: 12, paddingTop: 10 }} />
-              {chartKeys?.dataKeys ? (
-                dataKeys.map((dk, i) => (
-                  <Bar key={dk.key} dataKey={dk.key} name={dk.label || dk.key} fill={dk.resolvedColor} radius={[6, 6, 0, 0]} isAnimationActive={true} animationDuration={800} />
-                ))
-              ) : (
-                <Bar dataKey={valueKey} radius={[6, 6, 0, 0]} isAnimationActive={true} animationDuration={800}>
-                  {data.map((entry, index) => (
-                    <Cell key={`cell-bar-${index}`} fill={resolveColor(entry.tone || entry.color, index)} />
-                  ))}
-                </Bar>
-              )}
-            </BarChart>
-          </ResponsiveContainer>
+          /* Vertical Bar Chart with Capped Bar Width (maxBarSize={44}) */
+          <div className="w-full h-[260px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                <XAxis dataKey={nameKey} axisLine={false} tickLine={false} tick={{ fill: '#64748B', fontSize: 11 }} />
+                <YAxis axisLine={false} tickLine={false} allowDecimals={false} tick={{ fill: '#64748B', fontSize: 11 }} />
+                <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+                <Legend wrapperStyle={{ fontSize: 12, paddingTop: 10 }} />
+                {chartKeys?.dataKeys ? (
+                  dataKeys.map((dk) => (
+                    <Bar key={dk.key} dataKey={dk.key} name={dk.label || dk.key} fill={dk.resolvedColor} radius={[6, 6, 0, 0]} maxBarSize={44} isAnimationActive={true} animationDuration={800} />
+                  ))
+                ) : (
+                  <Bar dataKey={valueKey} radius={[6, 6, 0, 0]} maxBarSize={44} isAnimationActive={true} animationDuration={800}>
+                    {data.map((entry, index) => (
+                      <Cell key={`cell-bar-${index}`} fill={resolveColor(entry.tone || entry.color, index)} />
+                    ))}
+                  </Bar>
+                )}
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         ) : activeType === 'line' ? (
           /* Line Chart */
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-              <XAxis dataKey={nameKey} axisLine={false} tickLine={false} tick={{ fill: '#64748B', fontSize: 11 }} />
-              <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748B', fontSize: 11 }} />
-              <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
-              <Legend wrapperStyle={{ fontSize: 12, paddingTop: 10 }} />
-              {dataKeys.map((dk, i) => (
-                <Line key={dk.key} type="monotone" dataKey={dk.key} name={dk.label || dk.key} stroke={dk.resolvedColor} strokeWidth={3} dot={{ r: 4 }} isAnimationActive={true} animationDuration={800} />
-              ))}
-            </LineChart>
-          </ResponsiveContainer>
+          <div className="w-full h-[260px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                <XAxis dataKey={nameKey} axisLine={false} tickLine={false} tick={{ fill: '#64748B', fontSize: 11 }} />
+                <YAxis axisLine={false} tickLine={false} allowDecimals={false} tick={{ fill: '#64748B', fontSize: 11 }} />
+                <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+                <Legend wrapperStyle={{ fontSize: 12, paddingTop: 10 }} />
+                {dataKeys.map((dk) => (
+                  <Line key={dk.key} type="monotone" dataKey={dk.key} name={dk.label || dk.key} stroke={dk.resolvedColor} strokeWidth={3} dot={{ r: 4 }} isAnimationActive={true} animationDuration={800} />
+                ))}
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
         ) : (
           /* Area Chart */
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-              <defs>
-                {dataKeys.map((dk, i) => (
-                  <linearGradient key={dk.key} id={`grad-${dk.key}`} x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={dk.resolvedColor} stopOpacity={0.3} />
-                    <stop offset="95%" stopColor={dk.resolvedColor} stopOpacity={0} />
-                  </linearGradient>
+          <div className="w-full h-[260px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <defs>
+                  {dataKeys.map((dk) => (
+                    <linearGradient key={dk.key} id={`grad-${dk.key}`} x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor={dk.resolvedColor} stopOpacity={0.3} />
+                      <stop offset="95%" stopColor={dk.resolvedColor} stopOpacity={0} />
+                    </linearGradient>
+                  ))}
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                <XAxis dataKey={nameKey} axisLine={false} tickLine={false} tick={{ fill: '#64748B', fontSize: 11 }} />
+                <YAxis axisLine={false} tickLine={false} allowDecimals={false} tick={{ fill: '#64748B', fontSize: 11 }} />
+                <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+                <Legend wrapperStyle={{ fontSize: 12, paddingTop: 10 }} />
+                {dataKeys.map((dk) => (
+                  <Area
+                    key={dk.key}
+                    type="monotone"
+                    dataKey={dk.key}
+                    name={dk.label || dk.key}
+                    stroke={dk.resolvedColor}
+                    strokeWidth={3}
+                    fillOpacity={1}
+                    fill={`url(#grad-${dk.key})`}
+                    isAnimationActive={true}
+                    animationDuration={800}
+                  />
                 ))}
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-              <XAxis dataKey={nameKey} axisLine={false} tickLine={false} tick={{ fill: '#64748B', fontSize: 11 }} />
-              <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748B', fontSize: 11 }} />
-              <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
-              <Legend wrapperStyle={{ fontSize: 12, paddingTop: 10 }} />
-              {dataKeys.map((dk, i) => (
-                <Area
-                  key={dk.key}
-                  type="monotone"
-                  dataKey={dk.key}
-                  name={dk.label || dk.key}
-                  stroke={dk.resolvedColor}
-                  strokeWidth={3}
-                  fillOpacity={1}
-                  fill={`url(#grad-${dk.key})`}
-                  isAnimationActive={true}
-                  animationDuration={800}
-                />
-              ))}
-            </AreaChart>
-          </ResponsiveContainer>
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
         )}
       </div>
     </div>
