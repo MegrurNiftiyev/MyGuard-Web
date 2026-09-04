@@ -151,8 +151,10 @@ function renderBlock(
         <AiTableBlock 
           key={key} 
           title={block.title} 
-          headers={block.headers || block.tableData?.headers || []} 
-          rows={(block.rows || block.tableData?.rows || []) as (string | number)[][]} 
+          headers={block.headers} 
+          rows={block.rows as any} 
+          content={block.content}
+          tableData={block.tableData}
         />
       );
     case 'chart':
