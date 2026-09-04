@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { Home, FileText, Scan, ShieldAlert, Sparkles, SlidersHorizontal } from 'lucide-react';
+import { Home, FileText, Scan, ShieldAlert, Sparkles, SlidersHorizontal, ChevronRight, ChevronLeft, PanelLeftOpen, PanelLeftClose } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useUserRole } from '../../context/UserRoleContext';
 
@@ -14,6 +14,19 @@ export const BottomNav: React.FC<SideNavProps> = ({ disableFixed = false }) => {
   const { isAdmin } = useUserRole();
   const navRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLAnchorElement | null)[]>([]);
+
+  // State to track if sidebar is expanded with labels
+  const [isExpanded, setIsExpanded] = useState<boolean>(() => {
+    return localStorage.getItem('sidebar_expanded') === 'true';
+  });
+
+  const toggleExpand = () => {
+    setIsExpanded((prev) => {
+      const next = !prev;
+      localStorage.setItem('sidebar_expanded', String(next));
+      return next;
+    });
+  };
 
   // Navigation Items including Scan Et
   const allNavItems: Array<{
@@ -89,13 +102,29 @@ export const BottomNav: React.FC<SideNavProps> = ({ disableFixed = false }) => {
       clearTimeout(timeoutId);
       window.removeEventListener('resize', updateIndicator);
     };
-  }, [location.pathname, activeIndex, navItems.length, lang]);
+  }, [location.pathname, activeIndex, navItems.length, lang, isExpanded]);
 
   const DesktopNav = (
     <nav
       ref={navRef}
-      className="hidden md:flex relative flex-col items-center gap-2 p-2 bg-surface-container-lowest/85 backdrop-blur-xl border border-outline-variant/70 shadow-xs rounded-full overflow-hidden"
+      className={`hidden md:flex relative flex-col gap-2 p-2 bg-surface-container-lowest/90 backdrop-blur-xl border border-outline-variant/70 shadow-lg rounded-[28px] transition-all duration-300 ease-in-out ${
+        isExpanded ? 'w-52 items-start' : 'w-16 items-center'
+      }`}
     >
+      {/* Sidebar Expand / Collapse Toggle Button */}
+      <button
+        type="button"
+        onClick={toggleExpand}
+        className={`w-full flex items-center justify-center p-2 rounded-2xl text-on-surface-variant hover:text-brand-blue hover:bg-surface-container-high/60 transition-colors cursor-pointer mb-1 border-b border-outline-variant/30 ${
+          isExpanded ? 'justify-between px-3.5' : 'justify-center'
+        }`}
+        title={isExpanded ? 'Menyunu sıxlaşdır' : 'Menyunu genişləndir'}
+      >
+        {isExpanded && <span className="text-xs font-bold text-on-surface uppercase tracking-wider">Menyu</span>}
+        {isExpanded ? <PanelLeftClose className="w-5 h-5 text-brand-blue" /> : <PanelLeftOpen className="w-5 h-5 text-brand-blue" />}
+      </button>
+
+      {/* Sliding Active Pill Background */}
       <div
         className="absolute rounded-full bg-brand-blue shadow-md ring-2 ring-brand-blue/30 transition-all duration-300 ease-out z-0"
         style={{
@@ -106,6 +135,7 @@ export const BottomNav: React.FC<SideNavProps> = ({ disableFixed = false }) => {
           opacity: indicatorStyle.opacity,
         }}
       />
+
       {navItems.map((item, index) => {
         const Icon = item.icon;
         const isActive = activeIndex === index;
@@ -114,15 +144,22 @@ export const BottomNav: React.FC<SideNavProps> = ({ disableFixed = false }) => {
           <NavLink
             key={item.id}
             to={item.path}
-            title={item.label}
+            title={isExpanded ? undefined : item.label}
             ref={(el) => { itemRefs.current[index] = el; }}
-            className={`relative z-10 flex items-center justify-center p-3 rounded-full transition-colors duration-200 select-none ${
+            className={`relative z-10 flex items-center gap-3 rounded-full transition-colors duration-200 select-none ${
+              isExpanded ? 'w-full px-4 py-3 justify-start' : 'p-3 justify-center'
+            } ${
               isActive
-                ? '!text-white'
+                ? '!text-white font-bold'
                 : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high/60'
             }`}
           >
-            <Icon className={`w-6 h-6 shrink-0 ${isActive ? '!text-white' : ''}`} />
+            <Icon className={`w-5 h-5 shrink-0 ${isActive ? '!text-white' : ''}`} />
+            {isExpanded && (
+              <span className={`text-sm truncate ${isActive ? '!text-white font-bold' : 'font-medium'}`}>
+                {item.label}
+              </span>
+            )}
           </NavLink>
         );
       })}

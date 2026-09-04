@@ -41,8 +41,7 @@ export const SettingsPage: React.FC = () => {
 
   const handleSave = () => {
     updateDirty(false);
-    setSavedToast(true);
-    setTimeout(() => setSavedToast(false), 3000);
+    window.dispatchEvent(new CustomEvent('settings-saved-success'));
   };
 
   const handleReset = () => {
@@ -66,24 +65,8 @@ export const SettingsPage: React.FC = () => {
     };
   }, [ocrThreshold, sensitivity, autoScan, allowExternalAi, confidentialMode]);
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
-
   return (
     <div className="max-w-4xl mx-auto space-y-12 pb-24 relative">
-      {/* Bottom Right Theme-Styled Sliding Toast / Snackbar Notification */}
-      {savedToast && (
-        <div className="fixed bottom-8 right-8 z-[100] pointer-events-none animate-in fade-in slide-in-from-right-8 duration-300">
-          <div className="bg-surface-container-lowest/95 backdrop-blur-xl border border-emerald-500/40 text-on-surface rounded-2xl px-4 py-3 shadow-[0_16px_40px_rgba(0,102,255,0.15)] flex items-center gap-3 text-xs font-bold">
-            <div className="w-7 h-7 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-500/20">
-              <CheckCircle2 className="w-4 h-4" />
-            </div>
-            <span>{t('settingsSaved') || 'Parametrlər uğurla yadda saxlanıldı.'}</span>
-          </div>
-        </div>
-      )}
 
       {/* Təhlükəsizlik və Skan Parametrləri */}
       <section className="space-y-6">

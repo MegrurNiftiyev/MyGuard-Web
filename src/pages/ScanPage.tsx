@@ -297,24 +297,11 @@ export const ScanPage: React.FC = () => {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
              <div>
                <h1 className="text-headline-lg-mobile md:text-headline-lg font-bold text-on-surface mb-2">
-                 {t('scanTitle') || 'Real-Time Sənəd Skanı'}
+                 Sənəd Skaneri
                </h1>
                <p className="text-body-md text-on-surface-variant">
                  Skan ediləcək sənədi seçin və 7 mərhələli təhlükəsizlik borusunun fəaliyyətini izləyin
                </p>
-             </div>
-             
-             <div className="flex items-center gap-2 bg-surface-container-low px-4 py-2 rounded-xl border border-outline-variant shadow-sm hover:shadow transition-shadow">
-                <input 
-                  type="checkbox" 
-                  id="confidential-switch" 
-                  checked={isConfidential}
-                  onChange={(e) => setIsConfidential(e.target.checked)}
-                  className="w-5 h-5 accent-brand-blue cursor-pointer rounded"
-                />
-                <label htmlFor="confidential-switch" className="text-label-md font-bold text-on-surface cursor-pointer select-none">
-                  Məxfi Sənəd
-                </label>
              </div>
           </div>
         </header>
@@ -324,9 +311,6 @@ export const ScanPage: React.FC = () => {
           <Card padding="lg" className="shadow-l1 flex flex-col items-center text-center space-y-6">
             <div className="flex items-center justify-between w-full">
               <h2 className="text-title-lg font-bold text-on-surface">Hədəf Sənəd</h2>
-              <span className={`text-label-sm px-3 py-1 rounded-full border font-medium ${isUploading ? 'bg-blue-50 text-brand-blue border-blue-200 animate-pulse' : 'bg-surface-container-high text-on-surface-variant border-outline-variant'}`}>
-                {isUploading ? 'Yüklənir...' : 'Gözləmə Rejimi'}
-              </span>
             </div>
 
             {/* Upload Zone Drop Target */}
@@ -364,11 +348,12 @@ export const ScanPage: React.FC = () => {
             <div>
               <div className="flex items-center justify-between mb-6 pb-3 border-b border-outline-variant/50">
                 <h2 className="text-title-lg font-bold text-on-surface">
-                  {t('pipelineTitle') || 'Skan Borusu (7 Mərhələ)'}
+                  Skan etabı (7 Mərhələ)
                 </h2>
-                <span className={`text-label-sm font-mono ${isUploading ? 'text-brand-blue font-bold animate-pulse' : 'text-on-surface-variant'}`}>
-                  {isUploading ? 'Status: Fayl Yüklənir...' : 'Status: Gözləmədə'}
-                </span>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs font-bold text-on-surface select-none">Məxfi Sənəd</span>
+                  <CustomSwitch checked={isConfidential} onChange={(val) => setIsConfidential(val)} />
+                </div>
               </div>
 
               <div className="pl-2 space-y-4">
@@ -404,7 +389,7 @@ export const ScanPage: React.FC = () => {
       {/* Header spanning full width */}
       <header className="lg:col-span-12 mb-2 flex justify-between items-end">
         <div>
-          <h1 className="text-headline-lg-mobile md:text-headline-lg font-bold text-on-surface mb-2">{t('scanTitle')}</h1>
+          <h1 className="text-headline-lg-mobile md:text-headline-lg font-bold text-on-surface mb-2">Sənəd Skaneri</h1>
           <p className="text-body-md text-on-surface-variant">{t('scanSubtitle')}</p>
         </div>
         <div className="flex gap-3">
@@ -467,7 +452,7 @@ export const ScanPage: React.FC = () => {
       {/* Pipeline Status */}
       <div className="lg:col-span-7">
         <Card padding="lg" className="h-full shadow-l1">
-          <h2 className="text-title-lg font-medium text-on-surface mb-8">{t('pipelineTitle')}</h2>
+          <h2 className="text-title-lg font-medium text-on-surface mb-8">Skan etabı (7 Mərhələ)</h2>
           
           <div className="pl-2">
             {steps.map((step, idx) => (

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Shield, Sparkles, Home, Save, X, Globe, LogOut, User as UserIcon, Mail, Fingerprint, Building2, ChevronDown } from 'lucide-react';
+import { Shield, Sparkles, Home, Save, X, Globe, LogOut, User as UserIcon, Mail, Fingerprint, Building2, ChevronDown, Check } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
@@ -10,6 +10,7 @@ export const TopBar: React.FC = () => {
   const { lang, setLang, t } = useLanguage();
   const { user, logout } = useAuth();
   const [isSettingsDirty, setIsSettingsDirty] = useState(false);
+  const [isSaveSuccess, setIsSaveSuccess] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -22,6 +23,17 @@ export const TopBar: React.FC = () => {
     };
     window.addEventListener('settings-dirty-changed', handleDirtyChange);
     return () => window.removeEventListener('settings-dirty-changed', handleDirtyChange);
+  }, []);
+
+  useEffect(() => {
+    const handleSaveSuccess = () => {
+      setIsSaveSuccess(true);
+      setTimeout(() => {
+        setIsSaveSuccess(false);
+      }, 1600);
+    };
+    window.addEventListener('settings-saved-success', handleSaveSuccess);
+    return () => window.removeEventListener('settings-saved-success', handleSaveSuccess);
   }, []);
 
   // Close dropdown on click outside
@@ -76,24 +88,41 @@ export const TopBar: React.FC = () => {
 
         {/* Right: Controls & Profile Settings */}
         <div className="flex items-center gap-3">
-          {/* Settings Actions: Cancel (X) & Save Icon Buttons (Only visible on /settings route when modified) */}
-          {location.pathname === '/settings' && isSettingsDirty && (
+          {/* Settings Actions: Cancel (X) & Save Icon Buttons */}
+          {location.pathname === '/settings' && (isSettingsDirty || isSaveSuccess) && (
             <div className="flex items-center gap-1.5 animate-in fade-in zoom-in-95 duration-200">
+              {!isSaveSuccess && (
+                <button
+                  type="button"
+                  onClick={() => window.dispatchEvent(new Event('trigger-settings-reset'))}
+                  className="w-8 h-8 rounded-full bg-surface-container-low hover:bg-red-50 text-on-surface-variant hover:text-red-600 border border-outline-variant/70 flex items-center justify-center transition-all active:scale-95 cursor-pointer shrink-0"
+                  title="Dəyişiklikləri ləğv et"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
               <button
                 type="button"
-                onClick={() => window.dispatchEvent(new Event('trigger-settings-reset'))}
-                className="w-8 h-8 rounded-full bg-surface-container-low hover:bg-red-50 text-on-surface-variant hover:text-red-600 border border-outline-variant/70 flex items-center justify-center transition-all active:scale-95 cursor-pointer shrink-0"
-                title="Dəyişiklikləri ləğv et"
+                onClick={() => {
+                  if (!isSaveSuccess) {
+                    window.dispatchEvent(new Event('trigger-settings-save'));
+                  }
+                }}
+                className={`h-8 rounded-full flex items-center justify-center shadow-xs active:scale-95 transition-all cursor-pointer shrink-0 px-2.5 ${
+                  isSaveSuccess
+                    ? 'bg-emerald-500 text-white animate-in zoom-in-90 duration-300'
+                    : 'bg-brand-blue hover:bg-brand-blue/90 text-white w-8 !px-0'
+                }`}
+                title={isSaveSuccess ? 'Yadda saxlanıldı' : (t('saveBtn') || 'Yadda Saxla')}
               >
-                <X className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => window.dispatchEvent(new Event('trigger-settings-save'))}
-                className="w-8 h-8 rounded-full bg-brand-blue hover:bg-brand-blue/90 text-white flex items-center justify-center shadow-xs active:scale-95 transition-all cursor-pointer shrink-0"
-                title={t('saveBtn') || 'Yadda Saxla'}
-              >
-                <Save className="w-4 h-4" />
+                {isSaveSuccess ? (
+                  <span className="flex items-center gap-1 text-xs font-bold">
+                    <Check className="w-4 h-4" />
+                    <span className="hidden sm:inline">Yadda saxlanıldı!</span>
+                  </span>
+                ) : (
+                  <Save className="w-4 h-4" />
+                )}
               </button>
             </div>
           )}

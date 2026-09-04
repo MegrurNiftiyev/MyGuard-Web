@@ -1,5 +1,5 @@
 import React from 'react';
-import { FolderOpen, PlusCircle } from 'lucide-react';
+import { FolderOpen, ArrowRight } from 'lucide-react';
 import { Button } from './Button';
 
 export interface EmptyStateProps {
@@ -58,15 +58,14 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
           )}
 
           {primaryActionLabel && onPrimaryAction && (
-            <Button
-              variant="primary"
-              size="md"
+            <button
+              type="button"
               onClick={onPrimaryAction}
-              icon={<PlusCircle className="w-4 h-4" />}
-              className="rounded-full px-6 py-2.5 text-xs font-bold shadow-md cursor-pointer"
+              className="inline-flex items-center justify-center gap-2 bg-brand-blue hover:bg-brand-blue-hover text-white rounded-full px-6 py-2.5 text-xs font-bold shadow-md transition-all cursor-pointer group"
             >
-              {primaryActionLabel}
-            </Button>
+              <span>{primaryActionLabel}</span>
+              <ArrowRight className="w-4 h-4 text-white group-hover:translate-x-0.5 transition-transform" />
+            </button>
           )}
         </div>
       )}

@@ -161,12 +161,10 @@ export const DocumentsPage: React.FC = () => {
           ) : filteredDocs.length === 0 ? (
             <EmptyState
               icon={FileText}
-              title="Hələ ki skan edilmiş sənəd yoxdur"
-              description="Axtarış meyarlarına uyğun sənəd tapılmadı və ya sistemdə hələ heç bir sənəd skan edilməyib."
+              title="Skan edilmiş sənəd yoxdur"
+              description="Hal-hazırda hər hansı skan edilmiş sənəd tapılmadı."
               primaryActionLabel="Yeni Sənəd Skan Et"
               onPrimaryAction={() => navigate('/scan')}
-              secondaryActionLabel={searchTerm || activeFilter !== 'all' ? "Filtrləri Sıfırla" : undefined}
-              onSecondaryAction={searchTerm || activeFilter !== 'all' ? () => { setSearchTerm(''); setActiveFilter('all'); } : undefined}
             />
           ) : (
             filteredDocs.map((doc) => (

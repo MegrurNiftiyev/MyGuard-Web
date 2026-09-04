@@ -366,8 +366,8 @@ export const DashboardPage: React.FC = () => {
           ) : documents.length === 0 ? (
             <EmptyState
               icon={FileText}
-              title="Hələ heç bir sənəd yoxlanılmayıb"
-              description="Sistemdə skan edilmiş sənəd tapılmadı. Yuxarıdakı paneldən yeni sənəd yükləyərək analizə başlayın."
+              title="Skan edilmiş sənəd yoxdur"
+              description="Hal-hazırda hər hansı skan edilmiş sənəd tapılmadı."
               primaryActionLabel="Yeni Sənəd Skan Et"
               onPrimaryAction={() => navigate('/scan')}
             />
