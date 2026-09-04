@@ -407,7 +407,7 @@ export const DashboardPage: React.FC = () => {
                       {/* Mobile-only risk score percentage */}
                       <div className="flex md:hidden flex-col items-end shrink-0">
                          {doc.riskScore > 0 && (
-                           <span className={`font-bold font-mono text-xs px-2 py-0.5 rounded-full ${doc.riskScore >= 70 ? 'bg-red-50 text-red-600 border border-red-200' : doc.riskScore >= 30 ? 'bg-amber-50 text-amber-600 border border-amber-200' : 'bg-emerald-50 text-emerald-600 border border-emerald-200'}`}>
+                           <span className={`font-semibold text-xs ${doc.riskScore >= 70 ? 'text-error' : doc.riskScore >= 40 ? 'text-warning' : 'text-success'}`}>
                              {doc.riskScore}%
                            </span>
                          )}
@@ -431,7 +431,7 @@ export const DashboardPage: React.FC = () => {
                     {/* Column 3: Risk Percentage (Desktop) */}
                     <div className="hidden md:flex col-span-2 items-center justify-end gap-2">
                       {doc.riskScore > 0 ? (
-                        <span className={`font-bold font-mono text-sm px-2.5 py-1 rounded-full ${doc.riskScore >= 70 ? 'bg-red-50 text-red-600 border border-red-200/80' : doc.riskScore >= 30 ? 'bg-amber-50 text-amber-600 border border-amber-200/80' : 'bg-emerald-50 text-emerald-600 border border-emerald-200/80'}`}>
+                        <span className={`font-semibold ${doc.riskScore >= 70 ? 'text-error border-l-4 border-error pl-2' : doc.riskScore >= 40 ? 'text-warning border-l-4 border-warning pl-2' : 'text-success border-l-4 border-success pl-2'}`}>
                           {doc.riskScore}%
                         </span>
                       ) : (
