@@ -43,14 +43,14 @@ export const ThinkingIndicator: React.FC = () => {
 
   return (
     <div className="flex items-start gap-3.5 w-full my-3.5">
-      <div className="relative flex items-center justify-center shrink-0 mt-0.5">
+      <div className="relative flex items-center justify-center shrink-0">
         <span className="absolute w-7 h-7 rounded-full bg-brand-blue/20 animate-ping"></span>
         <span className="absolute w-8 h-8 rounded-full bg-brand-purple/15 animate-breathe"></span>
         <div className="w-8 h-8 rounded-full bg-blue-50 border border-brand-blue/30 text-brand-blue flex items-center justify-center shadow-xs z-10">
           <Sparkles className="w-4 h-4 text-brand-blue animate-icon-breathe" />
         </div>
       </div>
-      <span className={`text-sm font-medium text-on-surface transition-opacity duration-300 mt-1.5 ${fade ? 'opacity-100' : 'opacity-0'}`}>
+      <span className={`text-sm font-medium text-on-surface transition-opacity duration-300 pt-1.5 ${fade ? 'opacity-100' : 'opacity-0'}`}>
         {THINKING_STEPS[stepIndex]}
       </span>
     </div>
