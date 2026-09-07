@@ -29,6 +29,11 @@ export const FloatingAiAssistant: React.FC = () => {
     }
   ]);
 
+  // Hide floating AI button on home page (/) and dedicated assistant page (/assistant)
+  if (location.pathname === '/' || location.pathname === '/assistant') {
+    return null;
+  }
+
   const getScreenDestination = (pathname: string): ScreenDestination => {
     if (pathname === '/') return 'HOME_SCREEN';
     if (pathname.startsWith('/documents')) return 'DOCUMENTS_SCREEN';
@@ -41,6 +46,12 @@ export const FloatingAiAssistant: React.FC = () => {
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
+
+  useEffect(() => {
+    const handleCloseChat = () => setIsOpen(false);
+    window.addEventListener('close-floating-chat', handleCloseChat);
+    return () => window.removeEventListener('close-floating-chat', handleCloseChat);
+  }, []);
 
   useEffect(() => {
     if (isOpen) {

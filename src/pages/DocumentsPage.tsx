@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, FileText, ArrowRight, Eye, Trash2 } from 'lucide-react';
+import { Search, FileText, ArrowRight, Eye, Trash2, Lock } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Chip } from '../components/ui/Chip';
@@ -183,8 +183,13 @@ export const DocumentsPage: React.FC = () => {
                       <FileText className="w-5 h-5 text-on-surface-variant group-hover:text-brand-blue transition-colors" />
                     </div>
                     <div className="min-w-0">
-                      <div className="text-title-lg font-medium text-on-surface truncate group-hover:text-brand-blue transition-colors font-sans" style={{ fontFamily: "'Inter', system-ui, -apple-system, sans-serif" }}>
-                        {decodeFileName(doc.name)}
+                      <div className="text-title-lg font-medium text-on-surface truncate group-hover:text-brand-blue transition-colors font-sans flex items-center gap-2" style={{ fontFamily: "'Inter', system-ui, -apple-system, sans-serif" }}>
+                        <span className="truncate">{decodeFileName(doc.name)}</span>
+                        {doc.isConfidential && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-900 font-extrabold text-[10px] border border-indigo-200 shrink-0">
+                            <Lock className="w-3 h-3" /> MƏXFİ
+                          </span>
+                        )}
                       </div>
                       <div className="text-label-sm text-on-surface-variant/70">
                         {doc.fileType} • {doc.size}

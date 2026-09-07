@@ -39,7 +39,6 @@ export const BottomNav: React.FC<SideNavProps> = ({ disableFixed = false }) => {
     { id: 'home', label: t('home'), path: '/', icon: Home },
     { id: 'documents', label: t('documents'), path: '/documents', icon: FileText },
     { id: 'scan', label: 'Skan et', path: '/scan', icon: Scan },
-    { id: 'risks', label: t('risks'), path: '/risk-reports', icon: ShieldAlert, adminOnly: true },
     { id: 'assistant', label: t('assistant'), path: '/assistant', icon: Sparkles },
     { id: 'settings', label: t('settings'), path: '/settings', icon: SlidersHorizontal },
   ];
@@ -96,9 +95,12 @@ export const BottomNav: React.FC<SideNavProps> = ({ disableFixed = false }) => {
       }
     };
 
-    const timeoutId = setTimeout(updateIndicator, 50);
+    updateIndicator();
+    const rId = requestAnimationFrame(updateIndicator);
+    const timeoutId = setTimeout(updateIndicator, 150);
     window.addEventListener('resize', updateIndicator);
     return () => {
+      cancelAnimationFrame(rId);
       clearTimeout(timeoutId);
       window.removeEventListener('resize', updateIndicator);
     };
@@ -107,19 +109,31 @@ export const BottomNav: React.FC<SideNavProps> = ({ disableFixed = false }) => {
   const DesktopNav = (
     <nav
       ref={navRef}
-      className={`hidden md:flex relative flex-col gap-2 p-2 bg-surface-container-lowest/90 backdrop-blur-xl border border-outline-variant/70 shadow-lg transition-all duration-300 ease-in-out ${
-        isExpanded ? 'w-52 items-start rounded-3xl p-3' : 'w-16 items-center rounded-full py-3'
+      className={`hidden md:flex relative flex-col gap-2 bg-surface-container-lowest/95 backdrop-blur-xl border border-outline-variant/70 shadow-xl rounded-3xl transition-all duration-300 ease-in-out ${
+        isExpanded ? 'w-56 items-start p-3' : 'w-16 items-center py-4 px-2'
       }`}
     >
-      {/* Right Side Toggle Arrow Button */}
+      {/* Y-Axis Vertically Centered Toggle Arrow Button */}
       <button
         type="button"
         onClick={toggleExpand}
-        className="absolute -right-3.5 top-7 z-30 w-7 h-7 rounded-full bg-white border border-outline-variant/80 shadow-md flex items-center justify-center text-brand-blue hover:bg-surface-container-high hover:scale-110 active:scale-95 transition-all cursor-pointer"
+        className="absolute -right-3.5 top-1/2 -translate-y-1/2 z-30 w-7 h-7 rounded-full bg-white border border-outline-variant/80 shadow-md flex items-center justify-center text-brand-blue hover:bg-surface-container-high hover:scale-110 active:scale-95 transition-all cursor-pointer"
         title={isExpanded ? 'Menyunu sıxlaşdır' : 'Menyunu genişləndir'}
       >
         {isExpanded ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
       </button>
+
+      {/* Smooth Sliding Left Active Indicator Line */}
+      {isExpanded && activeIndex >= 0 && indicatorStyle.opacity > 0 && (
+        <div
+          className="absolute left-0 w-1.5 bg-brand-blue rounded-r-full shadow-2xs transition-all duration-300 ease-out pointer-events-none z-20"
+          style={{
+            top: `${indicatorStyle.top + (indicatorStyle.height - 24) / 2}px`,
+            height: '24px',
+            opacity: indicatorStyle.opacity,
+          }}
+        />
+      )}
 
       {navItems.map((item, index) => {
         const Icon = item.icon;
@@ -131,19 +145,16 @@ export const BottomNav: React.FC<SideNavProps> = ({ disableFixed = false }) => {
               key={item.id}
               to={item.path}
               ref={(el) => { itemRefs.current[index] = el; }}
-              className={`relative z-10 flex items-center gap-3.5 w-full px-4 py-3 rounded-2xl transition-all duration-200 select-none overflow-hidden ${
+              className={`relative z-10 flex items-center gap-3.5 w-full pl-5 pr-4 py-3 rounded-2xl transition-colors duration-200 select-none overflow-hidden ${
                 isActive
-                  ? 'text-brand-blue font-bold bg-blue-50/70 border border-brand-blue/15'
-                  : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high/50 font-medium'
+                  ? 'text-brand-blue font-bold bg-surface-container-high/50'
+                  : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high/30 font-medium'
               }`}
             >
               <Icon className={`w-5 h-5 shrink-0 ${isActive ? 'text-brand-blue' : ''}`} />
               <span className="text-sm truncate font-sans">
                 {item.label}
               </span>
-              {isActive && (
-                <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1.5 h-6 bg-brand-blue rounded-l-full shadow-2xs" />
-              )}
             </NavLink>
           );
         }

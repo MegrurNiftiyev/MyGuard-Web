@@ -65,7 +65,8 @@ export const AiChartBlock: React.FC<AiChartBlockProps> = ({
         return {
           name: dk.label || dk.key,
           value: sum,
-          color: dk.resolvedColor
+          color: dk.resolvedColor,
+          percentage: undefined as number | undefined
         };
       });
     }

@@ -11,6 +11,7 @@ import { AiMessage, DocumentItem, RiskStatus } from '../types';
 import { Chip } from '../components/ui/Chip';
 import { documentsApi } from '../api/documentsApi';
 import { chatApi } from '../api/chatApi';
+import { formatUploadDate } from '../utils/dateFormatter';
 import { AiMessageRenderer } from '../components/assistant/AiMessageRenderer';
 
 const decodeFileName = (text: string) => {

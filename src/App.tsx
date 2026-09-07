@@ -11,7 +11,6 @@ import ScanPage from './pages/ScanPage';
 import AnalysisResultPage from './pages/AnalysisResultPage';
 import TextComparisonPage from './pages/TextComparisonPage';
 import DocumentsPage from './pages/DocumentsPage';
-import RiskReportsPage from './pages/RiskReportsPage';
 import AssistantPage from './pages/AssistantPage';
 import ModelManagementPage from './pages/ModelManagementPage';
 import SettingsPage from './pages/SettingsPage';
@@ -51,14 +50,6 @@ export const App: React.FC = () => {
                   element={
                     <ProtectedRoute>
                       <DocumentsPage />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/risk-reports"
-                  element={
-                    <ProtectedRoute>
-                      <RiskReportsPage />
                     </ProtectedRoute>
                   }
                 />

@@ -8,6 +8,7 @@ import { HumanReviewBox } from '../components/ui/HumanReviewBox';
 import { Typewriter } from '../components/ui/Typewriter';
 import { documentsApi, DetailedDocumentReport } from '../api/documentsApi';
 import { formatUploadDate } from '../utils/dateFormatter';
+import { useLanguage } from '../context/LanguageContext';
 
 const decodeFileName = (text: string) => {
   if (!text) return text;
@@ -232,22 +233,51 @@ export const AnalysisResultPage: React.FC = () => {
   if (isLoading) {
     return (
       <div className="space-y-8 pb-12 animate-fade-in relative max-w-5xl mx-auto">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-surface-container-lowest p-6 md:p-8 rounded-xl border border-outline-variant shadow-l1">
-          <div className="flex gap-4 items-center w-1/2">
-            <div className="w-10 h-10 rounded-lg bg-surface-container-high animate-pulse shrink-0"></div>
-            <div className="flex flex-col gap-2 w-full">
-              <div className="h-6 bg-surface-container-high rounded animate-pulse w-3/4"></div>
-              <div className="h-4 bg-surface-container-high rounded animate-pulse w-1/4"></div>
+        <div className="flex items-center justify-between">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate(-1)}
+            icon={<ArrowLeft className="w-4 h-4 text-brand-blue" />}
+            className="rounded-full px-4 py-2 font-bold text-xs shadow-2xs hover:shadow transition-all bg-white cursor-pointer"
+          >
+            Geri
+          </Button>
+        </div>
+
+        {/* Header Skeleton */}
+        <div className="h-28 bg-white p-6 rounded-2xl border border-outline-variant/60 shadow-sm animate-pulse flex items-center justify-between gap-6">
+          <div className="flex items-center gap-4 w-full">
+            <div className="w-14 h-14 rounded-2xl bg-surface-container-high shrink-0"></div>
+            <div className="space-y-2.5 w-full max-w-md">
+              <div className="h-5 bg-surface-container-high rounded-md w-3/4"></div>
+              <div className="h-3.5 bg-surface-container-high rounded-md w-1/2"></div>
             </div>
           </div>
-          <div className="w-32 h-16 bg-surface-container-high rounded-xl animate-pulse"></div>
+          <div className="w-16 h-16 rounded-full bg-surface-container-high shrink-0"></div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+
+        {/* Grid Metrics Skeleton */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {[1, 2, 3, 4].map(i => (
-            <div key={i} className="h-32 bg-surface-container-lowest rounded-xl border border-outline-variant animate-pulse shadow-sm"></div>
+            <div key={i} className="h-32 bg-white rounded-2xl border border-outline-variant/60 p-5 shadow-sm animate-pulse flex flex-col justify-between">
+              <div className="flex justify-between items-start">
+                <div className="h-3 bg-surface-container-high rounded w-2/3"></div>
+                <div className="w-7 h-7 rounded-lg bg-surface-container-high"></div>
+              </div>
+              <div className="h-6 bg-surface-container-high rounded w-1/2 mt-3"></div>
+              <div className="h-1 bg-surface-container-high rounded-full w-full mt-2"></div>
+            </div>
           ))}
         </div>
-        <div className="h-40 bg-surface-container-lowest rounded-xl animate-pulse shadow-sm border border-outline-variant"></div>
+
+        {/* Report Card Skeleton */}
+        <div className="h-44 bg-white p-6 rounded-2xl border border-outline-variant/60 shadow-sm animate-pulse space-y-4">
+          <div className="h-4 bg-surface-container-high rounded w-1/4"></div>
+          <div className="h-3.5 bg-surface-container-high rounded w-5/6"></div>
+          <div className="h-3.5 bg-surface-container-high rounded w-4/6"></div>
+          <div className="h-3.5 bg-surface-container-high rounded w-3/6"></div>
+        </div>
       </div>
     );
   }

@@ -17,7 +17,6 @@ export const PageShell: React.FC<PageShellProps> = ({ children }) => {
     '/',
     '/login',
     '/documents',
-    '/risk-reports',
     '/assistant',
     '/settings',
     '/scan',

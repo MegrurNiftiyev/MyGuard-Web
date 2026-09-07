@@ -4,6 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { FileText, ArrowRight, UploadCloud, ShieldAlert, Sparkles, FileCode, Loader2 } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
+import { CustomSwitch } from '../components/ui/CustomSwitch';
 import { ProgressStep } from '../components/ui/ProgressStep';
 import { StepStatus } from '../types';
 import { useLanguage } from '../context/LanguageContext';

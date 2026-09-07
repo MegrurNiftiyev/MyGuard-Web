@@ -59,5 +59,3 @@ export const MyGuardLoader: React.FC<MyGuardLoaderProps> = ({
     </div>
   );
 };
-
-export default MyGuardLoader;
