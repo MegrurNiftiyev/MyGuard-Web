@@ -29,11 +29,6 @@ export const FloatingAiAssistant: React.FC = () => {
     }
   ]);
 
-  // Hide floating AI button on home page (/) and dedicated assistant page (/assistant)
-  if (location.pathname === '/' || location.pathname === '/assistant') {
-    return null;
-  }
-
   const getScreenDestination = (pathname: string): ScreenDestination => {
     if (pathname === '/') return 'HOME_SCREEN';
     if (pathname.startsWith('/documents')) return 'DOCUMENTS_SCREEN';
@@ -58,6 +53,11 @@ export const FloatingAiAssistant: React.FC = () => {
       scrollToBottom();
     }
   }, [messages, isThinking, isOpen]);
+
+  // Hide floating AI button on home page (/) and dedicated assistant page (/assistant)
+  if (location.pathname === '/' || location.pathname === '/assistant') {
+    return null;
+  }
 
   const handleSend = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
