@@ -472,13 +472,17 @@ export const ScanPage: React.FC = () => {
 
           <div className="mt-10 flex justify-end gap-4 border-t border-outline-variant pt-6">
             <Button variant="outline" size="md" onClick={clearGlobalState}>
-              {isScanning ? 'Ləğv Et' : 'Təmizlə'}
+              {(isScanning || isUploading) ? 'Ləğv Et' : 'Təmizlə'}
             </Button>
-            {!isScanning && (
-              <Button variant="primary" size="md" onClick={() => navigate(`/analysis/${activeDocId}`)}>
-                Hesabata Bax
-              </Button>
-            )}
+            <Button 
+              variant="primary" 
+              size="md" 
+              disabled={isScanning || isUploading}
+              onClick={() => navigate(`/analysis/${activeDocId}`)}
+              className={(isScanning || isUploading) ? '!bg-gray-200 !text-gray-400 !border-gray-200 opacity-70 cursor-not-allowed pointer-events-none shadow-none' : ''}
+            >
+              Hesabata Bax
+            </Button>
           </div>
         </Card>
       </div>
