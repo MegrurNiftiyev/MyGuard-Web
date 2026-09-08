@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ExternalLink, ArrowRight, Compass, Shield, FileText, Scan, SlidersHorizontal, Sparkles } from 'lucide-react';
+import { ExternalLink, ArrowRight, Paperclip, Shield, FileText, Scan, SlidersHorizontal, Sparkles } from 'lucide-react';
 
 export interface AiLinkBlockProps {
   url: string;
@@ -33,7 +33,7 @@ export const resolveScreenRoute = (
   }
 
   if (urlOrEnum.startsWith('/') && !urlOrEnum.includes('risk')) {
-    return { path: urlOrEnum, defaultLabel: 'Səhifəyə Keç', icon: Compass };
+    return { path: urlOrEnum, defaultLabel: 'Səhifəyə Keç', icon: Paperclip };
   }
 
   return null;
@@ -82,20 +82,20 @@ export const AiLinkBlock: React.FC<AiLinkBlockProps> = ({
   }
 
   return (
-    <div className="w-full bg-surface-container-lowest border border-outline-variant/60 rounded-xl p-3 shadow-xs mt-2.5 mb-0.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-body-md text-on-surface animate-in fade-in duration-300">
-      <div className="flex items-center gap-2 text-on-surface-variant text-xs">
-        <Compass className="w-4 h-4 text-on-surface-variant/70 shrink-0" />
-        <span>{description || 'Daha ətraflı keçid üçün:'}</span>
+    <div className="w-full bg-white border border-outline-variant/60 rounded-2xl sm:rounded-3xl px-5 py-3.5 shadow-xs my-2 flex items-center justify-between gap-4 text-sm text-on-surface animate-in fade-in duration-300">
+      <div className="flex items-center gap-2.5 text-on-surface min-w-0">
+        <Paperclip className="w-4 h-4 text-on-surface-variant/70 shrink-0" />
+        <span className="truncate font-medium">{description || 'Daha ətraflı metodologiya və mənbə üçün sənədləşməyə baxın:'}</span>
       </div>
 
       <a
         href={url}
         target="_blank"
         rel="noreferrer"
-        className="inline-flex items-center gap-1.5 font-bold text-brand-blue hover:underline text-xs cursor-pointer shrink-0"
+        className="inline-flex items-center gap-1.5 font-medium text-brand-blue hover:underline text-sm cursor-pointer shrink-0"
       >
         <span>{label}</span>
-        <ExternalLink className="w-3.5 h-3.5 ml-0.5" />
+        <ExternalLink className="w-4 h-4 text-brand-blue shrink-0" />
       </a>
     </div>
   );
