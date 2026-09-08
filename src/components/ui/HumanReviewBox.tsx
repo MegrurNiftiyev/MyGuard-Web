@@ -20,7 +20,7 @@ export const HumanReviewBox: React.FC<HumanReviewBoxProps> = ({
   primaryIcon = <Eye className="w-4 h-4" />,
   title = 'İnsan Təsdiqi Tələb Olunur',
   description = 'Yüksək riskli elementlər aşkar edilməyib, lakin sənədin məzmununu nəzərdən keçirməyiniz tövsiyə olunur.',
-  customLabel = 'İSTƏYƏ BAĞLI'
+  customLabel = null
 }) => {
   return (
     <div className="bg-amber-50/70 rounded-2xl p-5 sm:p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 border border-amber-100/50 my-4 shadow-sm">

@@ -100,6 +100,18 @@ export const AssistantPage: React.FC = () => {
     }
   };
 
+    useEffect(() => {
+    const handleNewSession = () => {
+      setMessages([]);
+      setSessionId(undefined);
+      setAttachedFiles([]);
+      setInput('');
+      globalMessages = [];
+      globalSessionId = undefined;
+    };
+    window.addEventListener('trigger-new-chat-session', handleNewSession);
+    return () => window.removeEventListener('trigger-new-chat-session', handleNewSession);
+  }, []);
   const handleMessageComplete = (messageId: string) => {
     setMessages((prev) => {
       const updated = prev.map((msg) =>

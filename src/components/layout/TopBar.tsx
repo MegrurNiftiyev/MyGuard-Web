@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Shield, Sparkles, Home, Save, X, Globe, LogOut, User as UserIcon, Mail, Fingerprint, Building2, ChevronDown, Check } from 'lucide-react';
+import { Shield, Sparkles, Plus, Home, Save, X, Globe, LogOut, User as UserIcon, Mail, Fingerprint, Building2, ChevronDown, Check } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
@@ -88,7 +88,18 @@ export const TopBar: React.FC = () => {
         </div>
 
         {/* Right: Controls & Profile Settings */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3">          {/*New Chat Session Button (Only visible on /assistant page)*/}
+          {location.pathname === '/assistant' && (
+            <button
+              type="button"
+              onClick={() => window.dispatchEvent(new Event('trigger-new-chat-session'))}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-50/90 hover:bg-brand-blue text-brand-blue hover:text-white border border-brand-blue/30 shadow-xs hover:shadow-md transition-all active:scale-95 cursor-pointer font-semibold text-xs group shrink-0"
+              title={(t as any)('newChatSession') || 'Yeni Çat'}
+            >
+              <Plus className="w-4 h-4 transition-transform group-hover:rotate-90 duration-300" />
+              <span className="hidden sm:inline font-bold">{(t as any)('newChatSession') || 'Yeni Çat'}</span>
+            </button>
+          )}
           {/* Settings Actions: Cancel (X) & Save Icon Buttons */}
           {location.pathname === '/settings' && (isSettingsDirty || isSaveSuccess) && (
             <div className="flex items-center gap-1.5 animate-in fade-in zoom-in-95 duration-200">
@@ -180,7 +191,18 @@ export const TopBar: React.FC = () => {
               <div className="absolute right-0 mt-3 w-80 bg-white/95 backdrop-blur-xl border border-outline-variant/80 rounded-3xl shadow-2xl p-4 z-[100] animate-in fade-in zoom-in-95 duration-150 space-y-3.5">
                 {/* User Info Header */}
                 <div className="p-3.5 bg-surface-container-low/70 rounded-2xl space-y-3 border border-outline-variant/40">
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3">          {/*New Chat Session Button (Only visible on /assistant page)*/}
+          {location.pathname === '/assistant' && (
+            <button
+              type="button"
+              onClick={() => window.dispatchEvent(new Event('trigger-new-chat-session'))}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-50/90 hover:bg-brand-blue text-brand-blue hover:text-white border border-brand-blue/30 shadow-xs hover:shadow-md transition-all active:scale-95 cursor-pointer font-semibold text-xs group shrink-0"
+              title={(t as any)('newChatSession') || 'Yeni Çat'}
+            >
+              <Plus className="w-4 h-4 transition-transform group-hover:rotate-90 duration-300" />
+              <span className="hidden sm:inline font-bold">{(t as any)('newChatSession') || 'Yeni Çat'}</span>
+            </button>
+          )}
                     <div className="w-11 h-11 rounded-full bg-blue-100/90 text-brand-blue font-bold flex items-center justify-center text-sm shrink-0 border border-brand-blue/20 shadow-xs overflow-hidden">
                       {isLoading || !user ? (
                         <div className="w-full h-full bg-slate-200/90 animate-pulse rounded-full" />
