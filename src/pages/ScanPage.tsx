@@ -16,8 +16,8 @@ const DEFAULT_SCAN_STEPS = [
   { stepNumber: 2, title: 'PDF Mətninin Çıxarılması', description: 'Daxili mətn qatı və strukturu oxunur...' },
   { stepNumber: 3, title: 'OCR Vizual Analiz', description: 'Vizual görüntüdən insan tərəfindən görünən mətn çıxarılır...' },
   { stepNumber: 4, title: 'Mətn Müqayisəsi', description: 'OCR və PDF mətn qatları fərqləri analiz edilir...' },
-  { stepNumber: 5, title: 'Gizli Mətn Aşkarlanması', description: 'Görünməyən şrift ölçüləri və opacity 0% mətnləri yoxlanılır...' },
-  { stepNumber: 6, title: 'Prompt Injection Analizi', description: 'AI modeli tərəfindən yoxlanılır...' },
+  { stepNumber: 5, title: 'Gizli Mətn Aşkarlanması', description: 'İnsan gözünə görünməyən yazılar yoxlanılır...' },
+  { stepNumber: 6, title: 'Prompt Injection Analizi', description: 'AI modeli tərəfindən prompt injection yoxlaması edilir...' },
   { stepNumber: 7, title: 'Risk Qiymətləndirilməsi', description: 'Risk balı hesablanır və sənəd statusu müəyyən edilir...' }
 ];
 
@@ -30,6 +30,30 @@ const formatActiveMessage = (msg?: string) => {
     .replace(/analiz edildi/g, 'analiz edilir...')
     .replace(/yoxlanıldı/g, 'yoxlanılır...')
     .replace(/hesablandı/g, 'hesablanır...');
+};
+
+const getStepDescription = (stepIdx: number, status: StepStatus, socketMsg?: string): string => {
+  if (stepIdx === 4) {
+    if (status === 'warning' || status === 'failed') {
+      return 'İnsan gözünə görünməyən yazılar aşkarlandı';
+    }
+    if (status === 'completed') {
+      return 'İnsan gözünə görünməyən yazılar tapılmadı';
+    }
+    return 'İnsan gözünə görünməyən yazılar yoxlanılır...';
+  }
+
+  if (stepIdx === 5) {
+    if (status === 'warning' || status === 'failed') {
+      return 'Prompt injection hücumu aşkarlandı';
+    }
+    if (status === 'completed') {
+      return 'Prompt injection təhdidi tapılmadı';
+    }
+    return 'AI modeli tərəfindən prompt injection yoxlaması edilir...';
+  }
+
+  return formatActiveMessage(socketMsg) || DEFAULT_SCAN_STEPS[stepIdx]?.description || '';
 };
 
 // Global state to persist scan pipeline across route changes
@@ -244,7 +268,8 @@ export const ScanPage: React.FC = () => {
 
           const newSteps = prevSteps.map((step, idx) => {
             if (idx < activeIdx) {
-              return { ...step, status: getStepFinalStatus(idx) };
+              const finalSt = getStepFinalStatus(idx);
+              return { ...step, status: finalSt, description: getStepDescription(idx, finalSt, data.message) };
             }
             if (idx === activeIdx) {
               let status: StepStatus = 'processing';
@@ -260,7 +285,7 @@ export const ScanPage: React.FC = () => {
                 isFinished = true;
               }
 
-              return { ...step, status, description: formatActiveMessage(data.message) || step.description };
+              return { ...step, status, description: getStepDescription(idx, status, data.message) };
             }
             return { ...step, status: 'pending' as StepStatus };
           });
@@ -388,14 +413,6 @@ export const ScanPage: React.FC = () => {
                 ))}
               </div>
             </div>
-
-            {isUploading && (
-              <div className="mt-8 pt-4 border-t border-outline-variant text-center">
-                <p className="text-xs text-on-surface-variant font-medium">
-                  ⏳ Fayl serverə yüklənir. Yükləmə tamamlandıqdan sonra 7 mərhələli canlı skan avtomatik başlayacaqdır.
-                </p>
-              </div>
-            )}
           </Card>
         </div>
       </div>
