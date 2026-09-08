@@ -464,11 +464,11 @@ export const AnalysisResultPage: React.FC = () => {
           </div>
         </section>
       ) : (
-        <section className="bg-white rounded-3xl border border-outline-variant/60 p-6 sm:p-7 shadow-xs flex items-center gap-5 relative overflow-hidden">
-          <div className="w-14 h-14 rounded-2xl bg-blue-50 text-brand-blue flex items-center justify-center shrink-0 border border-blue-100 shadow-2xs">
-            <Sparkles className="w-7 h-7" />
+        <section className="bg-white rounded-3xl border border-outline-variant/60 p-6 sm:p-7 shadow-xs flex items-start gap-4 sm:gap-5 relative overflow-hidden">
+          <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-blue-50 text-brand-blue flex items-center justify-center shrink-0 border border-blue-100 shadow-2xs mt-0.5">
+            <Sparkles className="w-6 h-6 sm:w-7 sm:h-7" />
           </div>
-          <div className="flex flex-col gap-1 w-full">
+          <div className="flex flex-col gap-1.5 w-full min-w-0">
             <h2 className="text-base sm:text-lg font-bold text-on-surface font-sans">
               Süni İntellekt İzahı
             </h2>
