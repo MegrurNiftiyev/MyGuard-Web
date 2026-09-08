@@ -159,7 +159,6 @@ export const TextComparisonPage: React.FC = () => {
             primaryLabel="Təhdiddir"
             secondaryLabel="Təhlükəsizdir"
             primaryIcon={<AlertTriangle className="w-4 h-4" />}
-            customLabel={liveComparison.flaggedMetadata?.visibilityType || 'GİZLİ MƏTN'}
             description="Zəhmət olmasa OCR və PDF qatlarını müqayisə edərək bunun təhdid olub-olmadığını təsdiqləyin."
           />
         ) : null}
