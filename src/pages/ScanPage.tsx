@@ -11,6 +11,15 @@ import { useLanguage } from '../context/LanguageContext';
 import { joinDocumentScanRoom, leaveDocumentScanRoom, ScanEventData } from '../api/socketClient';
 import { documentsApi } from '../api/documentsApi';
 
+const decodeFileName = (text: string) => {
+  if (!text) return text;
+  try {
+    return decodeURIComponent(escape(text));
+  } catch {
+    return text;
+  }
+};
+
 const DEFAULT_SCAN_STEPS = [
   { stepNumber: 1, title: 'Sənədin Yüklənməsi', description: 'Fayl təhlükəsiz sandbox mühitinə daxil edilir...' },
   { stepNumber: 2, title: 'PDF Mətninin Çıxarılması', description: 'Daxili mətn qatı və strukturu oxunur...' },
@@ -447,15 +456,19 @@ export const ScanPage: React.FC = () => {
           </div>
           
           <div className="flex flex-col gap-2 mt-auto">
-            <div className="flex justify-between items-center">
-              <span className="text-label-md font-medium text-on-surface truncate max-w-[200px]">{activeFileName}</span>
-              <span className="text-label-sm text-on-surface-variant">Canlı Əlaqə</span>
+            <div className="flex justify-between items-center gap-3">
+              <span className="text-label-md font-medium text-on-surface truncate max-w-[240px]" title={decodeFileName(activeFileName)}>
+                {decodeFileName(activeFileName)}
+              </span>
+              <span className="text-label-sm text-brand-blue font-bold shrink-0">
+                {Math.round(((currentStepIndex + 1) / steps.length) * 100)}% Tamamlandı
+              </span>
             </div>
             <div className="w-full bg-surface-variant rounded-full h-2 overflow-hidden">
-              <div className="bg-brand-blue h-2 rounded-full transition-all duration-500" style={{ width: `${Math.round(((currentStepIndex + 1) / steps.length) * 100)}%` }}></div>
-            </div>
-            <div className="text-label-sm text-brand-blue text-right mt-1">
-              {Math.round(((currentStepIndex + 1) / steps.length) * 100)}% Tamamlandı
+              <div 
+                className="bg-brand-blue h-2 rounded-full transition-all duration-500" 
+                style={{ width: `${Math.round(((currentStepIndex + 1) / steps.length) * 100)}%` }} 
+              />
             </div>
           </div>
         </Card>
