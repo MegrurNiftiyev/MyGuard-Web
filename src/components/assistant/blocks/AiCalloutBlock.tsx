@@ -5,8 +5,8 @@ import { SemanticTone } from '../../../types';
 
 const toneHeaderColors: Record<string, string> = {
   success: 'text-emerald-600 dark:text-emerald-400',
-  danger: 'text-error',
-  warning: 'text-amber-500',
+  danger: 'text-red-600 dark:text-red-400',
+  warning: 'text-amber-600 dark:text-amber-400',
   info: 'text-brand-blue',
   primary: 'text-brand-blue',
   purple: 'text-purple-600',
@@ -38,7 +38,7 @@ export const AiCalloutBlock: React.FC<CalloutProps> = ({ tone, title, content })
           <h3 className="text-title-md font-bold text-on-surface">{title}</h3>
         </div>
       )}
-      <div className="text-body-md text-on-surface leading-relaxed [&>p]:mb-2 [&>p:last-child]:mb-0 [&>ul]:list-disc [&>ul]:pl-5 [&>ul]:space-y-1.5 [&>ol]:list-decimal [&>ol]:pl-5 [&>ol]:space-y-1.5 [&_strong]:font-bold font-sans">
+      <div className="text-body-md text-on-surface leading-relaxed [&>p]:mb-2 [&>p:last-child]:mb-0 [&>ul]:list-disc [&>ul]:pl-5 [&>ul]:space-y-2 [&>ol]:list-decimal [&>ol]:pl-5 [&>ol]:space-y-2 [&_strong]:font-bold font-sans">
         <ReactMarkdown>{content}</ReactMarkdown>
       </div>
     </div>
