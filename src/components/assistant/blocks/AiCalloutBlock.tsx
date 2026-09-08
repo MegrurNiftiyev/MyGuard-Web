@@ -1,20 +1,20 @@
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
-import { CheckCircle2, XCircle, AlertTriangle, Info } from 'lucide-react';
+import { CheckSquare, XCircle, AlertTriangle, Info } from 'lucide-react';
 import { SemanticTone } from '../../../types';
 
-const toneStyles: Record<string, string> = {
-  info: 'bg-primary-container/10 border-primary/20 text-primary',
-  warning: 'bg-amber-50 border-amber-200 text-amber-900',
-  danger: 'bg-red-50 border-red-200 text-red-800',
-  success: 'bg-emerald-50 border-emerald-200 text-emerald-800',
-  primary: 'bg-blue-50 border-blue-200 text-brand-blue',
-  purple: 'bg-purple-50 border-purple-200 text-purple-800',
-  indigo: 'bg-indigo-50 border-indigo-200 text-indigo-800',
+const toneHeaderColors: Record<string, string> = {
+  success: 'text-emerald-600 dark:text-emerald-400',
+  danger: 'text-error',
+  warning: 'text-amber-500',
+  info: 'text-brand-blue',
+  primary: 'text-brand-blue',
+  purple: 'text-purple-600',
+  indigo: 'text-indigo-600',
 };
 
 const toneIcons: Record<string, React.ElementType> = {
-  success: CheckCircle2,
+  success: CheckSquare,
   danger: XCircle,
   warning: AlertTriangle,
   info: Info,
@@ -27,18 +27,18 @@ interface CalloutProps {
 }
 
 export const AiCalloutBlock: React.FC<CalloutProps> = ({ tone, title, content }) => {
-  const style = toneStyles[tone] || toneStyles.info;
-  const IconComponent = toneIcons[tone] || CheckCircle2;
+  const headerColor = toneHeaderColors[tone] || toneHeaderColors.info;
+  const IconComponent = toneIcons[tone] || CheckSquare;
 
   return (
-    <div className={`rounded-2xl border p-4.5 my-2.5 shadow-2xs ${style}`}>
+    <div className="w-full bg-surface-container-lowest border border-outline-variant/60 rounded-3xl p-5 shadow-xs my-3">
       {title && (
-        <p className="font-label-md text-label-md font-bold mb-2 flex items-center gap-2">
+        <div className={`flex items-center gap-2 mb-4 pb-2 border-b border-outline-variant/30 ${headerColor}`}>
           <IconComponent className="w-5 h-5 shrink-0" />
-          <span>{title}</span>
-        </p>
+          <h3 className="text-title-md font-bold text-on-surface">{title}</h3>
+        </div>
       )}
-      <div className="text-body-sm leading-relaxed opacity-95 [&>p]:mb-1.5 [&>p:last-child]:mb-0 [&>ul]:list-disc [&>ul]:pl-5 [&>ul]:space-y-1 [&>ol]:list-decimal [&>ol]:pl-5 [&_strong]:font-bold">
+      <div className="text-body-md text-on-surface leading-relaxed [&>p]:mb-2 [&>p:last-child]:mb-0 [&>ul]:list-disc [&>ul]:pl-5 [&>ul]:space-y-1.5 [&>ol]:list-decimal [&>ol]:pl-5 [&>ol]:space-y-1.5 [&_strong]:font-bold font-sans">
         <ReactMarkdown>{content}</ReactMarkdown>
       </div>
     </div>
