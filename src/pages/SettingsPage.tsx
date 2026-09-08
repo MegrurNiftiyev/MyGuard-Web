@@ -10,9 +10,6 @@ import { useAuth } from '../context/AuthContext';
 const INITIAL_SETTINGS = {
   ocrThreshold: 95,
   sensitivity: 'High' as const,
-  autoScan: true,
-  allowExternalAi: false,
-  confidentialMode: true,
 };
 
 export const SettingsPage: React.FC = () => {
@@ -22,9 +19,40 @@ export const SettingsPage: React.FC = () => {
 
   const [ocrThreshold, setOcrThreshold] = useState(INITIAL_SETTINGS.ocrThreshold);
   const [sensitivity, setSensitivity] = useState<'Low' | 'Medium' | 'High'>(INITIAL_SETTINGS.sensitivity);
-  const [autoScan, setAutoScan] = useState(INITIAL_SETTINGS.autoScan);
-  const [allowExternalAi, setAllowExternalAi] = useState(INITIAL_SETTINGS.allowExternalAi);
-  const [confidentialMode, setConfidentialMode] = useState(INITIAL_SETTINGS.confidentialMode);
+
+  const [allowExternalAi, setAllowExternalAi] = useState(() => {
+    const saved = localStorage.getItem('myguard_external_ai');
+    return saved !== null ? saved === 'true' : false;
+  });
+  
+  const [confidentialMode, setConfidentialMode] = useState(() => {
+    const saved = localStorage.getItem('myguard_confidential_mode');
+    return saved !== null ? saved === 'true' : false;
+  });
+
+  const handleConfidentialChange = (val: boolean) => {
+    setConfidentialMode(val);
+    localStorage.setItem('myguard_confidential_mode', String(val));
+    window.dispatchEvent(new Event('storage'));
+  };
+
+  const handleExternalAiChange = (val: boolean) => {
+    setAllowExternalAi(val);
+    localStorage.setItem('myguard_external_ai', String(val));
+    window.dispatchEvent(new Event('storage'));
+  };
+
+  useEffect(() => {
+    const handleStorage = () => {
+      const savedConfidential = localStorage.getItem('myguard_confidential_mode');
+      if (savedConfidential !== null) setConfidentialMode(savedConfidential === 'true');
+      
+      const savedExternalAi = localStorage.getItem('myguard_external_ai');
+      if (savedExternalAi !== null) setAllowExternalAi(savedExternalAi === 'true');
+    };
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }, []);
 
   // State to track if any setting has been modified
   const [isDirty, setIsDirty] = useState(false);
@@ -47,9 +75,6 @@ export const SettingsPage: React.FC = () => {
   const handleReset = () => {
     setOcrThreshold(INITIAL_SETTINGS.ocrThreshold);
     setSensitivity(INITIAL_SETTINGS.sensitivity);
-    setAutoScan(INITIAL_SETTINGS.autoScan);
-    setAllowExternalAi(INITIAL_SETTINGS.allowExternalAi);
-    setConfidentialMode(INITIAL_SETTINGS.confidentialMode);
     updateDirty(false);
   };
 
@@ -63,7 +88,7 @@ export const SettingsPage: React.FC = () => {
       window.removeEventListener('trigger-settings-save', handleSaveTrigger);
       window.removeEventListener('trigger-settings-reset', handleResetTrigger);
     };
-  }, [ocrThreshold, sensitivity, autoScan, allowExternalAi, confidentialMode]);
+  }, [ocrThreshold, sensitivity]);
 
   return (
     <div className="max-w-4xl mx-auto space-y-12 pb-24 relative">
@@ -140,21 +165,7 @@ export const SettingsPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Auto Scan Toggle Tile */}
-            <div className="flex items-center justify-between py-5 gap-4">
-              <div className="flex items-start gap-4">
-                <Bell className="w-6 h-6 text-emerald-500 mt-1" />
-                <div>
-                  <h4 className="text-title-lg font-medium text-on-surface leading-tight">
-                    {t('autoScanMode') || 'Avtomatik Skan Rejimi'}
-                  </h4>
-                  <p className="text-label-sm text-on-surface-variant/80 mt-1 max-w-sm">
-                    {t('autoScanDesc') || 'Bütün yüklənən sənədlər dərhal borudan (pipeline) keçirilsin.'}
-                  </p>
-                </div>
-              </div>
-              <CustomSwitch checked={autoScan} onChange={(val) => { setAutoScan(val); markDirty(); }} />
-            </div>
+
           </div>
         </Card>
 
@@ -181,7 +192,7 @@ export const SettingsPage: React.FC = () => {
                   </p>
                 </div>
               </div>
-              <CustomSwitch checked={confidentialMode} onChange={(val) => { setConfidentialMode(val); markDirty(); }} />
+              <CustomSwitch checked={confidentialMode} onChange={handleConfidentialChange} />
             </div>
 
             {/* External AI Tile */}
@@ -197,7 +208,7 @@ export const SettingsPage: React.FC = () => {
                   </p>
                 </div>
               </div>
-              <CustomSwitch checked={allowExternalAi} onChange={(val) => { setAllowExternalAi(val); markDirty(); }} />
+              <CustomSwitch checked={allowExternalAi} onChange={handleExternalAiChange} />
             </div>
           </div>
         </Card>

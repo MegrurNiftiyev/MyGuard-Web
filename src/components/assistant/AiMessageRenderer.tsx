@@ -175,7 +175,7 @@ function renderBlock(
     case 'quote':
       return <AiQuoteBlock key={key} title={block.title} content={block.content || ''} author={block.author} date={block.date} />;
     case 'link':
-      return <AiLinkBlock key={key} url={block.url || '#'} label={block.label || ''} description={block.description} prefixText={block.content} />;
+      return <AiLinkBlock key={key} url={block.url || '#'} label={block.label || ''} description={block.description} />;
     case 'file':
       return <AiFileBlock key={key} name={block.name || ''} sizeLabel={block.sizeLabel || ''} url={block.url} />;
     case 'image':
@@ -209,18 +209,139 @@ export const AiMessageRenderer: React.FC<{
   onComplete
 }) => {
   const shouldAnimate = animate && !message.isAnimationFinished;
+  const blocks = message.blocks || [];
+  
+  const [activeBlockIndex, setActiveBlockIndex] = React.useState(shouldAnimate ? 0 : blocks.length);
+
+  const handleBlockComplete = (index: number) => {
+    if (index === activeBlockIndex) {
+      setTimeout(() => {
+        setActiveBlockIndex(prev => {
+          const next = prev + 1;
+          if (next >= blocks.length && onComplete) {
+            onComplete();
+          }
+          if (onTyping) onTyping(); // Scroll when new block starts
+          return next;
+        });
+      }, 1000); // 1s delay
+    }
+  };
+
+  React.useEffect(() => {
+    if (!shouldAnimate) return;
+    if (activeBlockIndex >= blocks.length) return;
+
+    const currentBlock = blocks[activeBlockIndex];
+    const isSelfManaging = currentBlock.type === 'text' || 
+                           currentBlock.type === ('link_content_only' as any) ||
+                           (currentBlock.type === 'link' && (currentBlock.content || (currentBlock as any).prefixText));
+                           
+    if (!isSelfManaging) {
+      const timer = setTimeout(() => {
+        handleBlockComplete(activeBlockIndex);
+      }, 1000); // Wait 1s for fade-in to complete
+      return () => clearTimeout(timer);
+    }
+  }, [activeBlockIndex, blocks, shouldAnimate]);
 
   return (
-    <div className="flex flex-col gap-4 w-full text-left">
-      {(message.blocks || []).map((b: MessageBlock, i: number) => (
-        <div
-          key={`block-${message.id || 'msg'}-${i}`}
-          className={shouldAnimate ? "animate-in fade-in slide-in-from-bottom-4 duration-600 ease-out fill-mode-both" : ""}
-          style={shouldAnimate ? { animationDelay: `${i * 140}ms` } : undefined}
-        >
-          {renderBlock(b, `block-inner-${message.id || 'msg'}-${i}`, shouldAnimate, onTyping, onComplete)}
-        </div>
-      ))}
+    <div className="flex flex-col gap-3 w-full text-left">
+      {blocks.map((b: MessageBlock, i: number) => {
+        if (i > activeBlockIndex) return null;
+
+        const isCurrentlyActive = i === activeBlockIndex;
+        const currentHandleComplete = () => handleBlockComplete(i);
+
+        // Case 1: Link block with embedded text content
+        if (b.type === 'link' && (b.content || (b as any).prefixText)) {
+          const textContent = b.content || (b as any).prefixText;
+          return (
+            <React.Fragment key={`link-group-${message.id || 'msg'}-${i}`}>
+              <AiTextBlock
+                key={`text-sub-${message.id || 'msg'}-${i}`}
+                content={textContent}
+                animate={shouldAnimate}
+                onTyping={onTyping}
+                onComplete={currentHandleComplete}
+              />
+              {(!shouldAnimate || i < activeBlockIndex) && (
+                <div className="animate-in fade-in zoom-in-95 duration-500 delay-150">
+                  <AiLinkBlock
+                    key={`link-sub-${message.id || 'msg'}-${i}`}
+                    url={b.url || '#'}
+                    label={b.label || ''}
+                    description={b.description}
+                  />
+                </div>
+              )}
+            </React.Fragment>
+          );
+        }
+
+        // New Case: link_content_only
+        if (b.type === ('link_content_only' as any) && (b.content || (b as any).prefixText)) {
+          return (
+            <div
+              key={`block-${message.id || 'msg'}-${i}`}
+              className={shouldAnimate && isCurrentlyActive ? "animate-in fade-in slide-in-from-bottom-4 duration-1000 ease-out fill-mode-both" : ""}
+            >
+              <AiTextBlock
+                key={`text-sub-${message.id || 'msg'}-${i}`}
+                content={b.content || (b as any).prefixText}
+                animate={shouldAnimate}
+                onTyping={onTyping}
+                onComplete={currentHandleComplete}
+              />
+            </div>
+          );
+        }
+
+        // Case 2: Standard text block
+        if (b.type === 'text') {
+          return (
+            <div
+              key={`block-${message.id || 'msg'}-${i}`}
+              className={shouldAnimate && isCurrentlyActive ? "animate-in fade-in slide-in-from-bottom-4 duration-1000 ease-out fill-mode-both" : ""}
+            >
+              <AiTextBlock
+                key={`block-inner-${message.id || 'msg'}-${i}`}
+                content={b.content || ''}
+                animate={shouldAnimate}
+                onTyping={onTyping}
+                onComplete={currentHandleComplete}
+              />
+            </div>
+          );
+        }
+
+        // Case 3: Link block without text
+        if (b.type === 'link') {
+          return (
+            <div
+              key={`block-${message.id || 'msg'}-${i}`}
+              className={shouldAnimate && isCurrentlyActive ? "animate-in fade-in zoom-in-95 duration-1000" : ""}
+            >
+              <AiLinkBlock
+                key={`block-inner-${message.id || 'msg'}-${i}`}
+                url={b.url || '#'}
+                label={b.label || ''}
+                description={b.description}
+              />
+            </div>
+          );
+        }
+
+        // Default: other blocks
+        return (
+          <div
+            key={`block-${message.id || 'msg'}-${i}`}
+            className={shouldAnimate && isCurrentlyActive ? "animate-in fade-in slide-in-from-bottom-4 duration-1000 ease-out fill-mode-both" : ""}
+          >
+            {renderBlock(b, `block-inner-${message.id || 'msg'}-${i}`, shouldAnimate, onTyping, currentHandleComplete)}
+          </div>
+        );
+      })}
     </div>
   );
 };

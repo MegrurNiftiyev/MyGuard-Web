@@ -43,7 +43,6 @@ export const AiLinkBlock: React.FC<AiLinkBlockProps> = ({
   url = '#',
   label,
   description,
-  prefixText,
   onNavigate
 }) => {
   const navigate = useNavigate();
@@ -64,19 +63,16 @@ export const AiLinkBlock: React.FC<AiLinkBlockProps> = ({
     const buttonText = label || screenRoute.defaultLabel;
 
     return (
-      <div className="w-full my-2 bg-gradient-to-r from-blue-50/90 via-white to-purple-50/70 border border-brand-blue/30 rounded-2xl p-3 shadow-2xs flex flex-col gap-2 transition-all hover:border-brand-blue/60 group">
-        {(prefixText || description) && (
-          <p className="text-xs text-on-surface-variant font-medium leading-relaxed">
-            {prefixText || description}
-          </p>
-        )}
+      <div className="w-full mt-2.5 mb-0.5 animate-in fade-in zoom-in-95 duration-300">
         <button
           type="button"
           onClick={handleClick}
-          className="w-full py-2 px-3 rounded-xl bg-brand-blue hover:bg-brand-blue/90 active:scale-[0.98] text-white text-xs font-bold flex items-center justify-between shadow-xs transition-all cursor-pointer group-hover:shadow-md"
+          className="w-full py-2.5 px-4 rounded-xl bg-brand-blue hover:bg-brand-blue/90 active:scale-[0.98] text-white text-xs font-bold flex items-center justify-between shadow-md hover:shadow-lg transition-all cursor-pointer group"
         >
-          <div className="flex items-center gap-2 truncate">
-            <Icon className="w-4 h-4 shrink-0 text-white/90" />
+          <div className="flex items-center gap-2.5 truncate">
+            <div className="w-6 h-6 rounded-lg bg-white/20 flex items-center justify-center shrink-0">
+              <Icon className="w-3.5 h-3.5 text-white shrink-0" />
+            </div>
             <span className="truncate">{buttonText}</span>
           </div>
           <ArrowRight className="w-4 h-4 shrink-0 transition-transform group-hover:translate-x-1" />
@@ -86,10 +82,10 @@ export const AiLinkBlock: React.FC<AiLinkBlockProps> = ({
   }
 
   return (
-    <div className="w-full bg-surface-container-lowest border border-outline-variant/60 rounded-2xl p-3.5 shadow-xs my-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-body-md text-on-surface">
+    <div className="w-full bg-surface-container-lowest border border-outline-variant/60 rounded-xl p-3 shadow-xs mt-2.5 mb-0.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-body-md text-on-surface animate-in fade-in duration-300">
       <div className="flex items-center gap-2 text-on-surface-variant text-xs">
         <Compass className="w-4 h-4 text-on-surface-variant/70 shrink-0" />
-        <span>{prefixText || 'Daha ətraflı keçid üçün:'}</span>
+        <span>{description || 'Daha ətraflı keçid üçün:'}</span>
       </div>
 
       <a

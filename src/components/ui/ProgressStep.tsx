@@ -79,7 +79,7 @@ export const ProgressStep: React.FC<ProgressStepProps> = ({
               status === 'warning' && 'bg-amber-100 text-amber-800',
               status === 'failed' && 'bg-red-100 text-red-800',
               status === 'processing' && 'bg-blue-100 text-blue-800',
-              status === 'pending' && 'bg-gray-100 text-gray-600'
+              status === 'pending' && 'bg-gray-200 text-gray-700 font-bold border border-gray-300/60 shadow-sm'
             )}
           >
             {status === 'completed' && 'Tamamlandı'}

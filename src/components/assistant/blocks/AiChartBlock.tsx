@@ -225,18 +225,19 @@ export const AiChartBlock: React.FC<AiChartBlockProps> = ({
             })}
           </div>
         ) : activeType === 'donut' ? (
-          /* Donut / Pie Chart View with Bottom Responsive Grid Legend */
-          <div className="w-full flex flex-col items-center justify-center pt-1">
-            <div className="relative w-[180px] h-[180px] sm:w-[200px] sm:h-[200px] shrink-0 my-1">
+          /* Donut / Pie Chart View — side-by-side: donut left, legend rows right */
+          <div className="w-full flex flex-col sm:flex-row items-center sm:items-center gap-6 py-4">
+            {/* Donut Chart */}
+            <div className="relative w-[180px] h-[180px] shrink-0">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
                     data={donutData}
                     cx="50%"
                     cy="50%"
-                    innerRadius={60}
-                    outerRadius={85}
-                    paddingAngle={4}
+                    innerRadius={56}
+                    outerRadius={82}
+                    paddingAngle={3}
                     dataKey="value"
                     nameKey="name"
                     isAnimationActive={true}
@@ -244,35 +245,40 @@ export const AiChartBlock: React.FC<AiChartBlockProps> = ({
                     animationEasing="ease-out"
                   >
                     {donutData.map((entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={entry.color}
-                      />
+                      <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
                   <Tooltip
-                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', fontSize: 12 }}
                   />
                 </PieChart>
               </ResponsiveContainer>
-              {/* Inner Counter Center */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center animate-in zoom-in-75 duration-500">
-                <span className="text-[10px] uppercase tracking-wider text-on-surface-variant font-bold">Ümumi</span>
-                <span className="text-title-md font-bold text-on-surface font-mono">{totalSum.toLocaleString()}</span>
+              {/* Inner center label */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
+                <span className="text-[9px] uppercase tracking-widest text-on-surface-variant font-bold">Ümumi</span>
+                <span className="text-lg font-bold text-on-surface font-mono leading-tight">{totalSum.toLocaleString()}</span>
               </div>
             </div>
 
-            {/* Bottom Responsive Legend Breakdown Grid */}
-            <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 mt-3 pt-3 border-t border-outline-variant/30">
-              {donutData.map((item, index) => (
-                <div key={index} className="flex items-center justify-between text-xs p-2 rounded-xl bg-surface-container-low/60 border border-outline-variant/30 animate-in fade-in slide-in-from-bottom-2 duration-400">
-                  <div className="flex items-center gap-2 truncate">
-                    <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
-                    <span className="font-semibold text-on-surface truncate">{item.name}</span>
+            {/* Right: Legend rows */}
+            <div className="flex-1 w-full flex flex-col gap-2">
+              {donutData.map((item, index) => {
+                const pct = totalSum > 0 ? Math.round((item.value / totalSum) * 100) : 0;
+                const displayPct = item.percentage !== undefined ? item.percentage : pct;
+                return (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between gap-3 py-1 animate-in fade-in slide-in-from-right-2 duration-400"
+                    style={{ animationDelay: `${index * 80}ms` }}
+                  >
+                    <div className="flex items-center gap-2.5 truncate">
+                      <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
+                      <span className="text-sm font-semibold text-on-surface truncate">{item.name}</span>
+                    </div>
+                    <span className="text-sm font-bold text-on-surface-variant font-mono shrink-0">{displayPct}%</span>
                   </div>
-                  <span className="font-bold text-on-surface font-mono shrink-0 ml-2">{item.percentage ? `${item.percentage}%` : item.value}</span>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         ) : activeType === 'bar' ? (

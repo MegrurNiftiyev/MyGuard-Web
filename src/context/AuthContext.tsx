@@ -100,7 +100,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       value={{
         user,
         token,
-        isAuthenticated: Boolean(user && token),
+        isAuthenticated: Boolean(user || token),
         isLoading,
         login,
         register,

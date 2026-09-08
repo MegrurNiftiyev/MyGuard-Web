@@ -17,7 +17,7 @@ const DEFAULT_SCAN_STEPS = [
   { stepNumber: 3, title: 'OCR Vizual Analiz', description: 'Vizual görüntüdən insan tərəfindən görünən mətn çıxarılır...' },
   { stepNumber: 4, title: 'Mətn Müqayisəsi', description: 'OCR və PDF mətn qatları fərqləri analiz edilir...' },
   { stepNumber: 5, title: 'Gizli Mətn Aşkarlanması', description: 'Görünməyən şrift ölçüləri və opacity 0% mətnləri yoxlanılır...' },
-  { stepNumber: 6, title: 'Prompt Injection Analizi', description: 'ML/AI detektoru tərəfindən override cəhdləri yoxlanılır...' },
+  { stepNumber: 6, title: 'Prompt Injection Analizi', description: 'AI modeli tərəfindən yoxlanılır...' },
   { stepNumber: 7, title: 'Risk Qiymətləndirilməsi', description: 'Risk balı hesablanır və sənəd statusu müəyyən edilir...' }
 ];
 
@@ -62,7 +62,25 @@ export const ScanPage: React.FC = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const dragCounter = useRef(0);
-  const [isConfidential, setIsConfidential] = useState(false);
+  const [isConfidential, setIsConfidential] = useState(() => {
+    const saved = localStorage.getItem('myguard_confidential_mode');
+    return saved !== null ? saved === 'true' : false;
+  });
+
+  const handleConfidentialChange = (val: boolean) => {
+    setIsConfidential(val);
+    localStorage.setItem('myguard_confidential_mode', String(val));
+    window.dispatchEvent(new Event('storage'));
+  };
+
+  useEffect(() => {
+    const handleStorage = () => {
+      const saved = localStorage.getItem('myguard_confidential_mode');
+      if (saved !== null) setIsConfidential(saved === 'true');
+    };
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }, []);
 
   const [steps, setSteps] = useState(
     globalSteps || DEFAULT_SCAN_STEPS.map((s, i) => ({
@@ -298,10 +316,10 @@ export const ScanPage: React.FC = () => {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
              <div>
                <h1 className="text-headline-lg-mobile md:text-headline-lg font-bold text-on-surface mb-2">
-                 Sənəd Skaneri
+                 Sənəd Yoxlanış Sistemi
                </h1>
                <p className="text-body-md text-on-surface-variant">
-                 Skan ediləcək sənədi seçin və 7 mərhələli təhlükəsizlik borusunun fəaliyyətini izləyin
+                 Skan ediləcək sənədi seçin və 7 mərhələli təhlükəsizlik yoxlanış etabının fəaliyyətini izləyin
                </p>
              </div>
           </div>
@@ -353,7 +371,7 @@ export const ScanPage: React.FC = () => {
                 </h2>
                 <div className="flex items-center gap-3">
                   <span className="text-xs font-bold text-on-surface select-none">Məxfi Sənəd</span>
-                  <CustomSwitch checked={isConfidential} onChange={(val) => setIsConfidential(val)} />
+                  <CustomSwitch checked={isConfidential} onChange={handleConfidentialChange} />
                 </div>
               </div>
 
@@ -371,11 +389,13 @@ export const ScanPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="mt-8 pt-4 border-t border-outline-variant text-center">
-              <p className="text-xs text-on-surface-variant font-medium">
-                {isUploading ? '⏳ Fayl serverə yüklənir. Yükləmə tamamlandıqdan sonra 7 mərhələli canlı skan avtomatik başlayacaqdır.' : 'ⓘ Sənəd yükləndikdən sonra 7 mərhələli analiz borusu avtomatik başladılacaqdır.'}
-              </p>
-            </div>
+            {isUploading && (
+              <div className="mt-8 pt-4 border-t border-outline-variant text-center">
+                <p className="text-xs text-on-surface-variant font-medium">
+                  ⏳ Fayl serverə yüklənir. Yükləmə tamamlandıqdan sonra 7 mərhələli canlı skan avtomatik başlayacaqdır.
+                </p>
+              </div>
+            )}
           </Card>
         </div>
       </div>
@@ -387,43 +407,40 @@ export const ScanPage: React.FC = () => {
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start pb-8 min-h-[80vh] relative">
       {renderDragOverlay()}
 
-      {/* Header spanning full width */}
       <header className="lg:col-span-12 mb-2 flex justify-between items-end">
         <div>
-          <h1 className="text-headline-lg-mobile md:text-headline-lg font-bold text-on-surface mb-2">Sənəd Skaneri</h1>
-          <p className="text-body-md text-on-surface-variant">{t('scanSubtitle')}</p>
+          <h1 className="text-headline-lg-mobile md:text-headline-lg font-bold text-on-surface mb-2">Sənəd Yoxlanış Sistemi</h1>
+          <p className="text-body-md text-on-surface-variant">Skan ediləcək sənədi seçin və 7 mərhələli təhlükəsizlik yoxlanış etabının fəaliyyətini izləyin</p>
         </div>
         <div className="flex gap-3">
-          {!isScanning && (
-            <Button variant="outline" size="md" onClick={clearGlobalState}>
-              Yeni Skan
-            </Button>
-          )}
-          {!isScanning && (
-            <Button variant="primary" size="md" onClick={() => navigate(`/analysis/${activeDocId}`)} icon={<ArrowRight className="w-4 h-4" />}>
-              {t('viewAnalysis')}
-            </Button>
-          )}
+          <Button variant="outline" size="md" onClick={clearGlobalState}>
+            {(isScanning || isUploading) ? 'Ləğv Et' : 'Təmizlə'}
+          </Button>
+          <Button 
+            variant="primary" 
+            size="md" 
+            disabled={isScanning || isUploading}
+            onClick={() => navigate(`/analysis/${activeDocId}`)} 
+            icon={<ArrowRight className="w-4 h-4" />}
+            className={(isScanning || isUploading) ? 'opacity-60 cursor-not-allowed grayscale pointer-events-none' : ''}
+          >
+            {t('viewAnalysis') || 'Analiz Nəticəsinə Bax'}
+          </Button>
         </div>
       </header>
 
       {/* Upload/Preview Card */}
       <div className="lg:col-span-5 flex flex-col gap-6">
-        <Card padding="lg" className="ai-gradient-card shadow-l1 flex flex-col">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-title-lg font-medium text-on-surface">Hədəf Sənəd</h2>
-            <span className="bg-primary-container text-on-primary-container text-label-sm px-3 py-1 rounded-full border border-primary-fixed-dim">
-              {isScanning ? 'Canlı Skan Edilir...' : 'Skan Tamamlandı'}
-            </span>
-          </div>
-          
+        <Card padding="lg" className="ai-gradient-card shadow-l1 flex flex-col pt-6">
           <div className="aspect-[3/4] bg-surface-container-low rounded-xl border border-outline-variant flex items-center justify-center mb-6 relative overflow-hidden group">
             <div className="absolute inset-0 opacity-10 bg-[linear-gradient(45deg,transparent_25%,rgba(49,116,239,0.2)_50%,transparent_75%,transparent_100%)] bg-[length:20px_20px]"></div>
             <FileText className="w-20 h-20 text-outline-variant group-hover:scale-105 transition-transform" />
             
             {/* Scanning line animation overlay */}
-            {isScanning && (
-              <div className="absolute left-0 right-0 h-1 bg-brand-blue/50 blur-[2px] top-0 shadow-[0_0_10px_rgba(49,116,239,0.8)] animate-[scan_2s_linear_infinite]"></div>
+            {(isScanning || isUploading) && (
+              <div className="absolute left-0 right-0 h-[2px] bg-brand-blue top-0 shadow-[0_4px_16px_3px_rgba(0,102,255,0.7)] animate-[scan_2.5s_linear_infinite] z-20">
+                <div className="absolute inset-0 bg-brand-blue shadow-[0_0_8px_1px_rgba(0,102,255,0.9)] blur-[0.5px]"></div>
+              </div>
             )}
             <style>{`
               @keyframes scan {

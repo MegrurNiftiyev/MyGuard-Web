@@ -8,7 +8,7 @@ export const TopBar: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { lang, setLang, t } = useLanguage();
-  const { user, logout } = useAuth();
+  const { user, logout, isLoading } = useAuth();
   const [isSettingsDirty, setIsSettingsDirty] = useState(false);
   const [isSaveSuccess, setIsSaveSuccess] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -55,9 +55,10 @@ export const TopBar: React.FC = () => {
   }, [location.pathname]);
 
   const getInitials = (name?: string) => {
-    if (!name) return 'SƏ';
+    if (!name) return '';
     return name
       .split(' ')
+      .filter(Boolean)
       .map((n) => n[0])
       .join('')
       .substring(0, 2)
@@ -151,16 +152,26 @@ export const TopBar: React.FC = () => {
               type="button"
               onClick={() => setIsProfileOpen(!isProfileOpen)}
               className="flex items-center gap-2 bg-surface-container-low hover:bg-surface-container-high border border-outline-variant/70 pl-1.5 pr-2.5 py-1 rounded-full shadow-2xs transition-all cursor-pointer group"
-              title={user?.fullName || 'İstifadəçi Profili'}
+              title={user?.fullName || (isLoading ? 'Yüklənir...' : 'İstifadəçi Profili')}
             >
               <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-brand-blue to-brand-purple p-0.5 shadow-xs shrink-0 group-hover:scale-105 transition-transform">
-                <div className="w-full h-full rounded-full bg-white flex items-center justify-center text-[10px] font-bold text-brand-blue">
-                  {getInitials(user?.fullName)}
+                <div className="w-full h-full rounded-full bg-white flex items-center justify-center text-[10px] font-bold text-brand-blue overflow-hidden">
+                  {isLoading || !user ? (
+                    <div className="w-full h-full bg-slate-200/90 animate-pulse rounded-full" />
+                  ) : (
+                    getInitials(user.fullName) || 'U'
+                  )}
                 </div>
               </div>
-              <span className="text-xs font-semibold text-on-surface truncate max-w-[110px] hidden sm:inline-block">
-                {user?.fullName?.split(' ')[0] || 'Samir'}
-              </span>
+
+              {isLoading || !user ? (
+                <div className="w-14 h-3.5 bg-slate-200/90 animate-pulse rounded-md hidden sm:inline-block my-0.5" />
+              ) : (
+                <span className="text-xs font-semibold text-on-surface truncate max-w-[110px] hidden sm:inline-block">
+                  {user.fullName.split(' ')[0]}
+                </span>
+              )}
+
               <ChevronDown className={`w-3.5 h-3.5 text-on-surface-variant transition-transform duration-200 ${isProfileOpen ? 'rotate-180' : ''}`} />
             </button>
 
@@ -170,17 +181,30 @@ export const TopBar: React.FC = () => {
                 {/* User Info Header */}
                 <div className="p-3.5 bg-surface-container-low/70 rounded-2xl space-y-3 border border-outline-variant/40">
                   <div className="flex items-center gap-3">
-                    <div className="w-11 h-11 rounded-full bg-blue-100/90 text-brand-blue font-bold flex items-center justify-center text-sm shrink-0 border border-brand-blue/20 shadow-xs">
-                      {getInitials(user?.fullName || 'megrur niftiyev')}
+                    <div className="w-11 h-11 rounded-full bg-blue-100/90 text-brand-blue font-bold flex items-center justify-center text-sm shrink-0 border border-brand-blue/20 shadow-xs overflow-hidden">
+                      {isLoading || !user ? (
+                        <div className="w-full h-full bg-slate-200/90 animate-pulse rounded-full" />
+                      ) : (
+                        getInitials(user.fullName) || 'U'
+                      )}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-bold text-on-surface truncate">
-                        {user?.fullName || 'megrur niftiyev'}
-                      </p>
-                      <p className="text-[11px] text-on-surface-variant/80 truncate flex items-center gap-1 mt-0.5">
-                        <Mail className="w-3.5 h-3.5 text-on-surface-variant shrink-0" />
-                        <span>{user?.email || 'megrurniftiyev@gmail.com'}</span>
-                      </p>
+                      {isLoading || !user ? (
+                        <div className="space-y-1.5 py-0.5">
+                          <div className="w-28 h-3.5 bg-slate-200/90 animate-pulse rounded" />
+                          <div className="w-36 h-3 bg-slate-200/90 animate-pulse rounded" />
+                        </div>
+                      ) : (
+                        <>
+                          <p className="text-sm font-bold text-on-surface truncate">
+                            {user.fullName}
+                          </p>
+                          <p className="text-[11px] text-on-surface-variant/80 truncate flex items-center gap-1 mt-0.5">
+                            <Mail className="w-3.5 h-3.5 text-on-surface-variant shrink-0" />
+                            <span>{user.email || '-'}</span>
+                          </p>
+                        </>
+                      )}
                     </div>
                   </div>
 
@@ -189,15 +213,23 @@ export const TopBar: React.FC = () => {
                       <span className="text-on-surface-variant/70 flex items-center gap-1.5 font-medium">
                         <Fingerprint className="w-3.5 h-3.5 text-brand-blue" /> FİN:
                       </span>
-                      <span className="font-bold text-on-surface tracking-wider">{user?.finCode || '7B5AAML'}</span>
+                      {isLoading || !user ? (
+                        <div className="w-16 h-3 bg-slate-200/90 animate-pulse rounded" />
+                      ) : (
+                        <span className="font-bold text-on-surface tracking-wider">{user.finCode || '-'}</span>
+                      )}
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-on-surface-variant/70 flex items-center gap-1.5 font-medium">
                         <Building2 className="w-3.5 h-3.5 text-brand-purple" /> Dep:
                       </span>
-                      <span className="font-semibold text-on-surface truncate max-w-[150px]" title={user?.department || 'İnformasiya Təhlükəsizliyi'}>
-                        {user?.department || 'İnformasiya Təhlükəsiz...'}
-                      </span>
+                      {isLoading || !user ? (
+                        <div className="w-24 h-3 bg-slate-200/90 animate-pulse rounded" />
+                      ) : (
+                        <span className="font-semibold text-on-surface truncate max-w-[150px]" title={user.department || '-'}>
+                          {user.department || '-'}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>

@@ -4,6 +4,7 @@ import { Sparkles, X, Send } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
 import { AiMessage } from '../../types';
 import { AiMessageRenderer } from '../assistant/AiMessageRenderer';
+import { AiLinkBlock } from '../assistant/blocks/AiLinkBlock';
 import { chatApi, ScreenDestination } from '../../api/chatApi';
 
 export const FloatingAiAssistant: React.FC = () => {
@@ -144,18 +145,36 @@ export const FloatingAiAssistant: React.FC = () => {
           {/* Messages Body */}
           <div className="p-3.5 flex-1 overflow-y-auto space-y-3 bg-surface/50 text-xs">
             {messages.map((msg, idx) => (
-              <div
-                key={idx}
-                className={`p-3 rounded-2xl leading-relaxed max-w-[88%] ${
-                  msg.sender === 'user'
-                    ? 'bg-brand-blue text-white ml-auto font-medium rounded-tr-xs shadow-2xs'
-                    : 'bg-white text-on-surface border border-outline-variant/60 shadow-2xs rounded-tl-xs'
-                }`}
-              >
-                {msg.sender === 'user' ? (
-                  msg.blocks?.[0]?.content || msg.text || ''
-                ) : (
-                  <AiMessageRenderer message={msg} onTyping={scrollToBottom} />
+              <div key={idx} className={`flex flex-col gap-1.5 w-full ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}>
+                <div
+                  className={`p-3 rounded-2xl leading-relaxed max-w-[88%] ${
+                    msg.sender === 'user'
+                      ? 'bg-brand-blue text-white ml-auto font-medium rounded-tr-xs shadow-2xs'
+                      : 'bg-white text-on-surface border border-outline-variant/60 shadow-2xs rounded-tl-xs'
+                  }`}
+                >
+                  {msg.sender === 'user' ? (
+                    msg.blocks?.[0]?.content || (msg as any).text || ''
+                  ) : (
+                    <AiMessageRenderer 
+                      message={{ ...msg, blocks: msg.blocks?.map(b => b.type === 'link' ? { ...b, type: 'link_content_only' as any } : b) || [] }} 
+                      onTyping={scrollToBottom} 
+                      onComplete={() => {
+                        setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, isAnimationFinished: true } : m));
+                      }}
+                    />
+                  )}
+                </div>
+
+                {/* Navigation Links Outside Box */}
+                {msg.sender === 'assistant' && msg.blocks?.some(b => b.type === 'link') && (msg.isAnimationFinished || msg.id === 'greeting') && (
+                   <div className="w-[88%] px-1 animate-in fade-in zoom-in-95 duration-500 delay-150 fill-mode-both">
+                     {msg.blocks.filter(b => b.type === 'link').map((b, i) => (
+                        <div key={i} className="mb-2">
+                           <AiLinkBlock url={b.url || '#'} label={b.label || ''} description={b.description} />
+                        </div>
+                     ))}
+                   </div>
                 )}
               </div>
             ))}

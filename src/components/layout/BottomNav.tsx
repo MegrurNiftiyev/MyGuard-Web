@@ -147,8 +147,8 @@ export const BottomNav: React.FC<SideNavProps> = ({ disableFixed = false }) => {
               ref={(el) => { itemRefs.current[index] = el; }}
               className={`relative z-10 flex items-center gap-3.5 w-full pl-5 pr-4 py-3 rounded-2xl transition-colors duration-200 select-none overflow-hidden ${
                 isActive
-                  ? 'text-brand-blue font-bold bg-surface-container-high/50'
-                  : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high/30 font-medium'
+                  ? 'text-brand-blue font-bold'
+                  : 'text-on-surface-variant hover:text-brand-blue font-medium'
               }`}
             >
               <Icon className={`w-5 h-5 shrink-0 ${isActive ? 'text-brand-blue' : ''}`} />
