@@ -455,8 +455,7 @@ export const AnalysisResultPage: React.FC = () => {
           </div>
           <div className="flex flex-col gap-2 w-full">
             <div className="flex items-center gap-2">
-              <h2 className="text-label-lg font-bold text-indigo-900 uppercase tracking-wider">Məxfi Rejim (Confidential Mode)</h2>
-              <span className="px-2.5 py-0.5 rounded-full bg-indigo-200/80 text-indigo-900 text-[10px] font-extrabold uppercase tracking-wider">MƏXFİ</span>
+              <h2 className="text-label-lg font-bold text-indigo-900 uppercase tracking-wider">Məxfi Rejim</h2>
             </div>
             <p className="text-body-md text-indigo-950 font-medium leading-relaxed">
               Bu sənəd məxfi rejimdə yükləndiyi üçün xarici AI analizinə göndərilməyib. Yalnız yerli OCR və ML təhlükəsizlik təsnifatı aparılmışdır.
