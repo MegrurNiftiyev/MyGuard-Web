@@ -470,7 +470,7 @@ export const AnalysisResultPage: React.FC = () => {
           </div>
           <div className="flex flex-col gap-1 w-full">
             <h2 className="text-base sm:text-lg font-bold text-on-surface font-sans">
-              Aşkar Edilmiş Təhlükənin Təsviri (Açıq Mətnlə İzah)
+              Süni İntellekt İzahı
             </h2>
             <p className="text-body-md text-on-surface-variant leading-relaxed font-normal">
               {analysis.plainExplanation || 'Sənədin daxilində insan tərəfindən normal görünməyən və AI modelinin davranışını dəyişdirməyə yönəlmiş mətn aşkarlandı.'}
