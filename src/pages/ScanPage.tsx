@@ -32,7 +32,7 @@ const formatActiveMessage = (msg?: string) => {
     .replace(/hesablandı/g, 'hesablanır...');
 };
 
-const getStepDescription = (stepIdx: number, status: StepStatus, socketMsg?: string): string => {
+const getStepDescription = (stepIdx: number, status: StepStatus, socketMsg?: string, isActiveStep: boolean = false): string => {
   if (stepIdx === 4) {
     if (status === 'warning' || status === 'failed') {
       return 'İnsan gözünə görünməyən yazılar aşkarlandı';
@@ -269,7 +269,7 @@ export const ScanPage: React.FC = () => {
           const newSteps = prevSteps.map((step, idx) => {
             if (idx < activeIdx) {
               const finalSt = getStepFinalStatus(idx);
-              return { ...step, status: finalSt, description: getStepDescription(idx, finalSt, data.message) };
+              return { ...step, status: finalSt, description: getStepDescription(idx, finalSt, undefined, false) };
             }
             if (idx === activeIdx) {
               let status: StepStatus = 'processing';
@@ -285,7 +285,7 @@ export const ScanPage: React.FC = () => {
                 isFinished = true;
               }
 
-              return { ...step, status, description: getStepDescription(idx, status, data.message) };
+              return { ...step, status, description: getStepDescription(idx, status, data.message, true) };
             }
             return { ...step, status: 'pending' as StepStatus };
           });
@@ -439,19 +439,11 @@ export const ScanPage: React.FC = () => {
             <FileText className="w-20 h-20 text-outline-variant group-hover:scale-105 transition-transform" />
             
             {/* Scanning line animation overlay */}
-            {(isScanning || isUploading) && (
-              <div className="absolute left-0 right-0 h-[2px] bg-brand-blue top-0 shadow-[0_4px_16px_3px_rgba(0,102,255,0.7)] animate-[scan_2.5s_linear_infinite] z-20">
-                <div className="absolute inset-0 bg-brand-blue shadow-[0_0_8px_1px_rgba(0,102,255,0.9)] blur-[0.5px]"></div>
+            {(isScanning || isUploading || steps.some((s) => s.status === 'processing')) && (
+              <div className="absolute left-0 right-0 h-[2.5px] bg-brand-blue top-0 shadow-[0_4px_16px_3px_rgba(0,102,255,0.85)] animate-scan-line z-20 pointer-events-none">
+                <div className="absolute inset-0 bg-brand-blue shadow-[0_0_10px_2px_rgba(0,102,255,1)] blur-[0.5px]"></div>
               </div>
             )}
-            <style>{`
-              @keyframes scan {
-                0% { top: 0%; opacity: 0; }
-                10% { opacity: 1; }
-                90% { opacity: 1; }
-                100% { top: 100%; opacity: 0; }
-              }
-            `}</style>
           </div>
           
           <div className="flex flex-col gap-2 mt-auto">
