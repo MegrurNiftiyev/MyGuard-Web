@@ -183,24 +183,10 @@ export const BottomNav: React.FC<SideNavProps> = ({ disableFixed = false }) => {
   );
 
   const MobileNav = (
-    <nav className="flex md:hidden relative flex-row items-center justify-between gap-1 sm:gap-2 p-2 px-4 w-[92vw] sm:w-[85vw] bg-white/95 backdrop-blur-xl border border-outline-variant/70 shadow-2xl rounded-[2rem]">
+    <nav className="flex md:hidden relative flex-row items-center justify-around gap-1 sm:gap-2 p-2 px-4 w-[92vw] sm:w-[85vw] bg-white/95 backdrop-blur-xl border border-outline-variant/70 shadow-2xl rounded-[2rem]">
       {mobileNavItems.map((item, index) => {
         const Icon = item.icon;
         const isActive = mobileActiveIndex === index;
-        const isScan = item.id === 'scan';
-
-        if (isScan) {
-          return (
-            <NavLink
-              key={item.id}
-              to={item.path}
-              title={item.label}
-              className="relative -top-5 z-20 flex items-center justify-center w-14 h-14 rounded-[22px] bg-brand-blue text-white shadow-[0_4px_12px_rgba(49,116,239,0.22)] transition-transform active:scale-95 mx-2"
-            >
-              <Icon className="w-7 h-7" />
-            </NavLink>
-          );
-        }
 
         return (
           <NavLink
