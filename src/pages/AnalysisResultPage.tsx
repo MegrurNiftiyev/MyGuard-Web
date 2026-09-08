@@ -340,66 +340,92 @@ export const AnalysisResultPage: React.FC = () => {
       </header>
 
       {/* Bento Grid: Metrics */}
-      <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <Card padding="md" className="flex flex-col gap-4 bg-white rounded-2xl border border-outline-variant/60 shadow-sm relative overflow-hidden">
-          <div className="flex justify-between items-start">
-            <h3 className="text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider">OCR + PDF Uyğunluğu</h3>
-            <div className={`w-7 h-7 rounded-lg flex items-center justify-center border ${analysis.ocrPdfMatch === 100 ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : analysis.ocrPdfMatch >= 98 ? 'bg-amber-50 text-amber-500 border-amber-100' : 'bg-red-50 text-error border-red-100'}`}>
-              <FileCode className="w-3.5 h-3.5" />
-            </div>
+      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Card 1: OCR + PDF Uyğunluğu */}
+        <div className={`rounded-2xl bg-white border border-outline-variant/60 p-5 shadow-xs relative overflow-hidden flex flex-col justify-between min-h-[140px] border-l-4 ${analysis.ocrPdfMatch === 100 ? 'border-l-emerald-500' : analysis.ocrPdfMatch >= 98 ? 'border-l-amber-500' : 'border-l-red-500'}`}>
+          <FileCode className={`absolute -top-4 -right-4 w-28 h-28 ${analysis.ocrPdfMatch === 100 ? 'text-emerald-500/10' : analysis.ocrPdfMatch >= 98 ? 'text-amber-500/10' : 'text-red-500/10'} pointer-events-none stroke-1`} />
+          <div className="flex items-center gap-2 relative z-10">
+            <FileCode className={`w-5 h-5 shrink-0 ${analysis.ocrPdfMatch === 100 ? 'text-emerald-600' : analysis.ocrPdfMatch >= 98 ? 'text-amber-600' : 'text-red-600'}`} />
+            <h3 className={`text-xs sm:text-sm font-semibold ${analysis.ocrPdfMatch === 100 ? 'text-emerald-700' : analysis.ocrPdfMatch >= 98 ? 'text-amber-700' : 'text-red-700'}`}>
+              OCR + PDF Uyğunluğu
+            </h3>
           </div>
-          <div className="flex flex-col">
-            <span className="text-2xl font-bold text-gray-900">{analysis.ocrPdfMatch}%</span>
-            <span className="text-[11px] text-gray-500 font-medium">{analysis.ocrPdfMatch === 100 ? 'Mükəmməl uyğunluq' : analysis.ocrPdfMatch >= 98 ? 'Qismən uyğunluq' : 'Uyğunluq zəifdir'}</span>
+          <div className="flex flex-col my-2 relative z-10">
+            <span className={`text-xl sm:text-2xl font-extrabold ${analysis.ocrPdfMatch === 100 ? 'text-emerald-700' : analysis.ocrPdfMatch >= 98 ? 'text-amber-700' : 'text-red-600'}`}>
+              {analysis.ocrPdfMatch}%
+            </span>
           </div>
-          <div className="w-full bg-surface-container rounded-full h-1 mt-auto">
-            <div className={`h-1 rounded-full transition-all duration-1000 ease-out ${analysis.ocrPdfMatch === 100 ? 'bg-emerald-500' : analysis.ocrPdfMatch >= 98 ? 'bg-amber-500' : 'bg-error'}`} style={{ width: `${isMounted ? analysis.ocrPdfMatch : 0}%` }}></div>
+          <div className="w-full bg-gray-100 rounded-full h-1.5 relative z-10 overflow-hidden">
+            <div 
+              className={`h-full rounded-full transition-all duration-1000 ease-out ${analysis.ocrPdfMatch === 100 ? 'bg-emerald-500' : analysis.ocrPdfMatch >= 98 ? 'bg-amber-500' : 'bg-red-500'}`} 
+              style={{ width: `${isMounted ? analysis.ocrPdfMatch : 0}%` }}
+            />
           </div>
-        </Card>
+        </div>
 
-        <Card padding="md" className="flex flex-col gap-4 bg-white rounded-2xl border border-outline-variant/60 shadow-sm relative overflow-hidden">
-          <div className="flex justify-between items-start">
-            <h3 className="text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider">Gizli Mətn (Hidden)</h3>
-            <div className={`w-7 h-7 rounded-lg ${analysis.hiddenTextDetected ? 'bg-red-50 text-error border border-red-100' : 'bg-emerald-50 text-emerald-600 border border-emerald-100'} flex items-center justify-center`}>
-              {analysis.hiddenTextDetected ? <AlertTriangle className="w-3.5 h-3.5" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
-            </div>
+        {/* Card 2: Gizli Mətn (Hidden Text) */}
+        <div className={`rounded-2xl bg-white border border-outline-variant/60 p-5 shadow-xs relative overflow-hidden flex flex-col justify-between min-h-[140px] border-l-4 ${analysis.hiddenTextDetected ? 'border-l-red-500' : 'border-l-emerald-500'}`}>
+          <Eye className={`absolute -top-4 -right-4 w-28 h-28 ${analysis.hiddenTextDetected ? 'text-red-500/10' : 'text-emerald-500/10'} pointer-events-none stroke-1`} />
+          <div className="flex items-center gap-2 relative z-10">
+            <Eye className={`w-5 h-5 shrink-0 ${analysis.hiddenTextDetected ? 'text-red-500' : 'text-emerald-600'}`} />
+            <h3 className={`text-xs sm:text-sm font-semibold ${analysis.hiddenTextDetected ? 'text-red-600' : 'text-emerald-700'}`}>
+              Gizli Mətn (Hidden Text)
+            </h3>
           </div>
-          <div className="flex flex-col">
-            <span className="text-2xl font-bold text-gray-900">{analysis.hiddenTextDetected ? 'Tapıldı' : '0'}</span>
-            <span className="text-[11px] text-gray-500 font-medium">{analysis.hiddenTextDetected ? 'Gizli mətn mövcuddur' : 'Problem aşkar edilmədi'}</span>
+          <div className="flex flex-col my-2 relative z-10">
+            <span className={`text-xl sm:text-2xl font-extrabold ${analysis.hiddenTextDetected ? 'text-red-600' : 'text-emerald-700'}`}>
+              {analysis.hiddenTextDetected ? 'Aşkarlandı' : 'Aşkar Edilmədi'}
+            </span>
           </div>
-          <div className="w-full h-1 mt-auto"></div>
-        </Card>
+          <div className="h-1.5 w-full"></div>
+        </div>
 
-        <Card padding="md" className="flex flex-col gap-4 bg-white rounded-2xl border border-outline-variant/60 shadow-sm relative overflow-hidden">
-          <div className="flex justify-between items-start">
-            <h3 className="text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider">Prompt Injection</h3>
-            <div className={`w-7 h-7 rounded-lg ${analysis.promptInjectionProb > 10 ? (analysis.promptInjectionProb >= 50 ? 'bg-red-50 text-error border-red-100' : 'bg-amber-50 text-amber-500 border-amber-100') : 'bg-emerald-50 text-emerald-600 border-emerald-100'} border flex items-center justify-center`}>
-               <AlertTriangle className="w-3.5 h-3.5" />
-            </div>
+        {/* Card 3: Prompt Injection Ehtimalı */}
+        <div className={`rounded-2xl bg-white border border-outline-variant/60 p-5 shadow-xs relative overflow-hidden flex flex-col justify-between min-h-[140px] border-l-4 ${analysis.promptInjectionProb >= 50 ? 'border-l-red-500' : analysis.promptInjectionProb > 10 ? 'border-l-amber-500' : 'border-l-emerald-500'}`}>
+          <AlertTriangle className={`absolute -top-4 -right-4 w-28 h-28 ${analysis.promptInjectionProb >= 50 ? 'text-red-500/10' : analysis.promptInjectionProb > 10 ? 'text-amber-500/10' : 'text-emerald-500/10'} pointer-events-none stroke-1`} />
+          <div className="flex items-center gap-2 relative z-10">
+            <AlertTriangle className={`w-5 h-5 shrink-0 ${analysis.promptInjectionProb >= 50 ? 'text-red-500' : analysis.promptInjectionProb > 10 ? 'text-amber-500' : 'text-emerald-600'}`} />
+            <h3 className={`text-xs sm:text-sm font-semibold ${analysis.promptInjectionProb >= 50 ? 'text-red-600' : analysis.promptInjectionProb > 10 ? 'text-amber-700' : 'text-emerald-700'}`}>
+              Prompt Injection Ehtimalı
+            </h3>
           </div>
-          <div className="flex flex-col">
-            <span className="text-2xl font-bold text-gray-900">{analysis.promptInjectionProb}%</span>
-            <span className="text-[11px] text-gray-500 font-medium">{analysis.promptInjectionProb < 30 ? 'Aşağı risk' : 'Yüksək ehtimal'}</span>
+          <div className="flex flex-col my-2 relative z-10">
+            <span className={`text-xl sm:text-2xl font-extrabold ${analysis.promptInjectionProb >= 50 ? 'text-red-600' : analysis.promptInjectionProb > 10 ? 'text-amber-700' : 'text-emerald-700'}`}>
+              {analysis.promptInjectionProb}%
+            </span>
           </div>
-          <div className="w-full bg-surface-container rounded-full h-1 mt-auto">
-            <div className={`h-1 rounded-full transition-all duration-1000 ease-out ${analysis.promptInjectionProb > 10 ? (analysis.promptInjectionProb >= 50 ? 'bg-error' : 'bg-amber-500') : 'bg-emerald-500'}`} style={{ width: `${isMounted ? analysis.promptInjectionProb : 0}%` }}></div>
+          <div className="w-full bg-gray-100 rounded-full h-1.5 relative z-10 overflow-hidden">
+            <div 
+              className={`h-full rounded-full transition-all duration-1000 ease-out ${analysis.promptInjectionProb >= 50 ? 'bg-red-500' : analysis.promptInjectionProb > 10 ? 'bg-amber-500' : 'bg-emerald-500'}`} 
+              style={{ width: `${isMounted ? analysis.promptInjectionProb : 0}%` }}
+            />
           </div>
-        </Card>
+        </div>
 
-        <Card padding="md" className="flex flex-col gap-4 bg-white rounded-2xl border border-outline-variant/60 shadow-sm relative overflow-hidden">
-          <div className="flex justify-between items-start">
-            <h3 className="text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider">Ümumi Status</h3>
-            <div className={`w-7 h-7 rounded-lg ${riskColors.bg} ${riskColors.text} ${riskColors.border} border flex items-center justify-center`}>
-              {analysis.riskScore < 30 ? <CheckCircle2 className="w-3.5 h-3.5" /> : <ShieldAlert className="w-3.5 h-3.5" />}
-            </div>
+        {/* Card 4: Ümumi Status */}
+        <div className={`rounded-2xl bg-white border border-outline-variant/60 p-5 shadow-xs relative overflow-hidden flex flex-col justify-between min-h-[140px] border-l-4 ${analysis.riskScore >= 70 ? 'border-l-red-500' : analysis.riskScore >= 30 ? 'border-l-amber-500' : 'border-l-emerald-500'}`}>
+          {analysis.riskScore < 30 ? (
+            <CheckCircle2 className="absolute -top-4 -right-4 w-28 h-28 text-emerald-500/10 pointer-events-none stroke-1" />
+          ) : (
+            <ShieldAlert className="absolute -top-4 -right-4 w-28 h-28 text-red-500/10 pointer-events-none stroke-1" />
+          )}
+          <div className="flex items-center gap-2 relative z-10">
+            {analysis.riskScore < 30 ? (
+              <CheckCircle2 className="w-5 h-5 shrink-0 text-emerald-600" />
+            ) : (
+              <ShieldAlert className="w-5 h-5 shrink-0 text-red-500" />
+            )}
+            <h3 className={`text-xs sm:text-sm font-semibold ${analysis.riskScore < 30 ? 'text-emerald-700' : 'text-red-600'}`}>
+              Ümumi Status
+            </h3>
           </div>
-          <div className="flex flex-col">
-            <span className={`text-2xl font-bold ${riskColors.text}`}>{analysis.riskScore < 30 ? 'Təhlükəsiz' : analysis.riskScore >= 70 ? 'Yüksək Risk' : 'Şübhəli'}</span>
-            <span className="text-[11px] text-gray-500 font-medium">Sənəd analiz edildi</span>
+          <div className="flex flex-col my-2 relative z-10">
+            <span className={`text-xl sm:text-2xl font-extrabold ${analysis.riskScore < 30 ? 'text-emerald-700' : analysis.riskScore >= 70 ? 'text-red-600' : 'text-amber-600'}`}>
+              {analysis.riskScore < 30 ? 'Təhlükəsiz' : analysis.riskScore >= 70 ? 'Yüksək Risk' : 'Şübhəli'}
+            </span>
           </div>
-          <div className="w-full h-1 mt-auto"></div>
-        </Card>
+          <div className="h-1.5 w-full"></div>
+        </div>
       </section>
 
       {actionNotice && (
@@ -438,17 +464,19 @@ export const AnalysisResultPage: React.FC = () => {
           </div>
         </section>
       ) : (
-        analysis.plainExplanation && (
-          <section className="bg-surface-container-lowest p-6 md:p-8 rounded-xl ai-gradient-card shadow-l2 flex gap-6 items-start">
-            <div className="bg-brand-blue/10 p-3 rounded-full text-brand-blue shrink-0">
-              <Sparkles className="w-8 h-8" />
-            </div>
-            <div className="flex flex-col gap-3 w-full">
-              <h2 className="text-label-lg font-bold text-brand-blue uppercase tracking-wider">LLM İzahı</h2>
-              <Typewriter text={analysis.plainExplanation} speed={15} className="text-headline-sm text-on-surface leading-relaxed font-medium" />
-            </div>
-          </section>
-        )
+        <section className="bg-white rounded-3xl border border-outline-variant/60 p-6 sm:p-7 shadow-xs flex items-center gap-5 relative overflow-hidden">
+          <div className="w-14 h-14 rounded-2xl bg-blue-50 text-brand-blue flex items-center justify-center shrink-0 border border-blue-100 shadow-2xs">
+            <Sparkles className="w-7 h-7" />
+          </div>
+          <div className="flex flex-col gap-1 w-full">
+            <h2 className="text-base sm:text-lg font-bold text-on-surface font-sans">
+              Aşkar Edilmiş Təhlükənin Təsviri (Açıq Mətnlə İzah)
+            </h2>
+            <p className="text-body-md text-on-surface-variant leading-relaxed font-normal">
+              {analysis.plainExplanation || 'Sənədin daxilində insan tərəfindən normal görünməyən və AI modelinin davranışını dəyişdirməyə yönəlmiş mətn aşkarlandı.'}
+            </p>
+          </div>
+        </section>
       )}
 
       {/* Human Review Loop UI */}
