@@ -51,8 +51,8 @@ export const translations = {
     textComparisonBtn: 'Mətn Müqayisəsinə Bax',
 
     // Text Comparison
-    proofTitle: 'OCR ↔ PDF Layer Text Comparison',
-    proofSubtitle: 'İnsan gözünün gördüyü fiziki mətn (OCR) ilə AI modelinin oxuduğu daxili PDF kodu arasındakı fərqlər.',
+    proofTitle: 'OCR ↔ PDF Mətn Qatının Müqayisəsi',
+    proofSubtitle: 'İnsan gözünün gördüyü fiziki mətn (OCR) ilə AI modelinin oxuduğu daxili PDF kodu (Mətn Qatı) arasındakı fərqlər.',
     ocrVisual: 'OCR Vizual Nəticə (İnsan Vizualı)',
     pdfLayer: 'PDF Kod Qatı (AI tərəfindən Oxunan)',
     backToAnalysis: 'Detallı Analiz Səhifəsinə Qayıt',

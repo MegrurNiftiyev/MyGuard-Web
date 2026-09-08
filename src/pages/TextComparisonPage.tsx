@@ -128,65 +128,16 @@ export const TextComparisonPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 pb-8">
+    <div className="space-y-6 pt-4 sm:pt-6 pb-8">
       {/* Header */}
       <div className="space-y-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center justify-between">
-          <div className="flex flex-col gap-2">
-            <h1 className="text-headline-lg-mobile md:text-headline-lg font-bold text-on-surface leading-tight">
-              OCR ↔ PDF Layer Text Comparison
-            </h1>
-            <p className="text-body-md text-on-surface-variant">
-              İnsan gözünün gördüyü fiziki mətn (OCR) ilə AI modelinin oxuduğu daxili PDF kodu (Text Layer) arasındakı fərqlər.
-            </p>
-          </div>
-
-          {/* Top Score Banner */}
-          <div className="flex sm:justify-end">
-          {isLoading ? (
-            <div className="w-full max-w-sm h-20 bg-surface-container-lowest border border-outline-variant p-4 rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.03)] animate-pulse flex items-center justify-between gap-4">
-               <div className="flex flex-col gap-2 w-full items-end">
-                 <div className="h-4 bg-gray-200 rounded w-2/3"></div>
-                 <div className="h-6 bg-gray-200 rounded w-full"></div>
-               </div>
-               <div className="w-12 h-12 rounded-full bg-gray-200 shrink-0"></div>
-            </div>
-          ) : (() => {
-            const matchScore = liveComparison?.ocrPdfMatch ?? 0;
-            const matchColors = getMatchScoreColor(matchScore);
-            return (
-              <div className={`w-full max-w-sm px-5 py-3 rounded-2xl flex items-center justify-between sm:justify-end gap-5 bg-white border ${matchColors.border} shadow-sm`}>
-                <div className="flex flex-col items-end justify-center">
-                  <span className={`text-[11px] font-bold uppercase tracking-wider mb-0.5 ${matchColors.text} opacity-80`}>
-                    Uyğunluq Hesabı
-                  </span>
-                  <span className={`text-sm font-extrabold leading-none ${matchColors.text}`}>
-                    OCR ↔ PDF
-                  </span>
-                </div>
-                <div className="relative w-12 h-12 flex items-center justify-center shrink-0">
-                  <svg className="w-14 h-14 absolute -rotate-90" viewBox="0 0 48 48">
-                    <circle cx="24" cy="24" r="20" stroke="currentColor" strokeWidth="3" fill="none" className={`${matchColors.text} opacity-20`} />
-                    <circle 
-                      cx="24" cy="24" r="20" 
-                      stroke="currentColor" 
-                      strokeWidth="3" 
-                      fill="none" 
-                      strokeLinecap="round"
-                      className={matchColors.text} 
-                      style={{ 
-                        strokeDasharray: 2 * Math.PI * 20, 
-                        strokeDashoffset: (2 * Math.PI * 20) - ((isMounted ? matchScore : 0) / 100) * (2 * Math.PI * 20),
-                        transition: 'stroke-dashoffset 1s ease-out'
-                      }} 
-                    />
-                  </svg>
-                  <span className={`absolute text-[11px] font-extrabold ${matchColors.text}`}>{matchScore}%</span>
-                </div>
-              </div>
-            );
-          })()}
-          </div>
+        <div className="flex flex-col gap-2">
+          <h1 className="text-headline-lg-mobile md:text-headline-lg font-bold text-on-surface leading-tight font-sans">
+            OCR ↔ PDF Mətn Qatının Müqayisəsi
+          </h1>
+          <p className="text-body-md text-on-surface-variant">
+            İnsan gözünün gördüyü fiziki mətn (OCR) ilə AI modelinin oxuduğu daxili PDF kodu (Mətn Qatı) arasındakı fərqlər.
+          </p>
         </div>
 
         {/* Human Review Loop UI */}
