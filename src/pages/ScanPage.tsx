@@ -407,25 +407,10 @@ export const ScanPage: React.FC = () => {
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start pb-8 min-h-[80vh] relative">
       {renderDragOverlay()}
 
-      <header className="lg:col-span-12 mb-2 flex justify-between items-end">
+      <header className="lg:col-span-12 mb-2">
         <div>
           <h1 className="text-headline-lg-mobile md:text-headline-lg font-bold text-on-surface mb-2">Sənəd Yoxlanış Sistemi</h1>
           <p className="text-body-md text-on-surface-variant">Skan ediləcək sənədi seçin və 7 mərhələli təhlükəsizlik yoxlanış etabının fəaliyyətini izləyin</p>
-        </div>
-        <div className="flex gap-3">
-          <Button variant="outline" size="md" onClick={clearGlobalState}>
-            {(isScanning || isUploading) ? 'Ləğv Et' : 'Təmizlə'}
-          </Button>
-          <Button 
-            variant="primary" 
-            size="md" 
-            disabled={isScanning || isUploading}
-            onClick={() => navigate(`/analysis/${activeDocId}`)} 
-            icon={<ArrowRight className="w-4 h-4" />}
-            className={(isScanning || isUploading) ? 'opacity-60 cursor-not-allowed grayscale pointer-events-none' : ''}
-          >
-            {t('viewAnalysis') || 'Analiz Nəticəsinə Bax'}
-          </Button>
         </div>
       </header>
 
