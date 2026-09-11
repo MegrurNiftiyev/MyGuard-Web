@@ -6,6 +6,7 @@ import { Button } from '../components/ui/Button';
 import { CustomSwitch } from '../components/ui/CustomSwitch';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
+import { settingsApi } from '../api/settingsApi';
 
 const INITIAL_SETTINGS = {
   ocrThreshold: 95,
@@ -43,6 +44,15 @@ export const SettingsPage: React.FC = () => {
   };
 
   useEffect(() => {
+    settingsApi.getSettings().then((remoteSettings) => {
+      if (remoteSettings) {
+        if (remoteSettings.ocrThreshold !== undefined) setOcrThreshold(remoteSettings.ocrThreshold);
+        if (remoteSettings.sensitivity) setSensitivity(remoteSettings.sensitivity);
+        if (remoteSettings.confidentialMode !== undefined) setConfidentialMode(remoteSettings.confidentialMode);
+        if (remoteSettings.allowExternalAi !== undefined) setAllowExternalAi(remoteSettings.allowExternalAi);
+      }
+    });
+
     const handleStorage = () => {
       const savedConfidential = localStorage.getItem('myguard_confidential_mode');
       if (savedConfidential !== null) setConfidentialMode(savedConfidential === 'true');
@@ -67,7 +77,13 @@ export const SettingsPage: React.FC = () => {
     if (!isDirty) updateDirty(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    await settingsApi.updateSettings({
+      ocrThreshold,
+      sensitivity,
+      confidentialMode,
+      allowExternalAi
+    });
     updateDirty(false);
     window.dispatchEvent(new CustomEvent('settings-saved-success'));
   };
@@ -88,7 +104,7 @@ export const SettingsPage: React.FC = () => {
       window.removeEventListener('trigger-settings-save', handleSaveTrigger);
       window.removeEventListener('trigger-settings-reset', handleResetTrigger);
     };
-  }, [ocrThreshold, sensitivity]);
+  }, [ocrThreshold, sensitivity, confidentialMode, allowExternalAi]);
 
   return (
     <div className="max-w-4xl mx-auto space-y-12 pb-24 relative">

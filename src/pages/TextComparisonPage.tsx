@@ -5,6 +5,7 @@ import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { HumanReviewBox } from '../components/ui/HumanReviewBox';
 import { documentsApi, DocumentComparisonData } from '../api/documentsApi';
+import { renderWithFerqliTags } from '../utils/textHighlight';
 import { useLanguage } from '../context/LanguageContext';
 
 export const TextComparisonPage: React.FC = () => {
@@ -46,10 +47,23 @@ export const TextComparisonPage: React.FC = () => {
     fetchComparison();
   }, [id]);
 
+  const extractFerqliSnippets = (text?: string): string[] => {
+    if (!text || !text.includes('<ferqli>')) return [];
+    const matches = text.match(/<ferqli>([\s\S]*?)<\/ferqli>/g);
+    if (!matches) return [];
+    return matches.map(m => m.replace(/<\/?ferqli>/g, '').trim()).filter(Boolean);
+  };
+
   const highlightDiff = (ocrText: string, pdfText: string, snippets?: string[]) => {
     if (!pdfText) return <span className="opacity-50 italic">PDF daxili mətn qatı mövcud deyil</span>;
 
-    const validSnippets = (snippets || []).filter(s => s && s.trim().length > 0 && s.trim() !== pdfText.trim());
+    if (pdfText.includes('<ferqli>')) {
+      return renderWithFerqliTags(pdfText);
+    }
+
+    const ferqliExtracted = extractFerqliSnippets(ocrText);
+    const allSnippets = Array.from(new Set([...(snippets || []), ...ferqliExtracted]));
+    const validSnippets = allSnippets.filter(s => s && s.trim().length > 0 && s.trim() !== pdfText.trim());
 
     if (validSnippets.length > 0) {
       let elements: (string | React.ReactNode)[] = [pdfText];
@@ -80,12 +94,13 @@ export const TextComparisonPage: React.FC = () => {
       return <>{elements}</>;
     }
 
-    if (!ocrText || ocrText.trim() === pdfText.trim()) {
+    const cleanOcr = ocrText.replace(/<\/?ferqli>/g, '');
+    if (!cleanOcr || cleanOcr.trim() === pdfText.trim()) {
       return <span>{pdfText}</span>;
     }
 
     const ocrCleanWords = new Set(
-      ocrText
+      cleanOcr
         .toLowerCase()
         .replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, "")
         .split(/\s+/)
@@ -127,6 +142,18 @@ export const TextComparisonPage: React.FC = () => {
     setHasReviewed(true);
   };
 
+  const hasThreats = Boolean(
+    liveComparison?.hiddenTextDetected ||
+    liveComparison?.textDifferenceFound ||
+    (liveComparison?.hiddenTexts && liveComparison.hiddenTexts.length > 0) ||
+    (liveComparison?.flaggedSnippets && liveComparison.flaggedSnippets.length > 0) ||
+    liveComparison?.ocrText?.includes('<ferqli>')
+  );
+
+  const activeSnippets = liveComparison?.hiddenTexts?.length
+    ? liveComparison.hiddenTexts
+    : liveComparison?.flaggedSnippets;
+
   return (
     <div className="space-y-6 pt-4 sm:pt-6 pb-8">
       {/* Header */}
@@ -152,7 +179,7 @@ export const TextComparisonPage: React.FC = () => {
             </div>
             <div className="h-10 bg-surface-container rounded w-32 shrink-0"></div>
           </div>
-        ) : !hasReviewed && (liveComparison?.flaggedSnippets && liveComparison.flaggedSnippets.length > 0) ? (
+        ) : !hasReviewed && hasThreats ? (
           <HumanReviewBox 
             onPrimaryClick={() => handleReviewFeedback(true)}
             onSecondaryClick={() => handleReviewFeedback(false)}
@@ -198,7 +225,7 @@ export const TextComparisonPage: React.FC = () => {
                 <div className="h-4 bg-gray-200 rounded w-2/3"></div>
               </div>
             ) : liveComparison?.ocrText ? (
-              <div className="opacity-90">{liveComparison.ocrText}</div>
+              <div className="opacity-90">{renderWithFerqliTags(liveComparison.ocrText)}</div>
             ) : (
               <div className="opacity-50 italic text-center mt-10">Vizual mətn (OCR) tapılmadı</div>
             )}
@@ -216,10 +243,10 @@ export const TextComparisonPage: React.FC = () => {
                 <h3 className="text-title-lg font-bold text-on-surface">PDF Kod Qatı (AI Tərəfindən)</h3>
               </div>
             </div>
-            <div className={`text-label-sm font-bold tracking-wide uppercase ${(liveComparison?.flaggedSnippets && liveComparison.flaggedSnippets.length > 0) ? 'text-error' : 'text-emerald-600'}`}>
+            <div className={`text-label-sm font-bold tracking-wide uppercase ${hasThreats ? 'text-error' : 'text-emerald-600'}`}>
               {isLoading ? (
                 <div className="h-4 w-32 bg-gray-200 rounded animate-pulse"></div>
-              ) : (liveComparison?.flaggedSnippets && liveComparison.flaggedSnippets.length > 0) ? (
+              ) : hasThreats ? (
                 'Təhdid Tapıldı'
               ) : (
                 'Problem yoxdur'
@@ -237,7 +264,7 @@ export const TextComparisonPage: React.FC = () => {
                 <div className="h-4 bg-error/10 rounded w-2/3"></div>
               </div>
             ) : liveComparison?.pdfTextLayer ? (
-              <div className="opacity-90">{highlightDiff(liveComparison.ocrText || '', liveComparison.pdfTextLayer, liveComparison.flaggedSnippets)}</div>
+              <div className="opacity-90">{highlightDiff(liveComparison.ocrText || '', liveComparison.pdfTextLayer, activeSnippets)}</div>
             ) : (
               <div className="opacity-50 italic text-center mt-10">PDF daxili mətn qatı tapılmadı</div>
             )}

@@ -1,5 +1,15 @@
 import React from 'react';
 import { FileText, ShieldAlert, ShieldCheck, AlertTriangle } from 'lucide-react';
+import { formatUploadDate } from '../../../utils/dateFormatter';
+
+const decodeFileName = (text: string) => {
+  if (!text) return text;
+  try {
+    return decodeURIComponent(escape(text));
+  } catch {
+    return text;
+  }
+};
 
 export interface AiTableBlockProps {
   title?: string;
@@ -92,7 +102,7 @@ export const AiTableBlock: React.FC<AiTableBlockProps> = (props) => {
     // 2. Risk Status Indicators (Clean text with subtle dot indicator)
     if (lower.includes('yüksək risk') || lower.includes('high_risk') || lower.includes('high risk') || lower.includes('blocked')) {
       return (
-        <span className="inline-flex items-center gap-2 font-semibold text-red-700 text-sm whitespace-nowrap">
+        <span className="inline-flex items-center gap-2 font-bold text-red-600 text-sm whitespace-nowrap font-sans">
           <span className="w-2.5 h-2.5 rounded-full bg-red-600 shrink-0 animate-pulse" />
           <span>{cellStr}</span>
         </span>
@@ -100,7 +110,7 @@ export const AiTableBlock: React.FC<AiTableBlockProps> = (props) => {
     }
     if (lower.includes('şübhəli') || lower.includes('suspicious') || lower.includes('warning')) {
       return (
-        <span className="inline-flex items-center gap-2 font-semibold text-amber-700 text-sm whitespace-nowrap">
+        <span className="inline-flex items-center gap-2 font-bold text-amber-600 text-sm whitespace-nowrap font-sans">
           <span className="w-2.5 h-2.5 rounded-full bg-amber-500 shrink-0" />
           <span>{cellStr}</span>
         </span>
@@ -108,46 +118,51 @@ export const AiTableBlock: React.FC<AiTableBlockProps> = (props) => {
     }
     if (lower.includes('təhlükəsiz') || lower.includes('safe') || lower.includes('clean')) {
       return (
-        <span className="inline-flex items-center gap-2 font-semibold text-emerald-700 text-sm whitespace-nowrap">
+        <span className="inline-flex items-center gap-2 font-bold text-emerald-600 text-sm whitespace-nowrap font-sans">
           <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0" />
           <span>{cellStr}</span>
         </span>
       );
     }
 
-    // 3. File Names (Clean icon + full text)
+    // 3. File Names (Clean icon + full decoded text with solid font)
     if (lower.endsWith('.docx') || lower.endsWith('.pdf') || lower.endsWith('.txt') || lower.endsWith('.doc')) {
-      const displayName = cellStr.replace(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}-/i, '');
+      const displayName = decodeFileName(cellStr.replace(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}-/i, ''));
       return (
-        <span className="inline-flex items-center gap-2 font-medium text-on-surface text-sm whitespace-nowrap" title={cellStr}>
+        <span className="inline-flex items-center gap-2 font-bold text-on-surface text-sm whitespace-nowrap font-sans" title={cellStr}>
           <FileText className="w-4 h-4 text-brand-blue shrink-0" />
           <span>{displayName}</span>
         </span>
       );
     }
 
-    // 4. Numeric Risk Scores / Percentages
+    // 4. Date / Time (Format: 2026-09-08 14:12 -> 2026 sentyabr 08 14:12)
+    if (cellStr.match(/^\d{4}-\d{2}-\d{2}/) || headerLower.includes('tarix') || headerLower.includes('date') || headerLower.includes('time')) {
+      const formattedDate = formatUploadDate(cellStr);
+      return (
+        <span className="font-sans text-xs font-semibold text-on-surface-variant whitespace-nowrap bg-surface-container-low px-2.5 py-1 rounded-lg border border-outline-variant/60">
+          {formattedDate}
+        </span>
+      );
+    }
+
+    // 5. Numeric Risk Scores / Percentages (Solid bold font)
     if (typeof cell === 'number' || (!isNaN(Number(cellStr)) && cellStr !== '' && !cellStr.includes('-') && !cellStr.includes(':'))) {
       const num = Number(cellStr);
-      if (headerLower.includes('skor') || headerLower.includes('ehtimal') || headerLower.includes('faiz') || headerLower.includes('risk') || headerLower.includes('score')) {
+      if (headerLower.includes('skor') || headerLower.includes('ehtimal') || headerLower.includes('faiz') || headerLower.includes('risk') || headerLower.includes('score') || headerLower.includes('bal')) {
         const colorClass = num >= 70 ? 'text-red-600' : num >= 30 ? 'text-amber-600' : 'text-emerald-600';
         const hasPercent = headerLower.includes('%') || headerLower.includes('faiz') || headerLower.includes('ehtimal');
         return (
-          <span className={`font-bold font-mono text-sm ${colorClass}`}>
+          <span className={`font-extrabold font-sans text-sm ${colorClass}`}>
             {num}{hasPercent ? '%' : ''}
           </span>
         );
       }
-      return <span className="font-mono text-sm font-semibold text-on-surface">{cellStr}</span>;
-    }
-
-    // 5. Date / Time
-    if (cellStr.match(/^\d{4}-\d{2}-\d{2}/)) {
-      return <span className="font-mono text-xs text-on-surface-variant/90 whitespace-nowrap">{cellStr}</span>;
+      return <span className="font-sans text-sm font-bold text-on-surface">{cellStr}</span>;
     }
 
     // Default text
-    return <span className="text-sm text-on-surface whitespace-nowrap">{cellStr}</span>;
+    return <span className="text-sm font-medium text-on-surface whitespace-nowrap font-sans">{decodeFileName(cellStr)}</span>;
   };
 
   return (
@@ -164,7 +179,7 @@ export const AiTableBlock: React.FC<AiTableBlockProps> = (props) => {
           <thead>
             <tr className="border-b border-outline-variant/50 bg-surface-container-low/60">
               {headers.map((h, i) => (
-                <th key={i} className="px-4 py-3 text-xs font-bold text-on-surface-variant uppercase tracking-wider whitespace-nowrap">
+                <th key={i} className="px-4 py-3 text-xs font-bold text-on-surface-variant uppercase tracking-wider whitespace-nowrap font-sans">
                   {h}
                 </th>
               ))}
@@ -174,7 +189,7 @@ export const AiTableBlock: React.FC<AiTableBlockProps> = (props) => {
             {rows.map((row, i) => (
               <tr key={i} className="hover:bg-surface-container-low/40 transition-colors">
                 {row.map((cell, j) => (
-                  <td key={j} className="px-4 py-3 text-sm text-on-surface whitespace-nowrap align-middle">
+                  <td key={j} className="px-4 py-3 text-sm text-on-surface whitespace-nowrap align-middle font-sans">
                     {renderCellContent(cell, headers[j])}
                   </td>
                 ))}

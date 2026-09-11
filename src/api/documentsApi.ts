@@ -23,7 +23,8 @@ export interface DetailedDocumentReport extends DocumentItem {
   layer1_ocrTextMatch?: {
     matchPercent: number;
     hiddenTextDetected: boolean;
-    extraTextSegments: string[];
+    hiddenTexts?: string[];
+    extraTextSegments?: string[];
     textDifferenceFound?: boolean;
     differenceSnippet?: string;
     differenceSnippets?: string[];
@@ -35,7 +36,7 @@ export interface DetailedDocumentReport extends DocumentItem {
     label: string;
     confidence: number;
     accuracy?: number;
-    categories: string[];
+    categories?: string[];
     message?: string;
     requiresUserConfirmation?: boolean;
   };
@@ -61,6 +62,8 @@ export interface DocumentComparisonData {
   pdfTextLayer: string;
   ocrPdfMatch: number;
   hiddenTextDetected: boolean;
+  textDifferenceFound?: boolean;
+  hiddenTexts?: string[];
   flaggedSnippet?: string;
   flaggedSnippets?: string[];
   flaggedMetadata?: {
@@ -81,9 +84,7 @@ export const documentsApi = {
   async uploadDocument(file: File, isConfidential: boolean = false): Promise<{ success: boolean; document: DocumentItem }> {
     const formData = new FormData();
     formData.append('document', file);
-    if (isConfidential) {
-      formData.append('isConfidential', 'true');
-    }
+    formData.append('isConfidential', isConfidential ? 'true' : 'false');
     return apiClient<{ success: boolean; document: DocumentItem }>('/documents/upload', {
       method: 'POST',
       body: formData,
@@ -115,13 +116,8 @@ export const documentsApi = {
         pdfTextLayer: doc.layer1_ocrTextMatch?.pdfTextLayer || '',
         ocrPdfMatch: doc.layer1_ocrTextMatch?.matchPercent ?? 100,
         hiddenTextDetected: Boolean(doc.layer1_ocrTextMatch?.hiddenTextDetected),
-        flaggedSnippets: (doc.layer1_ocrTextMatch?.extraTextSegments && doc.layer1_ocrTextMatch.extraTextSegments.length > 0)
-          ? doc.layer1_ocrTextMatch.extraTextSegments
-          : (doc.layer1_ocrTextMatch?.differenceSnippets && doc.layer1_ocrTextMatch.differenceSnippets.length > 0)
-          ? doc.layer1_ocrTextMatch.differenceSnippets
-          : doc.layer1_ocrTextMatch?.differenceSnippet
-          ? [doc.layer1_ocrTextMatch.differenceSnippet]
-          : [],
+        hiddenTexts: doc.layer1_ocrTextMatch?.hiddenTexts || doc.layer1_ocrTextMatch?.extraTextSegments || [],
+        flaggedSnippets: doc.layer1_ocrTextMatch?.hiddenTexts || doc.layer1_ocrTextMatch?.extraTextSegments || [],
         flaggedMetadata: { pageNumber: 1 }
       };
     }

@@ -15,6 +15,7 @@ import AssistantPage from './pages/AssistantPage';
 import ModelManagementPage from './pages/ModelManagementPage';
 import SettingsPage from './pages/SettingsPage';
 import LoginPage from './pages/LoginPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ActionSecurityPage from './pages/ActionSecurityPage';
 import NotFoundPage from './pages/NotFoundPage';
 
@@ -32,6 +33,14 @@ export const App: React.FC = () => {
                   element={
                     <PublicOnlyRoute>
                       <LoginPage />
+                    </PublicOnlyRoute>
+                  }
+                />
+                <Route
+                  path="/forgot-password"
+                  element={
+                    <PublicOnlyRoute>
+                      <ForgotPasswordPage />
                     </PublicOnlyRoute>
                   }
                 />

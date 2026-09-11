@@ -3,15 +3,27 @@
   "name": "MyGuard — AI Security & Document Guard",
   "icons": [
     {
+      "src": "/MyGuard-App-Logo.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any"
+    },
+    {
+      "src": "/MyGuard-App-Logo.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    },
+    {
       "src": "/favicon.svg",
       "type": "image/svg+xml",
-      "sizes": "512x512 192x192 64x64 32x32",
-      "purpose": "any maskable"
+      "sizes": "any",
+      "purpose": "any"
     }
   ],
   "start_url": "/",
   "background_color": "#0f172a",
-  "theme_color": "#1e293b",
+  "theme_color": "#0066FF",
   "display": "standalone",
   "orientation": "portrait",
   "description": "Enterprise Document Injection Guard & AI Security Platform"

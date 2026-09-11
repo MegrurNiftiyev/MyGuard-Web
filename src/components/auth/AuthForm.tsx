@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, User, Fingerprint, Eye, EyeOff, Smartphone, Building2 } from 'lucide-react';
 import { Button } from '../ui/Button';
 
@@ -27,6 +28,7 @@ export interface AuthFormProps {
 }
 
 export const AuthForm: React.FC<AuthFormProps> = ({ mode, onSubmitData, isSubmitting = false }) => {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -185,9 +187,13 @@ export const AuthForm: React.FC<AuthFormProps> = ({ mode, onSubmitData, isSubmit
             />
             <span>Məni xatırla</span>
           </label>
-          <a href="#" className="font-bold text-brand-blue hover:underline">
+          <button
+            type="button"
+            onClick={() => navigate('/forgot-password')}
+            className="font-bold text-brand-blue hover:underline cursor-pointer bg-transparent border-0 p-0"
+          >
             Şifrəni unutmusunuz?
-          </a>
+          </button>
         </div>
       )}
 

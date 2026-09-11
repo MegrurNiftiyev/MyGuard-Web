@@ -63,7 +63,8 @@ export const DocumentsPage: React.FC = () => {
             size: d.fileSizeBytes ? `${(d.fileSizeBytes / (1024 * 1024)).toFixed(1)} MB` : '1.2 MB',
             status: (d.finalStatus as RiskStatus) || (d.isContainInjection ? 'high_risk' : 'safe'),
             riskScore: d.finalRiskScore ?? (d.isContainInjection ? 85 : 12),
-            fileType: d.fileType?.toUpperCase() || 'PDF'
+            fileType: d.fileType?.toUpperCase() || 'PDF',
+            isConfidential: Boolean(d.isConfidential)
           }));
           setDocuments(mappedDocs);
         } else {
@@ -198,8 +199,8 @@ export const DocumentsPage: React.FC = () => {
                   </div>
                   {/* Mobile-only risk score */}
                   <div className="flex md:hidden flex-col items-end shrink-0">
-                     {doc.riskScore > 0 && (
-                       <span className={`font-semibold text-xs ${doc.riskScore >= 70 ? 'text-error' : doc.riskScore >= 40 ? 'text-warning' : 'text-success'}`}>
+                     {doc.riskScore !== undefined && doc.riskScore !== null && (
+                       <span className={`font-semibold text-xs ${doc.riskScore >= 70 ? 'text-error' : doc.riskScore >= 40 ? 'text-warning' : 'text-emerald-600'}`}>
                          {doc.riskScore}/100
                        </span>
                      )}
@@ -226,8 +227,8 @@ export const DocumentsPage: React.FC = () => {
 
                 {/* Column 4: Risk Score /100 (Desktop) */}
                 <div className="hidden md:flex col-span-2 items-center justify-end gap-2">
-                  {doc.riskScore > 0 ? (
-                    <span className={`font-semibold ${doc.riskScore >= 70 ? 'text-error border-l-4 border-error pl-2' : doc.riskScore >= 40 ? 'text-warning border-l-4 border-warning pl-2' : 'text-success border-l-4 border-success pl-2'}`}>
+                  {doc.riskScore !== undefined && doc.riskScore !== null ? (
+                    <span className={`font-semibold ${doc.riskScore >= 70 ? 'text-error border-l-4 border-error pl-2' : doc.riskScore >= 40 ? 'text-warning border-l-4 border-warning pl-2' : 'text-emerald-600 border-l-4 border-emerald-500 pl-2'}`}>
                       {doc.riskScore}/100
                     </span>
                   ) : (

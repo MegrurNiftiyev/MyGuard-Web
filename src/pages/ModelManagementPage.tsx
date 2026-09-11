@@ -2,16 +2,48 @@ import React, { useState, useEffect } from 'react';
 import { Cpu, Server, CheckCircle2, Lock, Globe, RefreshCw, Sparkles } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
-import { mockModelConfigs, mockPipelines } from '../data/mockData';
 import { AIModelMode } from '../types';
 import { useLanguage } from '../context/LanguageContext';
 import { adminApi, DefenseModel } from '../api/adminApi';
 
+const defaultModelConfigs = [
+  {
+    id: 'mod-1',
+    name: 'STANDARD AI (Cloud Enterprise)',
+    mode: 'STANDARD AI',
+    status: 'Active',
+    isLocal: false,
+    lastUpdate: 'Bugün 12:00',
+    provider: 'Cloud High-Performance LLM',
+    description: 'Aşağı və orta həssaslıqlı sənədlər üçün yüksək sürətli xarici bulud modeli.',
+    latency: '140ms',
+    maxContext: '128k tokens'
+  },
+  {
+    id: 'mod-2',
+    name: 'CONFIDENTIAL AI (On-Premise Defense)',
+    mode: 'CONFIDENTIAL AI',
+    status: 'Active',
+    isLocal: true,
+    lastUpdate: 'Bugün 09:30',
+    provider: 'Local Air-Gapped Model',
+    description: 'Yüksək məxfiliyə malik və daxili müdafiə sənədləri üçün lokal serverdə çalışan izolyasiya olunmuş AI modeli.',
+    latency: '45ms',
+    maxContext: '32k tokens'
+  }
+];
+
+const defaultPipeline = {
+  layer1_ocrTextMatch: { matchPercent: 98 },
+  layer2_classification: { label: 'Safe', confidence: 0.99 },
+  layer3_llmReview: { isMalicious: false }
+};
+
 export const ModelManagementPage: React.FC = () => {
   const { t } = useLanguage();
   const [activeMode, setActiveMode] = useState<AIModelMode>('CONFIDENTIAL AI');
-  const [models, setModels] = useState<any[]>(mockModelConfigs);
-  const pipeline = mockPipelines[0];
+  const [models, setModels] = useState<any[]>(defaultModelConfigs);
+  const pipeline = defaultPipeline;
 
   const fetchModels = async () => {
     try {

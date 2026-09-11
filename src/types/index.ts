@@ -30,6 +30,7 @@ export interface DocumentItem {
   department: string;
   flaggedCount: number;
   category: string;
+  isConfidential?: boolean;
 }
 
 export interface ScanStep {

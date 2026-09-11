@@ -62,19 +62,11 @@ export const MyGuardLogo: React.FC<MyGuardLogoProps> = ({
           fill="url(#myguard-inner-highlight)"
         />
 
-        {/* Center MyGuard Emblem Typography (White 'MyGuard' Text Inside Shield) */}
-        <g fill="#FFFFFF" style={{ fontFamily: "system-ui, -apple-system, sans-serif" }}>
-          <text
-            x="50"
-            y="64"
-            fontSize="30"
-            fontWeight="900"
-            textAnchor="middle"
-            letterSpacing="-0.5px"
-          >
-            MyGuard
-          </text>
-        </g>
+        {/* Center 'M' Monogram Emblem inside Shield */}
+        <path
+          d="M 25 76 V 32 H 34 L 50 56 L 66 32 H 75 V 76 H 64 V 48 L 52 66 H 48 L 36 48 V 76 Z"
+          fill="#FFFFFF"
+        />
       </svg>
 
       {showText && (

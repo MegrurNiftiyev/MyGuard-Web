@@ -1,9 +1,10 @@
-const CACHE_NAME = 'myguard-pwa-v1';
+const CACHE_NAME = 'myguard-pwa-v2';
 const ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
-  '/favicon.svg'
+  '/favicon.svg',
+  '/MyGuard-App-Logo.png'
 ];
 
 self.addEventListener('install', (event) => {

@@ -77,9 +77,7 @@ export const LoginPage: React.FC = () => {
           <div className="w-14 h-14 rounded-2xl bg-white border border-outline-variant/80 flex items-center justify-center shadow-md">
             <ShieldCheck className="w-8 h-8 text-brand-blue" />
           </div>
-          <h1 className="text-headline-md font-bold text-on-surface tracking-tight">
-            MyGuard Security
-          </h1>
+          <h1 className="text-headline-lg font-bold text-on-surface font-sans">MyGuard</h1>
           <p className="text-body-md text-on-surface-variant max-w-xs">
             Dövlət və Korporativ AI Sənəd Təhlükəsizliyi Platforması
           </p>
