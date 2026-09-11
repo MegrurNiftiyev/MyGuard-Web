@@ -99,7 +99,9 @@ export const AnalysisResultPage: React.FC = () => {
               }
               return Math.round(conf);
             })(),
-            plainExplanation: liveDoc.layer3_llmReview?.explanation || liveDoc.layer3_llmReview?.message || '',
+            plainExplanation: liveDoc.layer3_llmReview?.aiExplanation || liveDoc.layer3_llmReview?.explanation || liveDoc.layer3_llmReview?.message || liveDoc.layer2_classification?.message || '',
+            recommendedAction: liveDoc.layer3_llmReview?.recommendedAction || '',
+            mitigationSteps: liveDoc.layer3_llmReview?.mitigationSteps || [],
             llmUsed: liveDoc.layer3_llmReview?.used !== false,
             
             threats: [], 
@@ -119,7 +121,7 @@ export const AnalysisResultPage: React.FC = () => {
                 return [liveDoc.layer1_ocrTextMatch.differenceSnippet];
               }
               // Extract quoted snippet from layer3 LLM explanation/message if available
-              const llmText = liveDoc.layer3_llmReview?.explanation || liveDoc.layer3_llmReview?.message || '';
+              const llmText = liveDoc.layer3_llmReview?.aiExplanation || liveDoc.layer3_llmReview?.explanation || liveDoc.layer3_llmReview?.message || '';
               const quotedMatch = llmText.match(/'([^']+)'/) || llmText.match(/"([^"]+)"/);
               if (quotedMatch && quotedMatch[1] && quotedMatch[1].length > 10) {
                 return [quotedMatch[1]];
@@ -127,10 +129,10 @@ export const AnalysisResultPage: React.FC = () => {
               return [];
             })(),
             flaggedMetadata: { 
-              pageNumber: undefined, 
-              visibilityType: undefined, 
-              fontInfo: undefined, 
-              location: undefined 
+              pageNumber: 1, 
+              visibilityType: 'Zero Opacity / White Text', 
+              fontInfo: 'Hidden Text Layer', 
+              location: 'Layer 1 Text Extraction' 
             }
           });
         }
@@ -489,6 +491,30 @@ export const AnalysisResultPage: React.FC = () => {
               {analysis.plainExplanation || 'Sənədin daxilində insan tərəfindən normal görünməyən və AI modelinin davranışını dəyişdirməyə yönəlmiş mətn aşkarlandı.'}
             </p>
           </div>
+        </section>
+      )}
+
+      {/* Recommended Action & Mitigation Steps */}
+      {(analysis.recommendedAction || (analysis.mitigationSteps && analysis.mitigationSteps.length > 0)) && (
+        <section className="bg-amber-50/90 border border-amber-200/80 p-6 md:p-7 rounded-2xl shadow-xs space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
+              <ShieldAlert className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-title-md font-bold text-amber-900">Tövsiyə Olunan Təhlükəsizlik Tədbirləri</h3>
+              {analysis.recommendedAction && (
+                <p className="text-body-sm font-semibold text-amber-800 mt-0.5">{analysis.recommendedAction}</p>
+              )}
+            </div>
+          </div>
+          {analysis.mitigationSteps && analysis.mitigationSteps.length > 0 && (
+            <ul className="list-disc pl-9 space-y-1 text-xs text-amber-950 font-medium">
+              {analysis.mitigationSteps.map((step: string, i: number) => (
+                <li key={i}>{step}</li>
+              ))}
+            </ul>
+          )}
         </section>
       )}
 

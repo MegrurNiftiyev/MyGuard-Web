@@ -42,6 +42,7 @@ export interface DetailedDocumentReport extends DocumentItem {
   };
   layer3_llmReview?: {
     used: boolean;
+    aiExplanation?: string;
     explanation?: string;
     message?: string;
     isMalicious?: boolean;
