@@ -72,6 +72,8 @@ export interface DocumentComparisonData {
     visibilityType?: string;
     location?: string;
   };
+  reviewedByUser?: boolean;
+  userReviewLabel?: boolean | null;
 }
 
 export interface CleanInjectionResponse {
@@ -124,7 +126,9 @@ export const documentsApi = {
         hiddenTextDetected: Boolean(doc.layer1_ocrTextMatch?.hiddenTextDetected),
         hiddenTexts: doc.layer1_ocrTextMatch?.hiddenTexts || doc.layer1_ocrTextMatch?.extraTextSegments || [],
         flaggedSnippets: doc.layer1_ocrTextMatch?.hiddenTexts || doc.layer1_ocrTextMatch?.extraTextSegments || [],
-        flaggedMetadata: { pageNumber: 1 }
+        flaggedMetadata: { pageNumber: 1 },
+        reviewedByUser: doc.reviewedByUser,
+        userReviewLabel: doc.userReviewLabel
       };
     }
   },

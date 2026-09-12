@@ -99,6 +99,12 @@ export const AnalysisResultPage: React.FC = () => {
       try {
         const liveDoc: DetailedDocumentReport = await documentsApi.getDocumentById(id);
         if (liveDoc && liveDoc.id) {
+          const isReviewed = Boolean(
+            liveDoc.reviewedByUser ||
+            (liveDoc.userReviewLabel !== null && liveDoc.userReviewLabel !== undefined)
+          );
+          setHasReviewed(isReviewed);
+
           setAnalysis({
             documentId: liveDoc.id,
             documentName: liveDoc.fileName,

@@ -37,6 +37,11 @@ export const TextComparisonPage: React.FC = () => {
         const comp = await documentsApi.getDocumentComparison(id);
         if (comp) {
           setLiveComparison(comp);
+          const isReviewed = Boolean(
+            comp.reviewedByUser ||
+            (comp.userReviewLabel !== null && comp.userReviewLabel !== undefined)
+          );
+          setHasReviewed(isReviewed);
         }
       } catch (err) {
         console.error('Failed to load comparison data:', err);
