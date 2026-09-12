@@ -57,10 +57,12 @@ export const TextComparisonPage: React.FC = () => {
   const highlightDiff = (ocrText: string, pdfText: string, snippets?: string[]) => {
     if (!pdfText) return <span className="opacity-50 italic">PDF daxili mətn qatı mövcud deyil</span>;
 
+    // 1. If pdfText contains <ferqli> tags, render with ferqli highlighter
     if (pdfText.includes('<ferqli>')) {
       return renderWithFerqliTags(pdfText);
     }
 
+    // 2. Extract any ferqli snippets from ocrText or pdfText
     const ferqliExtracted = extractFerqliSnippets(ocrText);
     const allSnippets = Array.from(new Set([...(snippets || []), ...ferqliExtracted]));
     const validSnippets = allSnippets.filter(s => s && s.trim().length > 0 && s.trim() !== pdfText.trim());
@@ -94,42 +96,9 @@ export const TextComparisonPage: React.FC = () => {
       return <>{elements}</>;
     }
 
-    const cleanOcr = ocrText.replace(/<\/?ferqli>/g, '');
-    if (!cleanOcr || cleanOcr.trim() === pdfText.trim()) {
-      return <span>{pdfText}</span>;
-    }
-
-    const ocrCleanWords = new Set(
-      cleanOcr
-        .toLowerCase()
-        .replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, "")
-        .split(/\s+/)
-        .filter(Boolean)
-    );
-
-    const pdfTokens = pdfText.split(/(\s+)/);
-
-    return (
-      <>
-        {pdfTokens.map((token, idx) => {
-          const cleanToken = token.toLowerCase().replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, "").trim();
-
-          if (!cleanToken) {
-            return <React.Fragment key={idx}>{token}</React.Fragment>;
-          }
-
-          if (ocrCleanWords.has(cleanToken)) {
-            return <React.Fragment key={idx}>{token}</React.Fragment>;
-          }
-
-          return (
-            <mark key={idx} className="bg-yellow-300 text-gray-900 font-bold px-1.5 py-0.5 rounded shadow-2xs inline">
-              {token}
-            </mark>
-          );
-        })}
-      </>
-    );
+    // 3. Fallback: Clean text rendering without marking every single token yellow
+    const cleanPdf = pdfText.replace(/<\/?ferqli>/g, '');
+    return <span>{cleanPdf}</span>;
   };
 
   const handleReviewFeedback = async (isInjection: boolean) => {
@@ -147,12 +116,17 @@ export const TextComparisonPage: React.FC = () => {
     liveComparison?.textDifferenceFound ||
     (liveComparison?.hiddenTexts && liveComparison.hiddenTexts.length > 0) ||
     (liveComparison?.flaggedSnippets && liveComparison.flaggedSnippets.length > 0) ||
-    liveComparison?.ocrText?.includes('<ferqli>')
+    liveComparison?.ocrText?.includes('<ferqli>') ||
+    liveComparison?.pdfTextLayer?.includes('<ferqli>')
   );
 
-  const activeSnippets = liveComparison?.hiddenTexts?.length
-    ? liveComparison.hiddenTexts
-    : liveComparison?.flaggedSnippets;
+  const activeSnippets = Array.from(
+    new Set([
+      ...(liveComparison?.hiddenTexts || []),
+      ...(liveComparison?.flaggedSnippets || []),
+      ...(liveComparison?.flaggedSnippet ? [liveComparison.flaggedSnippet] : []),
+    ])
+  ).filter(Boolean);
 
   return (
     <div className="space-y-6 pt-4 sm:pt-6 pb-8">
@@ -208,11 +182,8 @@ export const TextComparisonPage: React.FC = () => {
                 <Eye className="w-6 h-6" />
               </div>
               <div>
-                <h3 className="text-title-lg font-bold text-on-surface">OCR Vizual Nəticə</h3>
+                <h3 className="text-title-lg font-bold text-on-surface">Vizual görünən yazılar</h3>
               </div>
-            </div>
-            <div className="text-label-sm font-bold text-emerald-600 tracking-wide uppercase">
-              Normal Görünüş
             </div>
           </div>
 
@@ -240,17 +211,8 @@ export const TextComparisonPage: React.FC = () => {
                 <ShieldAlert className="w-6 h-6" />
               </div>
               <div>
-                <h3 className="text-title-lg font-bold text-on-surface">PDF Kod Qatı (AI Tərəfindən)</h3>
+                <h3 className="text-title-lg font-bold text-on-surface">PDF Kod Qatı</h3>
               </div>
-            </div>
-            <div className={`text-label-sm font-bold tracking-wide uppercase ${hasThreats ? 'text-error' : 'text-emerald-600'}`}>
-              {isLoading ? (
-                <div className="h-4 w-32 bg-gray-200 rounded animate-pulse"></div>
-              ) : hasThreats ? (
-                'Təhdid Tapıldı'
-              ) : (
-                'Problem yoxdur'
-              )}
             </div>
           </div>
 

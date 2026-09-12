@@ -94,7 +94,12 @@ export const documentsApi = {
 
   async getDocuments(): Promise<DocumentItem[]> {
     const res = await apiClient<{ documents: DocumentItem[] }>('/documents');
-    return res.documents || [];
+    const docs = res.documents || [];
+    return docs.sort((a, b) => {
+      const timeA = a.uploadedAt ? new Date(a.uploadedAt).getTime() : 0;
+      const timeB = b.uploadedAt ? new Date(b.uploadedAt).getTime() : 0;
+      return timeB - timeA;
+    });
   },
 
   async getDocumentById(id: string): Promise<DetailedDocumentReport> {

@@ -62,7 +62,13 @@ export const DashboardPage: React.FC = () => {
       try {
         const res = await documentsApi.getDocuments();
         if (res && res.length > 0) {
-          const mapped: DocumentItem[] = res.map((d) => ({
+          const sorted = [...res].sort((a, b) => {
+            const timeA = a.uploadedAt ? new Date(a.uploadedAt).getTime() : 0;
+            const timeB = b.uploadedAt ? new Date(b.uploadedAt).getTime() : 0;
+            return timeB - timeA;
+          });
+
+          const mapped: DocumentItem[] = sorted.map((d) => ({
             id: d.id,
             name: d.fileName || 'Sənəd.pdf',
             fileType: d.fileType?.toUpperCase() || 'PDF',
@@ -217,7 +223,7 @@ export const DashboardPage: React.FC = () => {
   ];
 
   return (
-    <div className="flex flex-col gap-10 w-full pb-8 min-h-screen relative">
+    <div className="flex flex-col gap-10 w-full pt-6 md:pt-8 pb-8 min-h-screen relative">
       {isDragging && createPortal(
         <div className="fixed inset-0 z-[100] bg-surface-container-lowest/85 backdrop-blur-md flex flex-col items-center justify-center p-6 transition-all duration-300 animate-in fade-in zoom-in-95 pointer-events-none">
           <div className="w-full max-w-xl p-10 border-2 border-dashed border-brand-blue/70 rounded-3xl bg-surface/95 flex flex-col items-center justify-center text-center space-y-5 shadow-2xl">

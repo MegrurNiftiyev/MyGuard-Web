@@ -8,6 +8,7 @@ import { HumanReviewBox } from '../components/ui/HumanReviewBox';
 import { Typewriter } from '../components/ui/Typewriter';
 import { documentsApi, DetailedDocumentReport } from '../api/documentsApi';
 import { formatUploadDate } from '../utils/dateFormatter';
+import { renderWithFerqliTags } from '../utils/textHighlight';
 import { useLanguage } from '../context/LanguageContext';
 
 const decodeFileName = (text: string) => {
@@ -49,6 +50,26 @@ const formatFileSize = (bytes?: number): string => {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+};
+
+const renderFormattedText = (text?: string) => {
+  if (!text) return null;
+  const parts = text.split(/(\*\*.*?\*\*)/g);
+  return (
+    <>
+      {parts.map((part, index) => {
+        if (part.startsWith('**') && part.endsWith('**') && part.length >= 4) {
+          const boldContent = part.slice(2, -2);
+          return (
+            <strong key={index} className="font-bold text-on-surface">
+              {boldContent}
+            </strong>
+          );
+        }
+        return <span key={index}>{part}</span>;
+      })}
+    </>
+  );
 };
 
 export const AnalysisResultPage: React.FC = () => {
@@ -178,6 +199,10 @@ export const AnalysisResultPage: React.FC = () => {
   const highlightDiff = (ocrText: string, pdfText: string, snippets?: string[]) => {
     if (!pdfText) return <span className="opacity-50 italic">PDF daxili mətn qatı mövcud deyil</span>;
 
+    if (pdfText.includes('<ferqli>')) {
+      return renderWithFerqliTags(pdfText);
+    }
+
     const validSnippets = (snippets || []).filter(s => s && s.trim().length > 0 && s.trim() !== pdfText.trim());
 
     if (validSnippets.length > 0) {
@@ -209,41 +234,8 @@ export const AnalysisResultPage: React.FC = () => {
       return <>{elements}</>;
     }
 
-    if (!ocrText || ocrText.trim() === pdfText.trim()) {
-      return <span>{pdfText}</span>;
-    }
-
-    const ocrCleanWords = new Set(
-      ocrText
-        .toLowerCase()
-        .replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, "")
-        .split(/\s+/)
-        .filter(Boolean)
-    );
-
-    const pdfTokens = pdfText.split(/(\s+)/);
-
-    return (
-      <>
-        {pdfTokens.map((token, idx) => {
-          const cleanToken = token.toLowerCase().replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, "").trim();
-
-          if (!cleanToken) {
-            return <React.Fragment key={idx}>{token}</React.Fragment>;
-          }
-
-          if (ocrCleanWords.has(cleanToken)) {
-            return <React.Fragment key={idx}>{token}</React.Fragment>;
-          }
-
-          return (
-            <mark key={idx} className="bg-yellow-300 text-gray-900 font-bold px-1.5 py-0.5 rounded shadow-2xs inline">
-              {token}
-            </mark>
-          );
-        })}
-      </>
-    );
+    const cleanPdf = pdfText.replace(/<\/?ferqli>/g, '');
+    return <span>{cleanPdf}</span>;
   };
 
   if (isLoading) {
@@ -488,13 +480,13 @@ export const AnalysisResultPage: React.FC = () => {
               Süni İntellekt İzahı
             </h2>
             <p className="text-body-md text-on-surface-variant leading-relaxed font-normal">
-              {analysis.plainExplanation || 'Sənədin daxilində insan tərəfindən normal görünməyən və AI modelinin davranışını dəyişdirməyə yönəlmiş mətn aşkarlandı.'}
+              {renderFormattedText(analysis.plainExplanation || 'Sənədin daxilində insan tərəfindən normal görünməyən və AI modelinin davranışını dəyişdirməyə yönəlmiş mətn aşkarlandı.')}
             </p>
           </div>
         </section>
       )}
 
-      {/* Recommended Action & Mitigation Steps */}
+      {/* Recommended Action & Mitigation Steps (Commented out as requested)
       {(analysis.recommendedAction || (analysis.mitigationSteps && analysis.mitigationSteps.length > 0)) && (
         <section className="bg-amber-50/90 border border-amber-200/80 p-6 md:p-7 rounded-2xl shadow-xs space-y-4">
           <div className="flex items-center gap-3">
@@ -504,19 +496,20 @@ export const AnalysisResultPage: React.FC = () => {
             <div>
               <h3 className="text-title-md font-bold text-amber-900">Tövsiyə Olunan Təhlükəsizlik Tədbirləri</h3>
               {analysis.recommendedAction && (
-                <p className="text-body-sm font-semibold text-amber-800 mt-0.5">{analysis.recommendedAction}</p>
+                <p className="text-body-sm font-semibold text-amber-800 mt-0.5">{renderFormattedText(analysis.recommendedAction)}</p>
               )}
             </div>
           </div>
           {analysis.mitigationSteps && analysis.mitigationSteps.length > 0 && (
             <ul className="list-disc pl-9 space-y-1 text-xs text-amber-950 font-medium">
               {analysis.mitigationSteps.map((step: string, i: number) => (
-                <li key={i}>{step}</li>
+                <li key={i}>{renderFormattedText(step)}</li>
               ))}
             </ul>
           )}
         </section>
       )}
+      */}
 
       {/* Human Review Loop UI */}
       {!hasReviewed && (

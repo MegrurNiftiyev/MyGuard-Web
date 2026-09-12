@@ -24,10 +24,10 @@ const DEFAULT_SCAN_STEPS = [
   { stepNumber: 1, title: 'Sənədin Yüklənməsi', description: 'Fayl təhlükəsiz sandbox mühitinə daxil edilir...' },
   { stepNumber: 2, title: 'PDF Mətninin Çıxarılması', description: 'Daxili mətn qatı və strukturu oxunur...' },
   { stepNumber: 3, title: 'OCR Vizual Analiz', description: 'Vizual görüntüdən insan tərəfindən görünən mətn çıxarılır...' },
-  { stepNumber: 4, title: 'Mətn Müqayisəsi', description: 'OCR və PDF mətn qatları fərqləri analiz edilir...' },
+  { stepNumber: 4, title: 'Mətn Müqayisəsi', description: 'Vizual və PDF mətn qatları fərqləri analiz edilir...' },
   { stepNumber: 5, title: 'Gizli Mətn Aşkarlanması', description: 'İnsan gözünə görünməyən yazılar yoxlanılır...' },
   { stepNumber: 6, title: 'Prompt Injection Analizi', description: 'AI modeli tərəfindən prompt injection yoxlaması edilir...' },
-  { stepNumber: 7, title: 'Risk Qiymətləndirilməsi', description: 'Risk balı hesablanır və sənəd statusu müəyyən edilir...' }
+  { stepNumber: 7, title: 'Risk Qiymətləndirilməsi', description: 'Risk balı hesablanır və sənəd müvafiq statusa keçirilir...' }
 ];
 
 const formatActiveMessage = (msg?: string) => {
@@ -42,6 +42,13 @@ const formatActiveMessage = (msg?: string) => {
 };
 
 const getStepDescription = (stepIdx: number, status: StepStatus, socketMsg?: string, isActiveStep: boolean = false): string => {
+  if (stepIdx === 3) {
+    if (status === 'completed' || status === 'warning' || status === 'failed') {
+      return 'Vizual və PDF mətn qatları fərqləri analiz edildi';
+    }
+    return 'Vizual və PDF mətn qatları fərqləri analiz edilir...';
+  }
+
   if (stepIdx === 4) {
     if (status === 'warning' || status === 'failed') {
       return 'İnsan gözünə görünməyən yazılar aşkarlandı';
@@ -62,7 +69,16 @@ const getStepDescription = (stepIdx: number, status: StepStatus, socketMsg?: str
     return 'AI modeli tərəfindən prompt injection yoxlaması edilir...';
   }
 
-  return formatActiveMessage(socketMsg) || DEFAULT_SCAN_STEPS[stepIdx]?.description || '';
+  if (isActiveStep) {
+    const formatted = formatActiveMessage(socketMsg);
+    return formatted ? formatted.replace(/OCR/g, 'Vizual') : (DEFAULT_SCAN_STEPS[stepIdx]?.description || '');
+  }
+
+  if (socketMsg) {
+    return socketMsg.replace(/OCR/g, 'Vizual');
+  }
+
+  return DEFAULT_SCAN_STEPS[stepIdx]?.description || '';
 };
 
 // Global state to persist scan pipeline across route changes
@@ -252,7 +268,12 @@ export const ScanPage: React.FC = () => {
             isFinished = true;
           }
 
-          const getStepFinalStatus = (stepIdx: number): StepStatus => {
+          const getStepFinalStatus = (stepIdx: number, existingStatus?: StepStatus): StepStatus => {
+            // Keep existing warning/failed status so subsequent socket events don't overwrite risk state
+            if (existingStatus === 'warning' || existingStatus === 'failed') {
+              return existingStatus;
+            }
+
             const fd = data.fileData;
             if (!fd) return 'completed';
 
@@ -277,7 +298,7 @@ export const ScanPage: React.FC = () => {
 
           const newSteps = prevSteps.map((step, idx) => {
             if (idx < activeIdx) {
-              const finalSt = getStepFinalStatus(idx);
+              const finalSt = getStepFinalStatus(idx, step.status);
               return { ...step, status: finalSt, description: getStepDescription(idx, finalSt, undefined, false) };
             }
             if (idx === activeIdx) {
@@ -287,7 +308,9 @@ export const ScanPage: React.FC = () => {
               } else if (data.response === 'error') {
                 status = 'warning';
               } else if (data.fileData?.stepStatus === 'completed' || data.fileData?.currentStep === 'COMPLETED' || isFinished) {
-                status = getStepFinalStatus(idx);
+                status = getStepFinalStatus(idx, step.status);
+              } else if (step.status === 'warning' || step.status === 'failed') {
+                status = step.status;
               }
 
               if (idx === 6 && (status === 'completed' || status === 'warning' || status === 'failed')) {
@@ -342,7 +365,7 @@ export const ScanPage: React.FC = () => {
   // If no document is selected/being scanned, render the Idle Scan State in exact same layout
   if (!activeDocId) {
     return (
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start pb-8 min-h-[80vh] relative">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start pt-6 md:pt-8 pb-8 min-h-[80vh] relative">
         {renderDragOverlay()}
 
         {/* Header spanning full width */}
@@ -430,7 +453,7 @@ export const ScanPage: React.FC = () => {
 
   // Active Scan State (when documentId is present)
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start pb-8 min-h-[80vh] relative">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start pt-6 md:pt-8 pb-8 min-h-[80vh] relative">
       {renderDragOverlay()}
 
       <header className="lg:col-span-12 mb-2">

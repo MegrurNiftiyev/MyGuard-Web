@@ -54,7 +54,13 @@ export const DocumentsPage: React.FC = () => {
       try {
         const liveDocs = await documentsApi.getDocuments();
         if (liveDocs && liveDocs.length > 0) {
-          const mappedDocs = liveDocs.map((d: DocumentItem) => ({
+          const sorted = [...liveDocs].sort((a: DocumentItem, b: DocumentItem) => {
+            const timeA = a.uploadedAt ? new Date(a.uploadedAt).getTime() : 0;
+            const timeB = b.uploadedAt ? new Date(b.uploadedAt).getTime() : 0;
+            return timeB - timeA;
+          });
+
+          const mappedDocs = sorted.map((d: DocumentItem) => ({
             id: d.id,
             name: d.fileName || 'Sənəd.pdf',
             category: d.fileType?.toUpperCase() || 'DOCUMENT',
@@ -97,7 +103,7 @@ export const DocumentsPage: React.FC = () => {
   });
 
   return (
-    <div className="space-y-8 pb-8">
+    <div className="space-y-8 pt-6 md:pt-8 pb-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
