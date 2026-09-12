@@ -1,23 +1,29 @@
 import React from 'react';
 
+/**
+ * Parses text containing one or multiple hidden text XML tags (<HiddenText>, <ferqli>, <hidden_text>)
+ * and highlights the inner text content with yellow background while stripping raw XML tags.
+ */
 export const renderWithFerqliTags = (text?: string): React.ReactNode => {
   if (!text) return null;
 
+  // Pattern matching any valid hidden text tag pair: <tag>content</tag>
   const tagPattern = /(<(?:ferqli|HiddenText|hidden_text|hiddenText)>[\s\S]*?<\/(?:ferqli|HiddenText|hidden_text|hiddenText)>)/gi;
 
-  if (!tagPattern.test(text)) {
+  const parts = text.split(tagPattern);
+
+  if (parts.length === 1) {
+    // No full tag pairs found, just strip any stray/orphan tag strings
     const cleanText = text.replace(/<\/?(?:ferqli|HiddenText|hidden_text|hiddenText)>/gi, '');
     return cleanText;
   }
 
-  const parts = text.split(tagPattern);
-
   return (
     <>
       {parts.map((part, index) => {
-        const match = part.match(/^<(ferqli|HiddenText|hidden_text|hiddenText)>([\s\S]*?)<\/\1>$/i);
+        const match = part.match(/^<(?:ferqli|HiddenText|hidden_text|hiddenText)>([\s\S]*?)<\/(?:ferqli|HiddenText|hidden_text|hiddenText)>$/i);
         if (match) {
-          const content = match[2];
+          const content = match[1];
           return (
             <mark
               key={index}
