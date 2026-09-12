@@ -2,15 +2,22 @@ import React from 'react';
 
 export const renderWithFerqliTags = (text?: string): React.ReactNode => {
   if (!text) return null;
-  if (!text.includes('<ferqli>')) return text;
 
-  const parts = text.split(/(<ferqli>[\s\S]*?<\/ferqli>)/g);
+  const tagPattern = /(<(?:ferqli|HiddenText|hidden_text|hiddenText)>[\s\S]*?<\/(?:ferqli|HiddenText|hidden_text|hiddenText)>)/gi;
+
+  if (!tagPattern.test(text)) {
+    const cleanText = text.replace(/<\/?(?:ferqli|HiddenText|hidden_text|hiddenText)>/gi, '');
+    return cleanText;
+  }
+
+  const parts = text.split(tagPattern);
 
   return (
     <>
       {parts.map((part, index) => {
-        if (part.startsWith('<ferqli>') && part.endsWith('</ferqli>')) {
-          const content = part.slice(8, -9);
+        const match = part.match(/^<(ferqli|HiddenText|hidden_text|hiddenText)>([\s\S]*?)<\/\1>$/i);
+        if (match) {
+          const content = match[2];
           return (
             <mark
               key={index}
@@ -20,7 +27,8 @@ export const renderWithFerqliTags = (text?: string): React.ReactNode => {
             </mark>
           );
         }
-        return <React.Fragment key={index}>{part}</React.Fragment>;
+        const cleanPart = part.replace(/<\/?(?:ferqli|HiddenText|hidden_text|hiddenText)>/gi, '');
+        return <React.Fragment key={index}>{cleanPart}</React.Fragment>;
       })}
     </>
   );

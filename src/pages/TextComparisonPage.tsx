@@ -48,27 +48,29 @@ export const TextComparisonPage: React.FC = () => {
   }, [id]);
 
   const extractFerqliSnippets = (text?: string): string[] => {
-    if (!text || !text.includes('<ferqli>')) return [];
-    const matches = text.match(/<ferqli>([\s\S]*?)<\/ferqli>/g);
+    if (!text) return [];
+    const matches = text.match(/<(?:ferqli|HiddenText|hidden_text|hiddenText)>([\s\S]*?)<\/(?:ferqli|HiddenText|hidden_text|hiddenText)>/gi);
     if (!matches) return [];
-    return matches.map(m => m.replace(/<\/?ferqli>/g, '').trim()).filter(Boolean);
+    return matches.map(m => m.replace(/<\/?(?:ferqli|HiddenText|hidden_text|hiddenText)>/gi, '').trim()).filter(Boolean);
   };
 
   const highlightDiff = (ocrText: string, pdfText: string, snippets?: string[]) => {
     if (!pdfText) return <span className="opacity-50 italic">PDF daxili mətn qatı mövcud deyil</span>;
 
-    // 1. If pdfText contains <ferqli> tags, render with ferqli highlighter
-    if (pdfText.includes('<ferqli>')) {
+    // 1. If pdfText contains any hidden tags (<ferqli> or <HiddenText>), render with tag highlighter
+    if (/<(?:ferqli|HiddenText|hidden_text|hiddenText)>/i.test(pdfText)) {
       return renderWithFerqliTags(pdfText);
     }
 
-    // 2. Extract any ferqli snippets from ocrText or pdfText
+    // 2. Extract any ferqli / HiddenText snippets from ocrText or pdfText
     const ferqliExtracted = extractFerqliSnippets(ocrText);
-    const allSnippets = Array.from(new Set([...(snippets || []), ...ferqliExtracted]));
-    const validSnippets = allSnippets.filter(s => s && s.trim().length > 0 && s.trim() !== pdfText.trim());
+    const cleanSnippets = (snippets || []).map(s => s.replace(/<\/?(?:ferqli|HiddenText|hidden_text|hiddenText)>/gi, '').trim());
+    const allSnippets = Array.from(new Set([...cleanSnippets, ...ferqliExtracted]));
+    const cleanPdfText = pdfText.replace(/<\/?(?:ferqli|HiddenText|hidden_text|hiddenText)>/gi, '');
+    const validSnippets = allSnippets.filter(s => s && s.trim().length > 0 && s.trim() !== cleanPdfText.trim());
 
     if (validSnippets.length > 0) {
-      let elements: (string | React.ReactNode)[] = [pdfText];
+      let elements: (string | React.ReactNode)[] = [cleanPdfText];
 
       validSnippets.forEach((snippet) => {
         const nextElements: (string | React.ReactNode)[] = [];
@@ -96,9 +98,8 @@ export const TextComparisonPage: React.FC = () => {
       return <>{elements}</>;
     }
 
-    // 3. Fallback: Clean text rendering without marking every single token yellow
-    const cleanPdf = pdfText.replace(/<\/?ferqli>/g, '');
-    return <span>{cleanPdf}</span>;
+    // 3. Fallback: Clean text rendering without showing raw tags
+    return <span>{cleanPdfText}</span>;
   };
 
   const handleReviewFeedback = async (isInjection: boolean) => {
@@ -116,8 +117,8 @@ export const TextComparisonPage: React.FC = () => {
     liveComparison?.textDifferenceFound ||
     (liveComparison?.hiddenTexts && liveComparison.hiddenTexts.length > 0) ||
     (liveComparison?.flaggedSnippets && liveComparison.flaggedSnippets.length > 0) ||
-    liveComparison?.ocrText?.includes('<ferqli>') ||
-    liveComparison?.pdfTextLayer?.includes('<ferqli>')
+    /<(?:ferqli|HiddenText|hidden_text|hiddenText)>/i.test(liveComparison?.ocrText || '') ||
+    /<(?:ferqli|HiddenText|hidden_text|hiddenText)>/i.test(liveComparison?.pdfTextLayer || '')
   );
 
   const activeSnippets = Array.from(
