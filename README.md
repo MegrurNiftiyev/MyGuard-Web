@@ -186,7 +186,7 @@ The **AI Security Assistant** is a contextual copilot engineered to answer secur
 
 ### 10. 🏗️ 3-Layer Security AI Model Architecture Diagram
 <p align="center">
-  <img src="screenshots/ai_model_architecture.png" alt="3-Layer Security AI Model Architecture" width="100%" />
+  <img src="screenshots/ai_model_architecture.png" alt="3-Layer Security AI Model Architecture" width="650" />
 </p>
 <p align="center"><b>High-Level Multi-Stage Threat Detection System Architecture Model Diagram</b></p>
 
