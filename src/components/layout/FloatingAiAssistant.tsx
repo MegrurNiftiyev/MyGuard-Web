@@ -20,9 +20,9 @@ export const FloatingAiAssistant: React.FC = () => {
   const [messages, setMessages] = useState<AiMessage[]>([]);
 
   const suggestedQuestions = [
-    'Son yüklənən sənədlərin statusu nədir?',
-    'Yüksək riskli fayllar varmı?',
-    'Bu gün neçə sənəd skan edilib?'
+    t('floatQ1'),
+    t('floatQ2'),
+    t('floatQ3')
   ];
 
   const getScreenDestination = (pathname: string): ScreenDestination => {
@@ -74,7 +74,7 @@ export const FloatingAiAssistant: React.FC = () => {
     try {
       let currentSessionId = sessionId;
       if (!currentSessionId) {
-        const newSession = await chatApi.createSession('Səhifə Tez Analizi');
+        const newSession = await chatApi.createSession(t('quickPageAnalysisSession'));
         currentSessionId = newSession.id;
         setSessionId(newSession.id);
       }
@@ -99,7 +99,7 @@ export const FloatingAiAssistant: React.FC = () => {
         blocks: [
           {
             type: 'text',
-            content: 'Soruşduğunuz mövzu üzrə sistem təhlükəsizlik qaydalarını qiymətləndirdi. Əlavə dəqiqləşdirmə üçün Əsas AI Asistent bölməsinə keçə bilərsiniz.'
+            content: t('fallbackAiContent')
           }
         ]
       };
@@ -123,7 +123,7 @@ export const FloatingAiAssistant: React.FC = () => {
               <div className="space-y-0.5">
                 <h3 className="text-label-md font-bold text-on-surface leading-tight">MyGuard AI</h3>
                 <p className="text-[11px] font-medium text-on-surface-variant leading-none">
-                  Real-time analysis
+                  {t('realTimeAnalysis')}
                 </p>
               </div>
             </div>
@@ -135,15 +135,15 @@ export const FloatingAiAssistant: React.FC = () => {
                   navigate('/assistant');
                 }}
                 className="text-xs font-bold text-brand-blue hover:underline cursor-pointer"
-                title="Tam ekran"
+                title={t('fullScreen')}
               >
-                Tam ekran ➔
+                {t('fullScreen')} ➔
               </button>
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
                 className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-surface-container-high transition-colors text-on-surface-variant cursor-pointer shrink-0 ml-1"
-                title="Bağla"
+                title={t('close')}
               >
                 <X className="w-4 h-4" />
               </button>
@@ -154,14 +154,14 @@ export const FloatingAiAssistant: React.FC = () => {
           <div className="p-3.5 flex-1 overflow-y-auto space-y-3 bg-surface/50 text-xs custom-scrollbar flex flex-col justify-between">
             {messages.length === 0 ? (
               <div className="h-full flex flex-col justify-center items-center gap-3 text-center p-3 my-auto">
-                <p className="text-xs font-semibold text-on-surface-variant mb-1">Tez-tez soruşulan suallar:</p>
-                <div className="flex flex-col items-center gap-2.5 w-full max-w-[280px]">
+                <p className="text-xs font-semibold text-on-surface-variant mb-1">{t('suggestedQuestionsTitle')}</p>
+                <div className="flex flex-wrap items-center justify-center gap-2 w-full px-1">
                   {suggestedQuestions.map((q) => (
                     <button
                       key={q}
                       type="button"
                       onClick={() => handleSend(undefined, q)}
-                      className="w-full px-4 py-2 rounded-full bg-surface-container-low border border-outline-variant/70 text-on-surface-variant hover:text-brand-blue text-xs font-semibold hover:bg-blue-50/50 hover:border-brand-blue/40 transition-all cursor-pointer shadow-2xs text-center"
+                      className="px-3.5 py-1.5 rounded-full bg-surface-container-low border border-outline-variant/70 text-on-surface-variant hover:text-brand-blue text-xs font-semibold hover:bg-blue-50/50 hover:border-brand-blue/40 transition-all cursor-pointer shadow-2xs text-center hover:scale-[1.02] active:scale-95"
                     >
                       {q}
                     </button>
@@ -224,7 +224,7 @@ export const FloatingAiAssistant: React.FC = () => {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               disabled={isThinking}
-              placeholder={isThinking ? 'AI düşünür...' : t('askPlaceholder') || 'Sənəd təhlükəsizliyi haqqında soruşun...'}
+              placeholder={isThinking ? t('aiThinking') : t('askPlaceholder')}
               className="w-full bg-surface-container border border-outline-variant/80 rounded-full py-2.5 px-4 pr-10 text-xs text-on-surface focus:outline-none focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 transition-all shadow-inner placeholder:text-on-surface-variant/60" 
             />
             <button 
@@ -243,7 +243,7 @@ export const FloatingAiAssistant: React.FC = () => {
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className="w-13 h-13 rounded-full bg-gradient-to-tr from-brand-blue via-brand-purple to-purple-400 text-white flex items-center justify-center animate-breathe cursor-pointer hover:scale-110 active:scale-95 transition-transform duration-200 shadow-xl"
-        title="MyGuard AI Köməkçi"
+        title={t('myGuardAiAssistant')}
       >
         <Sparkles className="w-6 h-6 text-white" />
       </button>

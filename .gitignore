@@ -22,3 +22,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Internal design, contract and planning docs
+AGENT.md
+API_CONTRACT_DOCUMENTS.md
+DESing.md
+implemtationplan.md
+implementationplan.md
+

@@ -1,5 +1,6 @@
 import React from 'react';
 import { AlertTriangle, Eye, Clock } from 'lucide-react';
+import { useLanguage } from '../../context/LanguageContext';
 
 interface HumanReviewBoxProps {
   onPrimaryClick: () => void;
@@ -15,13 +16,20 @@ interface HumanReviewBoxProps {
 export const HumanReviewBox: React.FC<HumanReviewBoxProps> = ({
   onPrimaryClick,
   onSecondaryClick,
-  primaryLabel = 'İndi yoxla',
-  secondaryLabel = 'Sonra bax',
+  primaryLabel,
+  secondaryLabel,
   primaryIcon = <Eye className="w-4 h-4" />,
-  title = 'İnsan Təsdiqi Tələb Olunur',
-  description = 'Yüksək riskli elementlər aşkar edilməyib, lakin sənədin məzmununu nəzərdən keçirməyiniz tövsiyə olunur.',
+  title,
+  description,
   customLabel = null
 }) => {
+  const { t } = useLanguage();
+
+  const finalPrimaryLabel = primaryLabel || t('reviewNow');
+  const finalSecondaryLabel = secondaryLabel || t('reviewLater');
+  const finalTitle = title || t('humanReviewRequiredTitle');
+  const finalDescription = description || t('reviewPromptDesc');
+
   return (
     <div className="bg-amber-50/70 rounded-2xl p-5 sm:p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 border border-amber-100/50 my-4 shadow-sm">
       <div className="flex items-center gap-4">
@@ -31,7 +39,7 @@ export const HumanReviewBox: React.FC<HumanReviewBoxProps> = ({
         <div className="flex flex-col">
           <div className="flex items-center gap-3 mb-1">
             <h3 className="text-base font-bold text-gray-900">
-              {title}
+              {finalTitle}
             </h3>
             {customLabel && (
               <span className="bg-amber-100/80 text-amber-600 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider">
@@ -40,7 +48,7 @@ export const HumanReviewBox: React.FC<HumanReviewBoxProps> = ({
             )}
           </div>
           <p className="text-[13px] text-gray-500 font-medium">
-            {description}
+            {finalDescription}
           </p>
         </div>
       </div>
@@ -50,16 +58,17 @@ export const HumanReviewBox: React.FC<HumanReviewBoxProps> = ({
             onClick={onSecondaryClick} 
             className="px-4 py-2 rounded-xl text-gray-600 font-semibold text-sm bg-white border border-gray-200 shadow-sm flex items-center gap-2 hover:bg-gray-50 transition-colors cursor-pointer"
           >
-            <Clock className="w-4 h-4 text-gray-400" /> {secondaryLabel}
+            <Clock className="w-4 h-4 text-gray-400" /> {finalSecondaryLabel}
           </button>
         )}
         <button 
           onClick={onPrimaryClick} 
           className="px-5 py-2 rounded-xl text-white font-semibold text-sm bg-amber-500 shadow-sm flex items-center gap-2 hover:bg-amber-600 transition-colors cursor-pointer"
         >
-          {primaryIcon} {primaryLabel}
+          {primaryIcon} {finalPrimaryLabel}
         </button>
       </div>
     </div>
   );
 };
+

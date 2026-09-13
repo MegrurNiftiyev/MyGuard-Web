@@ -6,10 +6,12 @@ import { Button } from '../components/ui/Button';
 import { AuthFloatingOrbsBackground } from '../components/auth/AuthFloatingOrbsBackground';
 import { authApi } from '../api/authApi';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 
 export const ForgotPasswordPage: React.FC = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
+  const { t } = useLanguage();
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
   const [finOrEmail, setFinOrEmail] = useState('');
   const [otp, setOtp] = useState<string[]>(['', '', '', '', '', '']);
@@ -183,7 +185,7 @@ export const ForgotPasswordPage: React.FC = () => {
               className="inline-flex items-center gap-2 text-xs font-bold text-on-surface-variant hover:text-brand-blue transition-colors mb-6 cursor-pointer"
             >
               <ArrowLeft className="w-4 h-4" />
-              <span>{step === 1 ? 'Daxil ol səhifəsinə qayıt' : 'Əvvəlki addım'}</span>
+              <span>{step === 1 ? t('backToLogin') : t('previousStep')}</span>
             </button>
           )}
 
@@ -201,16 +203,16 @@ export const ForgotPasswordPage: React.FC = () => {
                   <KeyRound className="w-6 h-6" />
                 </div>
                 <h2 className="text-xl font-bold text-on-surface font-sans">
-                  Şifrəni Bərpa Et
+                  {t('restorePasswordTitle')}
                 </h2>
                 <p className="text-xs text-on-surface-variant leading-relaxed max-w-xs mx-auto">
-                  Hesabınıza bağlı FİN kod və ya e-poçt ünvanınızı daxil edin. Sizə 6 rəqəmli OTP kodu göndəriləcək.
+                  {t('enterFinOrEmailPrompt')}
                 </p>
               </div>
 
               <div>
                 <label className="block text-xs font-bold text-on-surface-variant mb-1.5 uppercase tracking-wider">
-                  FİN Kod Və Ya E-Poçt
+                  {t('finOrEmailLabel')}
                 </label>
                 <div className="relative">
                   <Fingerprint className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-blue" />
@@ -235,10 +237,10 @@ export const ForgotPasswordPage: React.FC = () => {
                 {isSubmitting ? (
                   <span className="flex items-center justify-center gap-2">
                     <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    Göndərilir...
+                    {t('sending')}
                   </span>
                 ) : (
-                  <span>OTP Kod Göndər</span>
+                  <span>{t('sendOtpBtn')}</span>
                 )}
               </Button>
             </form>
@@ -252,17 +254,17 @@ export const ForgotPasswordPage: React.FC = () => {
                   <ShieldCheck className="w-6 h-6" />
                 </div>
                 <h2 className="text-xl font-bold text-on-surface font-sans">
-                  OTP Təsdiqləmə Kodu
+                  {t('otpCodeTitle')}
                 </h2>
                 <p className="text-xs text-on-surface-variant leading-relaxed max-w-xs mx-auto">
-                  <strong className="text-on-surface font-bold">{finOrEmail}</strong> ünvanına göndərilmiş 6 rəqəmli kodu daxil edin.
+                  <strong className="text-on-surface font-bold">{finOrEmail}</strong> {t('otpInstruction')}
                 </p>
               </div>
 
               {/* 6 Individual Digit Inputs */}
               <div>
                 <label className="block text-xs font-bold text-on-surface-variant mb-3 uppercase tracking-wider text-center">
-                  6 Rəqəmli Təsdiqləmə Kodu
+                  {t('otpLabel')}
                 </label>
                 <div className="flex items-center justify-center gap-2 sm:gap-2.5">
                   {otp.map((digit, idx) => (
@@ -290,7 +292,7 @@ export const ForgotPasswordPage: React.FC = () => {
               <div className="text-center">
                 {resendTimer > 0 ? (
                   <span className="text-xs text-on-surface-variant font-medium">
-                    Kodu təkrar göndər: <strong className="font-mono text-brand-blue font-bold">00:{resendTimer < 10 ? `0${resendTimer}` : resendTimer}</strong>
+                    {t('resendCode')}: <strong className="font-mono text-brand-blue font-bold">00:{resendTimer < 10 ? `0${resendTimer}` : resendTimer}</strong>
                   </span>
                 ) : (
                   <button
@@ -299,7 +301,7 @@ export const ForgotPasswordPage: React.FC = () => {
                     className="inline-flex items-center gap-1.5 text-xs font-bold text-brand-blue hover:underline cursor-pointer"
                   >
                     <RefreshCw className="w-3.5 h-3.5" />
-                    <span>Kodu təkrar göndər</span>
+                    <span>{t('resendCode')}</span>
                   </button>
                 )}
               </div>
@@ -314,10 +316,10 @@ export const ForgotPasswordPage: React.FC = () => {
                 {isSubmitting ? (
                   <span className="flex items-center justify-center gap-2">
                     <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    Yoxlanılır...
+                    {t('verifying')}
                   </span>
                 ) : (
-                  <span>Kodu Təsdiqlə</span>
+                  <span>{t('confirmCodeBtn')}</span>
                 )}
               </Button>
             </form>
@@ -331,16 +333,16 @@ export const ForgotPasswordPage: React.FC = () => {
                   <Lock className="w-6 h-6" />
                 </div>
                 <h2 className="text-xl font-bold text-on-surface font-sans">
-                  Yeni Şifrə Təyin Edin
+                  {t('setNewPasswordTitle')}
                 </h2>
                 <p className="text-xs text-on-surface-variant leading-relaxed max-w-xs mx-auto">
-                  Hesabınız üçün yeni təhlükəsiz şifrə daxil edin.
+                  {t('newPasswordPrompt')}
                 </p>
               </div>
 
               <div>
                 <label className="block text-xs font-bold text-on-surface-variant mb-1.5 uppercase tracking-wider">
-                  Yeni Şifrə
+                  {t('newPasswordLabel')}
                 </label>
                 <div className="relative">
                   <Lock className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant/70" />
@@ -364,7 +366,7 @@ export const ForgotPasswordPage: React.FC = () => {
 
               <div>
                 <label className="block text-xs font-bold text-on-surface-variant mb-1.5 uppercase tracking-wider">
-                  Yeni Şifrənin Təkrarı
+                  {t('confirmNewPasswordLabel')}
                 </label>
                 <div className="relative">
                   <Lock className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant/70" />
@@ -389,10 +391,10 @@ export const ForgotPasswordPage: React.FC = () => {
                 {isSubmitting ? (
                   <span className="flex items-center justify-center gap-2">
                     <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    Yenilənir...
+                    {t('updating')}
                   </span>
                 ) : (
-                  <span>Şifrəni Yenilə</span>
+                  <span>{t('updatePasswordBtn')}</span>
                 )}
               </Button>
             </form>
@@ -406,10 +408,10 @@ export const ForgotPasswordPage: React.FC = () => {
               </div>
               <div className="space-y-2">
                 <h2 className="text-2xl font-bold text-on-surface font-sans">
-                  Şifrəniz Uğurla Yeniləndi!
+                  {t('passwordUpdatedSuccess')}
                 </h2>
                 <p className="text-sm text-on-surface-variant leading-relaxed max-w-xs mx-auto">
-                  Yeni şifrəniz ilə təhlükəsiz şəkildə hesabınıza daxil ola bilərsiniz.
+                  {t('passwordSuccessDesc')}
                 </p>
               </div>
 
@@ -420,7 +422,7 @@ export const ForgotPasswordPage: React.FC = () => {
                 onClick={() => navigate('/login')}
                 className="w-full py-3.5 rounded-2xl font-bold text-sm shadow-md !bg-brand-blue hover:!bg-brand-blue-hover transition-all text-center justify-center cursor-pointer"
               >
-                Daxil Ol Səhifəsinə Keç
+                {t('goToLoginBtn')}
               </Button>
             </div>
           )}

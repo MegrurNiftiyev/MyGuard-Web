@@ -38,7 +38,7 @@ export const BottomNav: React.FC<SideNavProps> = ({ disableFixed = false }) => {
   }> = [
     { id: 'home', label: t('home'), path: '/', icon: Home },
     { id: 'documents', label: t('documents'), path: '/documents', icon: FileText },
-    { id: 'scan', label: 'Skan et', path: '/scan', icon: Scan },
+    { id: 'scan', label: t('scanNav'), path: '/scan', icon: Scan },
     { id: 'assistant', label: t('assistant'), path: '/assistant', icon: Sparkles },
     { id: 'settings', label: t('settings'), path: '/settings', icon: SlidersHorizontal },
   ];

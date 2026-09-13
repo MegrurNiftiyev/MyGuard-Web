@@ -83,18 +83,18 @@ export const ModelManagementPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 text-label-sm font-semibold text-brand-blue uppercase tracking-wider">
-            <Cpu className="w-4 h-4" /> AI Infrastruktur və Model İdarəetməsi
+            <Cpu className="w-4 h-4" /> {t('aiInfraManagement')}
           </div>
           <h1 className="text-headline-lg font-bold text-on-surface mt-1">
-            Model Operating Modes
+            {t('modelTitle')}
           </h1>
           <p className="text-body-md text-on-surface-variant">
-            Sənədin məxfilik dərəcəsindən asılı olaraq təhlükəsizlik marşrutlaşdırma modelləri
+            {t('modelRoutingDesc')}
           </p>
         </div>
 
         <div className="flex items-center gap-3">
-          <span className="text-label-sm font-semibold text-on-surface-variant">Cari Aktiv Rejim:</span>
+          <span className="text-label-sm font-semibold text-on-surface-variant">{t('activeModeLabel')}</span>
           <span className="px-3.5 py-1.5 rounded-full text-label-md font-bold bg-purple-100 text-brand-purple border border-purple-200">
             {activeMode}
           </span>
@@ -107,7 +107,7 @@ export const ModelManagementPage: React.FC = () => {
             <Sparkles className="w-5 h-5 text-brand-blue" />
             <span>{trainingNotice}</span>
           </div>
-          <button onClick={() => setTrainingNotice(null)} className="text-xs font-bold hover:underline">Bağla</button>
+          <button onClick={() => setTrainingNotice(null)} className="text-xs font-bold hover:underline">{t('close')}</button>
         </div>
       )}
 
@@ -130,7 +130,7 @@ export const ModelManagementPage: React.FC = () => {
               </div>
               {activeMode === 'STANDARD AI' && (
                 <span className="px-3 py-1 rounded-full text-label-sm font-bold bg-brand-blue text-white flex items-center gap-1">
-                  <CheckCircle2 className="w-3.5 h-3.5" /> Seçilib
+                  <CheckCircle2 className="w-3.5 h-3.5" /> {t('selected')}
                 </span>
               )}
             </div>
@@ -150,11 +150,11 @@ export const ModelManagementPage: React.FC = () => {
 
             <div className="pt-4 border-t border-outline-variant grid grid-cols-2 gap-4 text-label-sm">
               <div>
-                <span className="text-on-surface-variant/70">Yerləşmə:</span>
+                <span className="text-on-surface-variant/70">{t('locationLabel')}</span>
                 <p className="font-semibold text-on-surface">External Cloud Endpoint</p>
               </div>
               <div>
-                <span className="text-on-surface-variant/70">Gecikmə (Latency):</span>
+                <span className="text-on-surface-variant/70">{t('latencyLabel')}</span>
                 <p className="font-semibold text-on-surface">~140ms</p>
               </div>
             </div>
@@ -178,7 +178,7 @@ export const ModelManagementPage: React.FC = () => {
               </div>
               {activeMode === 'CONFIDENTIAL AI' && (
                 <span className="px-3 py-1 rounded-full text-label-sm font-bold bg-brand-purple text-white flex items-center gap-1">
-                  <CheckCircle2 className="w-3.5 h-3.5" /> Seçilib (Tövsiyə olunan)
+                  <CheckCircle2 className="w-3.5 h-3.5" /> {t('selectedRecommended')}
                 </span>
               )}
             </div>
@@ -198,11 +198,11 @@ export const ModelManagementPage: React.FC = () => {
 
             <div className="pt-4 border-t border-outline-variant grid grid-cols-2 gap-4 text-label-sm">
               <div>
-                <span className="text-on-surface-variant/70">Yerləşmə:</span>
+                <span className="text-on-surface-variant/70">{t('locationLabel')}</span>
                 <p className="font-semibold text-on-surface">On-Premise Isolated Server</p>
               </div>
               <div>
-                <span className="text-on-surface-variant/70">Təhlükəsizlik Zəmanəti:</span>
+                <span className="text-on-surface-variant/70">{t('securityGuaranteeLabel')}</span>
                 <p className="font-semibold text-emerald-700">Zero Data Leakage</p>
               </div>
             </div>
@@ -213,8 +213,8 @@ export const ModelManagementPage: React.FC = () => {
       {/* 3-Layer Architecture Status Panels */}
       <Card padding="lg" className="space-y-6">
         <div>
-          <h3 className="text-title-lg font-bold text-on-surface">3-Qatlı Analiz Arxitekturası Statusu</h3>
-          <p className="text-label-md text-on-surface-variant">Pipeline qatlarının cari işləmə statusları və yüklənmələri</p>
+          <h3 className="text-title-lg font-bold text-on-surface">{t('threeLayerStatusTitle')}</h3>
+          <p className="text-label-md text-on-surface-variant">{t('threeLayerStatusDesc')}</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -225,12 +225,12 @@ export const ModelManagementPage: React.FC = () => {
               <span className="text-label-sm font-bold text-blue-600 uppercase tracking-wider">Layer 1</span>
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
             </div>
-            <h4 className="text-title-md font-bold text-on-surface">Mətn & Vizual Ekstraksiya</h4>
+            <h4 className="text-title-md font-bold text-on-surface">{t('layer1Name')}</h4>
             <p className="text-label-sm text-on-surface-variant">
               PDF Text Layer, OCR və Hidden Text modulları aktivdir.
             </p>
             <div className="pt-2 border-t border-outline-variant text-label-md">
-              <span className="font-semibold">Uyğunluq:</span> {pipeline.layer1_ocrTextMatch.matchPercent}%
+              <span className="font-semibold">{t('matchLabel')}</span> {pipeline.layer1_ocrTextMatch.matchPercent}%
             </div>
           </div>
 
@@ -241,12 +241,12 @@ export const ModelManagementPage: React.FC = () => {
               <span className="text-label-sm font-bold text-purple-600 uppercase tracking-wider">Layer 2</span>
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
             </div>
-            <h4 className="text-title-md font-bold text-on-surface">Klassifikasiya (LLM)</h4>
+            <h4 className="text-title-md font-bold text-on-surface">{t('layer2Name')}</h4>
             <p className="text-label-sm text-on-surface-variant">
               Prompt injection cəhdlərini və risk dərəcəsini qiymətləndirən lokal model.
             </p>
             <div className="pt-2 border-t border-outline-variant text-label-md">
-              <span className="font-semibold">Status:</span> {pipeline.layer2_classification.label} ({(pipeline.layer2_classification.confidence * 100).toFixed(0)}%)
+              <span className="font-semibold">{t('statusLabel')}</span> {pipeline.layer2_classification.label} ({(pipeline.layer2_classification.confidence * 100).toFixed(0)}%)
             </div>
           </div>
 
@@ -257,12 +257,12 @@ export const ModelManagementPage: React.FC = () => {
               <span className="text-label-sm font-bold text-amber-600 uppercase tracking-wider">Layer 3</span>
               <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
             </div>
-            <h4 className="text-title-md font-bold text-on-surface">İnsan Yoxlaması (Review Loop)</h4>
+            <h4 className="text-title-md font-bold text-on-surface">{t('layer3Name')}</h4>
             <p className="text-label-sm text-on-surface-variant">
               Sistem modelin qərarına əmin olmadıqda (Confidence &lt; 0.7) insan müdaxiləsi tələb olunur.
             </p>
             <div className="pt-2 border-t border-outline-variant text-label-md">
-              <span className="font-semibold">Status:</span> Gözləmədə (Standby)
+              <span className="font-semibold">{t('statusLabel')}</span> {t('standbyStatus')}
             </div>
           </div>
         </div>
@@ -272,15 +272,15 @@ export const ModelManagementPage: React.FC = () => {
       <Card padding="lg" className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-title-lg font-bold text-on-surface">Mövcud AI Modellər və Server Statusları</h3>
-            <p className="text-label-md text-on-surface-variant">Sənəd emal mühərriklərinin texniki göstəriciləri</p>
+            <h3 className="text-title-lg font-bold text-on-surface">{t('availableModelsTitle')}</h3>
+            <p className="text-label-md text-on-surface-variant">{t('engineMetricsSubtitle')}</p>
           </div>
           <div className="flex items-center gap-3">
             <Button variant="outline" size="sm" icon={<Sparkles className="w-4 h-4 text-brand-blue" />} onClick={handleTrainModel} disabled={isTraining}>
-              {isTraining ? 'Təlim Başladılır...' : 'Modeli Təlim Et'}
+              {isTraining ? t('trainingStarted') : t('trainModelBtn')}
             </Button>
             <Button variant="outline" size="sm" icon={<RefreshCw className="w-4 h-4" />} onClick={fetchModels}>
-              Statusları Yoxla
+              {t('checkStatusesBtn')}
             </Button>
           </div>
         </div>
@@ -305,15 +305,15 @@ export const ModelManagementPage: React.FC = () => {
 
               <div className="flex items-center gap-6 text-label-md">
                 <div>
-                  <span className="text-label-sm text-on-surface-variant/70">Kontekst:</span>
+                  <span className="text-label-sm text-on-surface-variant/70">{t('contextLabel')}</span>
                   <div className="font-semibold text-on-surface">{model.maxContext || '128k'}</div>
                 </div>
                 <div>
-                  <span className="text-label-sm text-on-surface-variant/70">Lokal Server:</span>
-                  <div className="font-semibold text-on-surface">{model.isLocal ? 'Bəli (On-Prem)' : 'Xeyr (Cloud)'}</div>
+                  <span className="text-label-sm text-on-surface-variant/70">{t('localServerLabel')}</span>
+                  <div className="font-semibold text-on-surface">{model.isLocal ? (t('yes') + ' (On-Prem)') : (t('no') + ' (Cloud)')}</div>
                 </div>
                 <div>
-                  <span className="text-label-sm text-on-surface-variant/70">Yenilənmə:</span>
+                  <span className="text-label-sm text-on-surface-variant/70">{t('updatedLabel')}</span>
                   <div className="font-semibold text-on-surface">{model.lastUpdate || 'Bugün'}</div>
                 </div>
               </div>

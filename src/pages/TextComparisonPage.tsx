@@ -60,7 +60,7 @@ export const TextComparisonPage: React.FC = () => {
   };
 
   const highlightDiff = (ocrText: string, pdfText: string, snippets?: string[]) => {
-    if (!pdfText) return <span className="opacity-50 italic">PDF daxili mətn qatı mövcud deyil</span>;
+    if (!pdfText) return <span className="opacity-50 italic">{t('pdfLayerNotFound')}</span>;
 
     // 1. If pdfText contains any hidden tags (<ferqli> or <HiddenText>), render with tag highlighter
     if (/<(?:ferqli|HiddenText|hidden_text|hiddenText)>/i.test(pdfText)) {
@@ -140,10 +140,10 @@ export const TextComparisonPage: React.FC = () => {
       <div className="space-y-4">
         <div className="flex flex-col gap-2">
           <h1 className="text-headline-lg-mobile md:text-headline-lg font-bold text-on-surface leading-tight font-sans">
-            OCR ↔ PDF Mətn Qatının Müqayisəsi
+            {t('proofTitle')}
           </h1>
           <p className="text-body-md text-on-surface-variant">
-            İnsan gözünün gördüyü fiziki mətn (OCR) ilə AI modelinin oxuduğu daxili PDF kodu (Mətn Qatı) arasındakı fərqlər.
+            {t('proofSubtitle')}
           </p>
         </div>
 
@@ -163,10 +163,10 @@ export const TextComparisonPage: React.FC = () => {
           <HumanReviewBox 
             onPrimaryClick={() => handleReviewFeedback(true)}
             onSecondaryClick={() => handleReviewFeedback(false)}
-            primaryLabel="Təhdiddir"
-            secondaryLabel="Təhlükəsizdir"
+            primaryLabel={t('isThreat')}
+            secondaryLabel={t('isSafe')}
             primaryIcon={<AlertTriangle className="w-4 h-4" />}
-            description="Zəhmət olmasa OCR və PDF qatlarını müqayisə edərək bunun təhdid olub-olmadığını təsdiqləyin."
+            description={t('reviewPromptDesc')}
           />
         ) : null}
         
@@ -188,7 +188,7 @@ export const TextComparisonPage: React.FC = () => {
                 <Eye className="w-6 h-6" />
               </div>
               <div>
-                <h3 className="text-title-lg font-bold text-on-surface">Vizual görünən yazılar</h3>
+                <h3 className="text-title-lg font-bold text-on-surface">{t('visualVisibleText')}</h3>
               </div>
             </div>
           </div>
@@ -204,7 +204,7 @@ export const TextComparisonPage: React.FC = () => {
             ) : liveComparison?.ocrText ? (
               <div className="opacity-90">{renderWithFerqliTags(liveComparison.ocrText)}</div>
             ) : (
-              <div className="opacity-50 italic text-center mt-10">Vizual mətn (OCR) tapılmadı</div>
+              <div className="opacity-50 italic text-center mt-10">{t('ocrTextNotFound')}</div>
             )}
           </div>
         </Card>
@@ -217,7 +217,7 @@ export const TextComparisonPage: React.FC = () => {
                 <ShieldAlert className="w-6 h-6" />
               </div>
               <div>
-                <h3 className="text-title-lg font-bold text-on-surface">PDF Kod Qatı</h3>
+                <h3 className="text-title-lg font-bold text-on-surface">{t('pdfCodeLayer')}</h3>
               </div>
             </div>
           </div>
@@ -234,7 +234,7 @@ export const TextComparisonPage: React.FC = () => {
             ) : liveComparison?.pdfTextLayer ? (
               <div className="opacity-90">{highlightDiff(liveComparison.ocrText || '', liveComparison.pdfTextLayer, activeSnippets)}</div>
             ) : (
-              <div className="opacity-50 italic text-center mt-10">PDF daxili mətn qatı tapılmadı</div>
+              <div className="opacity-50 italic text-center mt-10">{t('pdfLayerNotFound')}</div>
             )}
           </div>
         </Card>

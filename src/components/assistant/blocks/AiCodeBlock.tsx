@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Copy, Check, FileCode, Moon, Sun, Settings } from 'lucide-react';
 import { CodeLanguage } from '../../../types';
+import { useLanguage } from '../../../context/LanguageContext';
 
 export interface AiCodeBlockProps {
   title?: string;
@@ -117,6 +118,7 @@ export const AiCodeBlock: React.FC<AiCodeBlockProps> = ({
   code = '',
   language = CodeLanguage.JSON
 }) => {
+  const { t } = useLanguage();
   const [copied, setCopied] = useState(false);
   const [codeTheme, setCodeTheme] = useState<'dark' | 'light'>('dark');
 
@@ -152,12 +154,12 @@ export const AiCodeBlock: React.FC<AiCodeBlockProps> = ({
             {codeTheme === 'dark' ? (
               <>
                 <Sun className="w-3.5 h-3.5 text-amber-500" />
-                <span className="hidden sm:inline">Light Theme</span>
+                <span className="hidden sm:inline">{t('lightTheme')}</span>
               </>
             ) : (
               <>
                 <Moon className="w-3.5 h-3.5 text-purple-600" />
-                <span className="hidden sm:inline">Dark Theme</span>
+                <span className="hidden sm:inline">{t('darkTheme')}</span>
               </>
             )}
           </button>
@@ -171,7 +173,7 @@ export const AiCodeBlock: React.FC<AiCodeBlockProps> = ({
             {copied ? (
               <>
                 <Check className="w-3.5 h-3.5 text-emerald-600" />
-                <span className="text-emerald-600 font-bold">Kopyalandı</span>
+                <span className="text-emerald-600 font-bold">{t('copied')}</span>
               </>
             ) : (
               <>

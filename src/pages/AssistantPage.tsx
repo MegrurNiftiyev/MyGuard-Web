@@ -5,6 +5,7 @@ import { AiMessageWrapper } from '../components/assistant/AiMessageWrapper';
 import { AiMessageRenderer } from '../components/assistant/AiMessageRenderer';
 import { AiMessage, MessageBlock } from '../types';
 import { chatApi } from '../api/chatApi';
+import { useLanguage } from '../context/LanguageContext';
 
 interface AttachedFile {
   id: string;
@@ -17,29 +18,30 @@ interface AttachedFile {
   extractedText?: string;
 }
 
-const THINKING_STEPS = [
-  'MyGuard AI sənəd və mətn strukturlarını analiz edir...',
-  'Prompt injection və şübhəli fraqmentlər yoxlanılır...',
-  'Layer 1 OCR və PDF daxili qat fərqlilikləri müqayisə olunur...',
-  'Layer 2 ML classifier təhlükəsizlik qaydalarını qiymətləndirir...',
-  'Layer 3 LLM tərəfindən yekun təhlükəsizlik hesabatı hazırlanır...'
-];
-
 export const ThinkingIndicator: React.FC = () => {
+  const { t } = useLanguage();
   const [stepIndex, setStepIndex] = useState(0);
   const [fade, setFade] = useState(true);
+
+  const thinkingSteps = [
+    t('thinkingStep1'),
+    t('thinkingStep2'),
+    t('thinkingStep3'),
+    t('thinkingStep4'),
+    t('thinkingStep5')
+  ];
 
   useEffect(() => {
     const interval = setInterval(() => {
       setFade(false);
       setTimeout(() => {
-        setStepIndex((prev) => (prev + 1) % THINKING_STEPS.length);
+        setStepIndex((prev) => (prev + 1) % thinkingSteps.length);
         setFade(true);
       }, 250);
     }, 3000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [thinkingSteps.length]);
 
   return (
     <div className="flex items-start gap-3.5 w-full my-3.5">
@@ -51,7 +53,7 @@ export const ThinkingIndicator: React.FC = () => {
         </div>
       </div>
       <span className={`text-sm font-medium text-on-surface transition-opacity duration-300 pt-1.5 ${fade ? 'opacity-100' : 'opacity-0'}`}>
-        {THINKING_STEPS[stepIndex]}
+        {thinkingSteps[stepIndex]}
       </span>
     </div>
   );
@@ -62,6 +64,7 @@ let globalMessages: AiMessage[] = [];
 let globalSessionId: string | undefined = undefined;
 
 export const AssistantPage: React.FC = () => {
+  const { t } = useLanguage();
   const [messages, setMessages] = useState<AiMessage[]>(globalMessages);
   const [input, setInput] = useState('');
   const [isThinking, setIsThinking] = useState(false);
@@ -81,14 +84,14 @@ export const AssistantPage: React.FC = () => {
   }, [sessionId]);
 
   const suggestedQuestions = [
-    'Sənədin risk dərəcəsi nədir?',
-    'Məlumat sızıntısı varmı?',
-    'Zərərli kod aşkar edilib?',
-    'Prompt injection riski',
-    'Şəxsi məlumatlar varmı?',
-    'Sənədi kim yaradıb?',
-    'Təhlükəsizlik qaydalarına uyğundurmu?',
-    'Sənədin xülasəsini ver'
+    t('asstQ1'),
+    t('asstQ2'),
+    t('asstQ3'),
+    t('asstQ4'),
+    t('asstQ5'),
+    t('asstQ6'),
+    t('asstQ7'),
+    t('asstQ8')
   ];
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -100,7 +103,7 @@ export const AssistantPage: React.FC = () => {
     }
   };
 
-    useEffect(() => {
+  useEffect(() => {
     const handleNewSession = () => {
       setMessages([]);
       setSessionId(undefined);
@@ -112,6 +115,7 @@ export const AssistantPage: React.FC = () => {
     window.addEventListener('trigger-new-chat-session', handleNewSession);
     return () => window.removeEventListener('trigger-new-chat-session', handleNewSession);
   }, []);
+
   const handleMessageComplete = (messageId: string) => {
     setMessages((prev) => {
       const updated = prev.map((msg) =>
@@ -126,52 +130,52 @@ export const AssistantPage: React.FC = () => {
     scrollToBottom();
   }, [messages, isThinking]);
 
-const extractCleanTextFromFile = async (file: File): Promise<string> => {
-  const ext = file.name.split('.').pop()?.toLowerCase() || '';
+  const extractCleanTextFromFile = async (file: File): Promise<string> => {
+    const ext = file.name.split('.').pop()?.toLowerCase() || '';
 
-  if (['txt', 'json', 'csv', 'md', 'html', 'xml', 'log', 'js', 'ts', 'py', 'css'].includes(ext)) {
+    if (['txt', 'json', 'csv', 'md', 'html', 'xml', 'log', 'js', 'ts', 'py', 'css'].includes(ext)) {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const result = e.target?.result as string;
+          resolve(result || file.name);
+        };
+        reader.onerror = () => resolve(file.name);
+        reader.readAsText(file);
+      });
+    }
+
     return new Promise((resolve) => {
       const reader = new FileReader();
       reader.onload = (e) => {
-        const result = e.target?.result as string;
-        resolve(result || file.name);
+        const buffer = e.target?.result as ArrayBuffer;
+        if (!buffer) {
+          resolve(file.name);
+          return;
+        }
+
+        const decoder = new TextDecoder('utf-8', { fatal: false });
+        const rawText = decoder.decode(buffer);
+
+        const cleanTokens = rawText
+          .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]/g, ' ')
+          .replace(/<xml[\s\S]*?>/gi, ' ')
+          .replace(/<[^>]+>/g, ' ')
+          .split(/\s+/)
+          .filter((word) => word.length > 1 && !/^[\x00-\x1F\x7F-\xFF]+$/.test(word) && /[\p{L}\p{N}]/u.test(word));
+
+        const extracted = cleanTokens.join(' ').trim();
+        
+        if (extracted.length > 20) {
+          resolve(extracted);
+        } else {
+          resolve(`${file.name} sənədinin daxili mətni (Ölçü: ${(file.size / 1024).toFixed(1)} KB)`);
+        }
       };
       reader.onerror = () => resolve(file.name);
-      reader.readAsText(file);
+      reader.readAsArrayBuffer(file);
     });
-  }
-
-  return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const buffer = e.target?.result as ArrayBuffer;
-      if (!buffer) {
-        resolve(file.name);
-        return;
-      }
-
-      const decoder = new TextDecoder('utf-8', { fatal: false });
-      const rawText = decoder.decode(buffer);
-
-      const cleanTokens = rawText
-        .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]/g, ' ')
-        .replace(/<xml[\s\S]*?>/gi, ' ')
-        .replace(/<[^>]+>/g, ' ')
-        .split(/\s+/)
-        .filter((word) => word.length > 1 && !/^[\x00-\x1F\x7F-\xFF]+$/.test(word) && /[\p{L}\p{N}]/u.test(word));
-
-      const extracted = cleanTokens.join(' ').trim();
-      
-      if (extracted.length > 20) {
-        resolve(extracted);
-      } else {
-        resolve(`${file.name} sənədinin daxili mətni (Ölçü: ${(file.size / 1024).toFixed(1)} KB)`);
-      }
-    };
-    reader.onerror = () => resolve(file.name);
-    reader.readAsArrayBuffer(file);
-  });
-};
+  };
 
   const formatFileSize = (bytes: number) => {
     if (bytes < 1024) return bytes + ' B';
@@ -326,7 +330,7 @@ const extractCleanTextFromFile = async (file: File): Promise<string> => {
     try {
       let currentSessionId = sessionId;
       if (!currentSessionId) {
-        const newSession = await chatApi.createSession('Sənəd Təhlükəsizliyi və Risk Analizi');
+        const newSession = await chatApi.createSession(t('docSecurityAndRiskAnalysisSession'));
         currentSessionId = newSession.id;
         setSessionId(newSession.id);
       }
@@ -346,8 +350,8 @@ const extractCleanTextFromFile = async (file: File): Promise<string> => {
       const response = await chatApi.sendMessage({
         chatMode: 'LARGE_CHAT',
         screenDestination: 'AI_SCREEN',
-        message: query || 'Qoşulmuş sənədləri analiz et',
-        userMessage: query || 'Qoşulmuş sənədləri analiz et',
+        message: query || t('analyzeAttachedDocsQuery'),
+        userMessage: query || t('analyzeAttachedDocsQuery'),
         sessionId: currentSessionId,
         files: filesArray.length > 0 ? filesArray : undefined,
         attachedDocument: firstAttachedDoc
@@ -365,8 +369,8 @@ const extractCleanTextFromFile = async (file: File): Promise<string> => {
         blocks: [
           {
             type: 'callout',
-            title: 'Təhlükəsizlik Servisi Əlaqə Xətası',
-            content: err.message || 'AI xidməti ilə əlaqə qurularkən xəta baş verdi. Zəhmət olmasa yenidən cəhd edin.',
+            title: t('securityConnectionError'),
+            content: err.message || t('securityErrorContent'),
             tone: 'danger'
           }
         ]
@@ -394,13 +398,13 @@ const extractCleanTextFromFile = async (file: File): Promise<string> => {
             </div>
             {attachedFiles.length > 0 && (
               <span className="text-label-sm font-semibold text-brand-blue bg-blue-50 px-3 py-1 rounded-full border border-brand-blue/30">
-                {attachedFiles.length} fayl əlavə edilib
+                {attachedFiles.length} {t('filesAttached')}
               </span>
             )}
             <div className="space-y-1">
-              <h3 className="text-title-lg font-bold text-on-surface tracking-tight">Add anything</h3>
+              <h3 className="text-title-lg font-bold text-on-surface tracking-tight">{t('addAnything')}</h3>
               <p className="text-body-md text-on-surface-variant">
-                Drop any file here to add it to the conversation
+                {t('dropFileToConversation')}
               </p>
             </div>
           </div>
@@ -423,14 +427,14 @@ const extractCleanTextFromFile = async (file: File): Promise<string> => {
             <Sparkles className="w-10 h-10" />
           </div>
           <div className="text-title-lg font-medium text-on-surface-variant text-center max-w-md">
-            Sənəd təhlükəsizliyi barədə sualınızı verin və ya aşağıdakılardan birini seçin:
+            {t('askSecurityPrompt')}
           </div>
-          <div className="flex flex-wrap items-center justify-center gap-3 w-full max-w-3xl mt-4">
+          <div className="flex flex-wrap items-center justify-center gap-3 w-full max-w-3xl mt-4 px-2">
             {suggestedQuestions.map((q) => (
               <button
                 key={q}
                 onClick={() => handleSend(q)}
-                className="px-5 py-2.5 rounded-full bg-surface border border-outline-variant text-on-surface-variant hover:text-brand-blue text-sm font-semibold hover:bg-blue-50/50 hover:border-brand-blue/30 transition-all cursor-pointer shadow-sm hover:shadow-md active:scale-95"
+                className="px-5 py-2.5 rounded-full bg-surface border border-outline-variant/80 text-on-surface-variant hover:text-brand-blue text-sm font-semibold hover:bg-blue-50/50 hover:border-brand-blue/40 transition-all cursor-pointer shadow-2xs hover:shadow-md active:scale-95 text-center"
               >
                 {q}
               </button>
@@ -537,7 +541,7 @@ const extractCleanTextFromFile = async (file: File): Promise<string> => {
                       type="button"
                       onClick={() => removeFile(file.id)}
                       className="ml-auto p-1 text-on-surface-variant/60 hover:text-error hover:bg-error-container/30 rounded-full transition-colors shrink-0"
-                      title="Sil"
+                      title={t('deleteFile')}
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -562,10 +566,10 @@ const extractCleanTextFromFile = async (file: File): Promise<string> => {
                 disabled={isThinking}
                 placeholder={
                   isThinking
-                    ? 'AI analiz edir...'
+                    ? t('aiAnalyzing')
                     : attachedFiles.length > 0
-                    ? 'Fayllar barədə soruş...'
-                    : 'Təhlükəsizlik barədə soruş...'
+                    ? t('askAboutFiles')
+                    : t('askAboutSecurity')
                 }
                 className="flex-1 min-w-0 py-2 sm:py-3 px-1 sm:px-2 bg-transparent text-sm sm:text-body-md text-on-surface focus:outline-none placeholder:text-on-surface-variant/60"
               />
@@ -591,3 +595,4 @@ const extractCleanTextFromFile = async (file: File): Promise<string> => {
 };
 
 export default AssistantPage;
+

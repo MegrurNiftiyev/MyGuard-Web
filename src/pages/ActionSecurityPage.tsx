@@ -63,8 +63,8 @@ export const ActionSecurityPage: React.FC = () => {
         {/* System Status Widget */}
         <Card padding="lg" className="lg:col-span-4 bg-surface-container-lowest border-outline-variant shadow-l1 flex flex-col justify-between">
           <div>
-            <h2 className="text-title-lg font-medium text-on-surface mb-2">Policy Engine</h2>
-            <p className="text-body-md text-on-surface-variant mb-6 font-medium text-emerald-600">Active Enforcement Mode</p>
+            <h2 className="text-title-lg font-medium text-on-surface mb-2">{t('policyEngine')}</h2>
+            <p className="text-body-md text-on-surface-variant mb-6 font-medium text-emerald-600">{t('activeEnforcement')}</p>
             
             <div className="flex items-center justify-center py-8">
               <div className="relative flex items-center justify-center">
@@ -78,11 +78,11 @@ export const ActionSecurityPage: React.FC = () => {
           
           <div className="grid grid-cols-2 gap-4 mt-6">
             <div className="bg-surface-container rounded-lg p-4">
-              <p className="text-label-sm text-on-surface-variant mb-1 uppercase tracking-wider">Agents Monitored</p>
+              <p className="text-label-sm text-on-surface-variant mb-1 uppercase tracking-wider">{t('agentsMonitored')}</p>
               <p className="text-headline-lg font-bold text-on-surface">142</p>
             </div>
             <div className="bg-error-container/30 border border-error/20 rounded-lg p-4">
-              <p className="text-label-sm text-on-surface-variant mb-1 uppercase tracking-wider">Actions Blocked</p>
+              <p className="text-label-sm text-on-surface-variant mb-1 uppercase tracking-wider">{t('actionsBlocked')}</p>
               <p className="text-headline-lg font-bold text-error">
                 {actions.filter(a => a.decision === 'BLOCKED').length}
               </p>
@@ -93,9 +93,9 @@ export const ActionSecurityPage: React.FC = () => {
         {/* Recent Interventions */}
         <Card padding="lg" className="lg:col-span-8 bg-surface-container-lowest border-outline-variant shadow-l1 flex flex-col gap-6">
           <div className="flex justify-between items-center mb-2">
-            <h2 className="text-title-lg font-medium text-on-surface">Recent Interventions</h2>
+            <h2 className="text-title-lg font-medium text-on-surface">{t('recentInterventions')}</h2>
             <button onClick={loadActions} className="text-label-md font-medium text-brand-purple border border-brand-purple/50 rounded-lg px-4 py-2 hover:bg-brand-purple/5 transition-colors cursor-pointer">
-              Yenilə
+              {t('refreshBtn')}
             </button>
           </div>
 
@@ -105,9 +105,9 @@ export const ActionSecurityPage: React.FC = () => {
             ) : actions.length === 0 ? (
               <EmptyState
                 icon={ShieldCheck}
-                title="Aktiv agent müdaxiləsi tapılmadı"
-                description="Hazırda heç bir autonomous AI agent tərəfindən bloka alınan və ya monitorinq olunan kritik müdaxilə qeydə alınmayıb."
-                primaryActionLabel="Yenidən Yoxla"
+                title={t('noInterventionsFound')}
+                description={t('noInterventionsDesc')}
+                primaryActionLabel={t('recheck')}
                 onPrimaryAction={loadActions}
               />
             ) : (
@@ -156,7 +156,7 @@ export const ActionSecurityPage: React.FC = () => {
                       onClick={() => handleDecisionToggle(act.id, act.decision)}
                       className="text-label-sm font-bold text-brand-blue hover:underline cursor-pointer flex items-center gap-1"
                     >
-                      Qərarı dəyiş ({act.decision === 'BLOCKED' ? 'ALLOW' : 'BLOCK'}) <ChevronRight className="w-4 h-4" />
+                      {t('changeDecision')} ({act.decision === 'BLOCKED' ? 'ALLOW' : 'BLOCK'}) <ChevronRight className="w-4 h-4" />
                     </button>
                   </div>
                 </div>

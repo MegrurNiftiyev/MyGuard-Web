@@ -217,9 +217,9 @@ export const DashboardPage: React.FC = () => {
   };
 
   const suggestedQuestions = [
-    'Son yüklənən sənədlərin statusu nədir?',
-    'Yüksək riskli fayllar varmı?',
-    'Bu gün neçə sənəd skan edilib?'
+    t('floatQ1'),
+    t('floatQ2'),
+    t('floatQ3')
   ];
 
   return (
@@ -236,9 +236,9 @@ export const DashboardPage: React.FC = () => {
               </div>
             </div>
             <div className="space-y-1">
-              <h3 className="text-title-lg font-bold text-on-surface tracking-tight">Sənədi bura buraxın</h3>
+              <h3 className="text-title-lg font-bold text-on-surface tracking-tight">{t('dropDocumentHere')}</h3>
               <p className="text-body-md text-on-surface-variant">
-                Analiz etmək üçün istənilən faylı bura sürükləyib buraxa bilərsiniz
+                {t('dropDocumentDesc')}
               </p>
             </div>
           </div>
@@ -265,7 +265,7 @@ export const DashboardPage: React.FC = () => {
               <div className="w-16 h-16 rounded-full bg-blue-50 border border-brand-blue/30 flex items-center justify-center text-brand-blue shadow-md mb-4 group-hover:scale-110 group-hover:bg-blue-100 group-hover:border-brand-blue group-hover:animate-pulse transition-all duration-300">
                 <UploadCloud className="w-8 h-8 text-brand-blue" />
               </div>
-              <p className="text-title-lg font-medium text-on-surface mb-1">{isUploading ? 'Fayl yüklənir...' : t('dragDropText')}</p>
+              <p className="text-title-lg font-medium text-on-surface mb-1">{isUploading ? t('uploadingFile') : t('dragDropText')}</p>
               <p className="text-body-md text-on-surface-variant mb-6">{t('maxSize')}</p>
               <Button variant="primary" size="md" className="shadow-sm pointer-events-none" disabled={isUploading}>
                 {t('selectFile')}
@@ -285,7 +285,7 @@ export const DashboardPage: React.FC = () => {
                 </div>
                 <div>
                   <h3 className="text-title-md font-bold text-on-surface">MyGuard AI</h3>
-                  <p className="text-[11px] text-on-surface-variant font-medium">Real-time analysis</p>
+                  <p className="text-[11px] text-on-surface-variant font-medium">{t('realTimeAnalysis')}</p>
                 </div>
               </div>
               <button
@@ -293,22 +293,22 @@ export const DashboardPage: React.FC = () => {
                 onClick={() => navigate('/assistant')}
                 className="text-xs font-bold text-brand-blue hover:underline cursor-pointer"
               >
-                Tam ekran ➔
+                {t('fullScreen')} ➔
               </button>
             </div>
             
             {/* Scrollable Internal Message Body */}
             <div ref={chatContainerRef} className="flex-1 overflow-y-auto pr-1 space-y-3 custom-scrollbar">
               {messages.length === 0 ? (
-                <div className="h-full flex flex-col justify-center items-center gap-2 text-center p-2">
-                  <p className="text-xs font-semibold text-on-surface-variant mb-2">Tez-tez soruşulan suallar:</p>
-                  <div className="flex flex-wrap items-center justify-center gap-2">
+                <div className="h-full flex flex-col justify-center items-center gap-2 text-center p-2 my-auto">
+                  <p className="text-xs font-semibold text-on-surface-variant mb-2">{t('suggestedQuestionsTitle')}</p>
+                  <div className="flex flex-wrap items-center justify-center gap-2 w-full max-w-md px-2">
                     {suggestedQuestions.map((q) => (
                       <button
                         key={q}
                         type="button"
                         onClick={() => handleAiChatSubmit(q)}
-                        className="px-3.5 py-1.5 rounded-full bg-surface-container-low border border-outline-variant/70 text-on-surface-variant hover:text-brand-blue text-xs font-semibold hover:bg-blue-50/50 hover:border-brand-blue/40 transition-all cursor-pointer shadow-2xs text-center"
+                        className="px-3.5 py-1.5 rounded-full bg-surface-container-low border border-outline-variant/70 text-on-surface-variant hover:text-brand-blue text-xs font-semibold hover:bg-blue-50/50 hover:border-brand-blue/40 transition-all cursor-pointer shadow-2xs text-center hover:scale-[1.02] active:scale-95"
                       >
                         {q}
                       </button>
@@ -373,18 +373,18 @@ export const DashboardPage: React.FC = () => {
           ) : documents.length === 0 ? (
             <EmptyState
               icon={FileText}
-              title="Skan edilmiş sənəd yoxdur"
-              description="Hal-hazırda hər hansı skan edilmiş sənəd tapılmadı."
-              primaryActionLabel="Yeni Sənəd Skan Et"
+              title={t('noScannedDocs')}
+              description={t('emptyDocsDesc')}
+              primaryActionLabel={t('newDocumentScan')}
               onPrimaryAction={() => navigate('/scan')}
             />
           ) : (
             <div className="flex flex-col border border-outline-variant/60 rounded-xl overflow-hidden bg-surface-container-lowest">
               {/* Desktop Header */}
               <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-3.5 bg-surface-container-low border-b border-outline-variant text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
-                <div className="col-span-6">Sənəd Adı</div>
-                <div className="col-span-4">Yüklənmə Tarixi</div>
-                <div className="col-span-2 text-right">Risk Balı</div>
+                <div className="col-span-6">{t('docNameCol')}</div>
+                <div className="col-span-4">{t('uploadDateCol')}</div>
+                <div className="col-span-2 text-right">{t('riskScoreCol')}</div>
               </div>
               
               <div className="divide-y divide-outline-variant/60">
@@ -468,7 +468,7 @@ export const DashboardPage: React.FC = () => {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="px-3 py-1.5 text-[11px] font-bold text-brand-blue uppercase tracking-wider border-b border-outline-variant/40 mb-1 select-none">
-              {t('docActionsTitle') || 'Əməliyyatlar'}
+              {t('docActionsTitle')}
             </div>
 
             <button
@@ -480,7 +480,7 @@ export const DashboardPage: React.FC = () => {
               className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-on-surface hover:bg-surface-container-high rounded-xl transition-colors cursor-pointer"
             >
               <Eye className="w-4 h-4 text-brand-blue" />
-              <span>{t('viewDocument') || 'Sənədə bax'}</span>
+              <span>{t('viewDocument')}</span>
             </button>
 
             <button
@@ -492,7 +492,7 @@ export const DashboardPage: React.FC = () => {
               className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-error hover:bg-red-50 rounded-xl transition-colors cursor-pointer"
             >
               <Trash2 className="w-4 h-4 text-error" />
-              <span>{t('deleteDocument') || 'Sil'}</span>
+              <span>{t('deleteDocument')}</span>
             </button>
           </div>
         </div>

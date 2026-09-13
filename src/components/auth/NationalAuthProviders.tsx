@@ -1,11 +1,14 @@
 import React from 'react';
 import { Fingerprint, QrCode } from 'lucide-react';
+import { useLanguage } from '../../context/LanguageContext';
 
 export interface NationalAuthProvidersProps {
   onSelectProvider: (provider: 'sima' | 'mygov') => void;
 }
 
 export const NationalAuthProviders: React.FC<NationalAuthProvidersProps> = ({ onSelectProvider }) => {
+  const { t } = useLanguage();
+
   return (
     <div className="grid grid-cols-2 gap-3">
       {/* myGov Login Button */}
@@ -23,7 +26,7 @@ export const NationalAuthProviders: React.FC<NationalAuthProvidersProps> = ({ on
           </p>
           <p className="text-[10px] text-on-surface-variant font-medium flex items-center gap-1">
             <QrCode className="w-3 h-3 text-brand-blue shrink-0" />
-            <span>QR Giriş</span>
+            <span>{t('qrLogin')}</span>
           </p>
         </div>
       </button>
@@ -43,7 +46,7 @@ export const NationalAuthProviders: React.FC<NationalAuthProvidersProps> = ({ on
           </p>
           <p className="text-[10px] text-on-surface-variant font-medium flex items-center gap-1">
             <QrCode className="w-3 h-3 text-teal-600 shrink-0" />
-            <span>QR Giriş</span>
+            <span>{t('qrLogin')}</span>
           </p>
         </div>
       </button>

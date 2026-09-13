@@ -88,11 +88,11 @@ export const DocumentsPage: React.FC = () => {
   }, []);
 
   const filterTabs = [
-    { id: 'all', label: t('filterAll') || 'Bütün' },
-    { id: 'safe', label: t('filterSafe') || 'Təhlükəsiz' },
-    { id: 'suspicious', label: t('filterSuspicious') || 'Şübhəli' },
-    { id: 'high_risk', label: t('filterHighRisk') || 'Yüksək riskli' },
-    { id: 'blocked', label: t('filterBlocked') || 'Bloklanan' }
+    { id: 'all', label: t('filterAll') },
+    { id: 'safe', label: t('filterSafe') },
+    { id: 'suspicious', label: t('filterSuspicious') },
+    { id: 'high_risk', label: t('filterHighRisk') },
+    { id: 'blocked', label: t('filterBlocked') }
   ];
 
   const filteredDocs = documents.filter((doc) => {
@@ -108,14 +108,14 @@ export const DocumentsPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-headline-lg font-bold text-on-surface">
-            {t('documentsPageTitle') || 'Sənəd İdarəetmə Mərkəzi'}
+            {t('documentsPageTitle')}
           </h1>
           <p className="text-body-md text-on-surface-variant">
-            {t('documentsPageSubtitle') || 'Skan edilmiş korporativ sənədlərin siyahısı, risk dərəcələri və təhlükəsizlik statusları'}
+            {t('documentsPageSubtitle')}
           </p>
         </div>
         <Button variant="primary" size="md" onClick={() => navigate('/scan')}>
-          {t('newDocumentScan') || 'Yeni Sənəd Skan Et'}
+          {t('newDocumentScan')}
         </Button>
       </div>
 
@@ -146,7 +146,7 @@ export const DocumentsPage: React.FC = () => {
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Sənəd adı və ya departament..."
+              placeholder={t('searchPlaceholder')}
               className="w-full pl-9 pr-4 py-2 rounded-lg border border-outline-variant bg-white text-label-md focus:border-brand-blue focus:ring-2 focus:ring-blue-100 outline-none"
             />
           </div>
@@ -157,10 +157,10 @@ export const DocumentsPage: React.FC = () => {
       <Card padding="none" className="overflow-hidden">
         {/* Table Header (Desktop Only) */}
         <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-3.5 bg-surface-container-low border-b border-outline-variant text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
-          <div className="col-span-5">Sənəd</div>
-          <div className="col-span-3">Yüklənmə Tarixi</div>
-          <div className="col-span-2">Tip / Həcm</div>
-          <div className="col-span-2 text-right">Risk Balı</div>
+          <div className="col-span-5">{t('docNameCol')}</div>
+          <div className="col-span-3">{t('uploadDateCol')}</div>
+          <div className="col-span-2">{t('typeSizeCol')}</div>
+          <div className="col-span-2 text-right">{t('riskScoreCol')}</div>
         </div>
 
         {/* Rows */}
@@ -170,9 +170,9 @@ export const DocumentsPage: React.FC = () => {
           ) : filteredDocs.length === 0 ? (
             <EmptyState
               icon={FileText}
-              title="Skan edilmiş sənəd yoxdur"
-              description="Hal-hazırda hər hansı skan edilmiş sənəd tapılmadı."
-              primaryActionLabel="Yeni Sənəd Skan Et"
+              title={t('noScannedDocs')}
+              description={t('emptyDocsDesc')}
+              primaryActionLabel={t('newDocumentScan')}
               onPrimaryAction={() => navigate('/scan')}
             />
           ) : (
@@ -194,7 +194,7 @@ export const DocumentsPage: React.FC = () => {
                         <span className="truncate">{decodeFileName(doc.name)}</span>
                         {doc.isConfidential && (
                           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-900 font-extrabold text-[10px] border border-indigo-200 shrink-0">
-                            <Lock className="w-3 h-3" /> MƏXFİ
+                            <Lock className="w-3 h-3" /> {t('confidentialModeTag')}
                           </span>
                         )}
                       </div>

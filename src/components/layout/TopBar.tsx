@@ -108,7 +108,7 @@ export const TopBar: React.FC = () => {
                   type="button"
                   onClick={() => window.dispatchEvent(new Event('trigger-settings-reset'))}
                   className="w-8 h-8 rounded-full bg-surface-container-low hover:bg-red-50 text-on-surface-variant hover:text-red-600 border border-outline-variant/70 flex items-center justify-center transition-all active:scale-95 cursor-pointer shrink-0"
-                  title="Dəyişiklikləri ləğv et"
+                  title={t('cancelChanges') || 'Dəyişiklikləri ləğv et'}
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -125,12 +125,12 @@ export const TopBar: React.FC = () => {
                     ? 'bg-emerald-500 text-white animate-in zoom-in-90 duration-300'
                     : 'bg-brand-blue hover:bg-brand-blue/90 text-white w-8 !px-0'
                 }`}
-                title={isSaveSuccess ? 'Yadda saxlanıldı' : (t('saveBtn') || 'Yadda Saxla')}
+                title={isSaveSuccess ? (t('savedSuccess') || 'Yadda saxlanıldı!') : (t('saveBtn') || 'Yadda Saxla')}
               >
                 {isSaveSuccess ? (
-                  <span className="flex items-center gap-1 text-xs font-bold">
+                  <span className="flex items-center justify-center gap-1 text-xs font-bold">
                     <Check className="w-4 h-4" />
-                    <span className="hidden sm:inline">Yadda saxlanıldı!</span>
+                    <span className="hidden sm:inline">{t('savedSuccess') || 'Yadda saxlanıldı!'}</span>
                   </span>
                 ) : (
                   <Save className="w-4 h-4" />
@@ -143,7 +143,7 @@ export const TopBar: React.FC = () => {
             <button
               onClick={() => navigate('/')}
               className="md:hidden w-10 h-10 rounded-full bg-blue-50 hover:bg-blue-100 flex items-center justify-center text-brand-blue transition-colors cursor-pointer border border-brand-blue/20 relative overflow-hidden"
-              title="Home"
+              title={t('home')}
             >
               <Home className="w-5 h-5 relative z-10" />
             </button>
@@ -151,7 +151,7 @@ export const TopBar: React.FC = () => {
             <button
               onClick={() => navigate('/assistant')}
               className="md:hidden w-10 h-10 rounded-full bg-blue-50 hover:bg-blue-100 flex items-center justify-center text-brand-blue transition-colors cursor-pointer border border-brand-blue/20 relative overflow-hidden"
-              title="MyGuard AI"
+              title={t('myGuardAiAssistant')}
             >
               <Sparkles className="w-5 h-5 relative z-10" />
             </button>
@@ -163,7 +163,7 @@ export const TopBar: React.FC = () => {
               type="button"
               onClick={() => setIsProfileOpen(!isProfileOpen)}
               className="flex items-center gap-2 bg-surface-container-low hover:bg-surface-container-high border border-outline-variant/70 pl-1.5 pr-2.5 py-1 rounded-full shadow-2xs transition-all cursor-pointer group"
-              title={user?.fullName || (isLoading ? 'Yüklənir...' : 'İstifadəçi Profili')}
+              title={user?.fullName || (isLoading ? t('loading') : t('userProfile'))}
             >
               <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-brand-blue to-brand-purple p-0.5 shadow-xs shrink-0 group-hover:scale-105 transition-transform">
                 <div className="w-full h-full rounded-full bg-white flex items-center justify-center text-[10px] font-bold text-brand-blue overflow-hidden">
@@ -249,7 +249,7 @@ export const TopBar: React.FC = () => {
                 <div className="flex items-center justify-between px-3.5 py-2 bg-surface-container-lowest border border-outline-variant/60 rounded-2xl">
                   <div className="flex items-center gap-2 text-xs font-bold text-on-surface">
                     <Globe className="w-4 h-4 text-brand-blue" />
-                    <span>{t('interfaceLanguage') || 'Dil'}:</span>
+                    <span>{t('interfaceLanguage')}:</span>
                   </div>
                   <div className="flex items-center gap-1 bg-surface-container-low p-1 rounded-xl border border-outline-variant/60">
                     <button
@@ -284,7 +284,7 @@ export const TopBar: React.FC = () => {
                   className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-bold text-red-600 hover:text-red-700 bg-red-50/90 hover:bg-red-100 border border-red-200/80 rounded-2xl transition-all cursor-pointer shadow-2xs active:scale-[0.98]"
                 >
                   <LogOut className="w-4 h-4" />
-                  <span>Çıxış Et</span>
+                  <span>{t('logout')}</span>
                 </button>
               </div>
             )}
@@ -294,4 +294,3 @@ export const TopBar: React.FC = () => {
     </header>
   );
 };
-

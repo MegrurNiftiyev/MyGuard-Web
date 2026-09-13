@@ -6,6 +6,7 @@ import {
 import { BarChart2, PieChart as PieIcon, TrendingUp, LayoutList } from 'lucide-react';
 
 import { SemanticTone } from '../../../types';
+import { useLanguage } from '../../../context/LanguageContext';
 
 export interface AiChartBlockProps {
   title?: string;
@@ -23,13 +24,11 @@ const DEFAULT_COLORS = ['#3B82F6', '#A855F7', '#F59E0B', '#EF4444', '#10B981', '
 
 export const SEMANTIC_COLOR_MAP: Record<string, string> = {
   primary: '#0066FF',
-  secondary: '#64748B',
-  danger: '#EF4444',
-  warning: '#F59E0B',
-  success: '#10B981',
-  info: '#3B82F6',
   purple: '#A855F7',
-  indigo: '#6366F1',
+  warning: '#F59E0B',
+  danger: '#EF4444',
+  success: '#10B981',
+  indigo: '#6366F1'
 };
 
 const resolveColor = (toneOrColor?: string, fallbackIndex: number = 0): string => {
@@ -45,6 +44,7 @@ export const AiChartBlock: React.FC<AiChartBlockProps> = ({
   data = [],
   chartKeys
 }) => {
+  const { t } = useLanguage();
   const normalizedInitialType = initialType === 'pie' ? 'donut' : initialType;
   const [activeType, setActiveType] = useState<'area' | 'line' | 'bar' | 'horizontal_bar' | 'donut'>(normalizedInitialType);
 
@@ -255,7 +255,7 @@ export const AiChartBlock: React.FC<AiChartBlockProps> = ({
               </ResponsiveContainer>
               {/* Inner center label */}
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
-                <span className="text-[9px] uppercase tracking-widest text-on-surface-variant font-bold">Ümumi</span>
+                <span className="text-[9px] uppercase tracking-widest text-on-surface-variant font-bold">{t('totalScanned')}</span>
                 <span className="text-lg font-bold text-on-surface font-mono leading-tight">{totalSum.toLocaleString()}</span>
               </div>
             </div>

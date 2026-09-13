@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { FileText, ArrowRight, UploadCloud, ShieldAlert, Sparkles, FileCode, Loader2 } from 'lucide-react';
+import { FileText, UploadCloud, FileCode, Loader2 } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { CustomSwitch } from '../components/ui/CustomSwitch';
@@ -10,6 +10,9 @@ import { StepStatus } from '../types';
 import { useLanguage } from '../context/LanguageContext';
 import { joinDocumentScanRoom, leaveDocumentScanRoom, ScanEventData } from '../api/socketClient';
 import { documentsApi } from '../api/documentsApi';
+import { translations } from '../i18n/translations';
+
+type TranslationKey = keyof typeof translations['az'];
 
 const decodeFileName = (text: string) => {
   if (!text) return text;
@@ -20,14 +23,20 @@ const decodeFileName = (text: string) => {
   }
 };
 
-const DEFAULT_SCAN_STEPS = [
-  { stepNumber: 1, title: 'Sənədin Yüklənməsi', description: 'Fayl təhlükəsiz sandbox mühitinə daxil edilir...' },
-  { stepNumber: 2, title: 'PDF Mətninin Çıxarılması', description: 'Daxili mətn qatı və strukturu oxunur...' },
-  { stepNumber: 3, title: 'OCR Vizual Analiz', description: 'Vizual görüntüdən insan tərəfindən görünən mətn çıxarılır...' },
-  { stepNumber: 4, title: 'Mətn Müqayisəsi', description: 'Vizual və PDF mətn qatları fərqləri analiz edilir...' },
-  { stepNumber: 5, title: 'Gizli Mətn Aşkarlanması', description: 'İnsan gözünə görünməyən yazılar yoxlanılır...' },
-  { stepNumber: 6, title: 'Prompt Injection Analizi', description: 'AI modeli tərəfindən prompt injection yoxlaması edilir...' },
-  { stepNumber: 7, title: 'Risk Qiymətləndirilməsi', description: 'Risk balı hesablanır və sənəd müvafiq statusa keçirilir...' }
+interface StepDef {
+  stepNumber: number;
+  titleKey: TranslationKey;
+  descKey: TranslationKey;
+}
+
+const DEFAULT_SCAN_STEPS: StepDef[] = [
+  { stepNumber: 1, titleKey: 'step1Title', descKey: 'step1Desc' },
+  { stepNumber: 2, titleKey: 'step2Title', descKey: 'step2Desc' },
+  { stepNumber: 3, titleKey: 'step3Title', descKey: 'step3Desc' },
+  { stepNumber: 4, titleKey: 'step4Title', descKey: 'step4Desc' },
+  { stepNumber: 5, titleKey: 'step5Title', descKey: 'step5Desc' },
+  { stepNumber: 6, titleKey: 'step6Title', descKey: 'step6Desc' },
+  { stepNumber: 7, titleKey: 'step7Title', descKey: 'step7Desc' }
 ];
 
 const formatActiveMessage = (msg?: string) => {
@@ -41,44 +50,53 @@ const formatActiveMessage = (msg?: string) => {
     .replace(/hesablandı/g, 'hesablanır...');
 };
 
-const getStepDescription = (stepIdx: number, status: StepStatus, socketMsg?: string, isActiveStep: boolean = false): string => {
+const getStepDescription = (
+  stepIdx: number,
+  status: StepStatus,
+  socketMsg: string | undefined,
+  isActiveStep: boolean,
+  t: (key: TranslationKey) => string
+): string => {
   if (stepIdx === 3) {
     if (status === 'completed' || status === 'warning' || status === 'failed') {
-      return 'Vizual və PDF mətn qatları fərqləri analiz edildi';
+      return t('step3DoneDesc');
     }
-    return 'Vizual və PDF mətn qatları fərqləri analiz edilir...';
+    return t('step3ProcessingDesc');
   }
 
   if (stepIdx === 4) {
     if (status === 'warning' || status === 'failed') {
-      return 'İnsan gözünə görünməyən yazılar aşkarlandı';
+      return t('step4DetectedDesc');
     }
     if (status === 'completed') {
-      return 'İnsan gözünə görünməyən yazılar tapılmadı';
+      return t('step4NotFoundDesc');
     }
-    return 'İnsan gözünə görünməyən yazılar yoxlanılır...';
+    return t('step4CheckingDesc');
   }
 
   if (stepIdx === 5) {
     if (status === 'warning' || status === 'failed') {
-      return 'Prompt injection hücumu aşkarlandı';
+      return t('step5DetectedDesc');
     }
     if (status === 'completed') {
-      return 'Prompt injection təhdidi tapılmadı';
+      return t('step5NotFoundDesc');
     }
-    return 'AI modeli tərəfindən prompt injection yoxlaması edilir...';
+    return t('step5CheckingDesc');
   }
+
+  const stepDef = DEFAULT_SCAN_STEPS[stepIdx];
+  const defaultDesc = stepDef ? t(stepDef.descKey) : '';
 
   if (isActiveStep) {
     const formatted = formatActiveMessage(socketMsg);
-    return formatted ? formatted.replace(/OCR/g, 'Vizual') : (DEFAULT_SCAN_STEPS[stepIdx]?.description || '');
+    return formatted ? formatted.replace(/OCR/g, 'Vizual') : defaultDesc;
   }
 
   if (socketMsg) {
     return socketMsg.replace(/OCR/g, 'Vizual');
   }
 
-  return DEFAULT_SCAN_STEPS[stepIdx]?.description || '';
+  return defaultDesc;
 };
 
 // Global state to persist scan pipeline across route changes
@@ -97,7 +115,7 @@ export const ScanPage: React.FC = () => {
   const urlFileName = searchParams.get('name');
 
   const activeDocId = urlDocId || globalDocId;
-  const activeFileName = urlFileName || globalFileName || 'Sənəd.pdf';
+  const activeFileName = urlFileName || globalFileName || t('untitledPdf');
 
   useEffect(() => {
     if (urlDocId) {
@@ -132,9 +150,10 @@ export const ScanPage: React.FC = () => {
   }, []);
 
   const [steps, setSteps] = useState(
-    globalSteps || DEFAULT_SCAN_STEPS.map((s, i) => ({
+    globalSteps || DEFAULT_SCAN_STEPS.map((s) => ({
       ...s,
-      status: 'pending' as StepStatus
+      status: 'pending' as StepStatus,
+      socketMsg: undefined as string | undefined
     }))
   );
 
@@ -151,7 +170,7 @@ export const ScanPage: React.FC = () => {
     globalCurrentStepIndex = 0;
     globalIsScanning = false;
     setSearchParams({});
-    setSteps(DEFAULT_SCAN_STEPS.map(s => ({ ...s, status: 'pending' as StepStatus })));
+    setSteps(DEFAULT_SCAN_STEPS.map((s) => ({ ...s, status: 'pending' as StepStatus, socketMsg: undefined })));
     setCurrentStepIndex(0);
     setIsScanning(false);
   };
@@ -233,7 +252,7 @@ export const ScanPage: React.FC = () => {
   useEffect(() => {
     if (!activeDocId) {
       setIsScanning(false);
-      setSteps(DEFAULT_SCAN_STEPS.map((s) => ({ ...s, status: 'pending' as StepStatus })));
+      setSteps(DEFAULT_SCAN_STEPS.map((s) => ({ ...s, status: 'pending' as StepStatus, socketMsg: undefined })));
       return;
     }
 
@@ -242,7 +261,8 @@ export const ScanPage: React.FC = () => {
       setSteps(
         DEFAULT_SCAN_STEPS.map((s, i) => ({
           ...s,
-          status: i === 0 ? ('processing' as StepStatus) : ('pending' as StepStatus)
+          status: i === 0 ? ('processing' as StepStatus) : ('pending' as StepStatus),
+          socketMsg: undefined
         }))
       );
     }
@@ -269,7 +289,6 @@ export const ScanPage: React.FC = () => {
           }
 
           const getStepFinalStatus = (stepIdx: number, existingStatus?: StepStatus): StepStatus => {
-            // Keep existing warning/failed status so subsequent socket events don't overwrite risk state
             if (existingStatus === 'warning' || existingStatus === 'failed') {
               return existingStatus;
             }
@@ -299,7 +318,7 @@ export const ScanPage: React.FC = () => {
           const newSteps = prevSteps.map((step, idx) => {
             if (idx < activeIdx) {
               const finalSt = getStepFinalStatus(idx, step.status);
-              return { ...step, status: finalSt, description: getStepDescription(idx, finalSt, undefined, false) };
+              return { ...step, status: finalSt, socketMsg: undefined };
             }
             if (idx === activeIdx) {
               let status: StepStatus = 'processing';
@@ -317,9 +336,9 @@ export const ScanPage: React.FC = () => {
                 isFinished = true;
               }
 
-              return { ...step, status, description: getStepDescription(idx, status, data.message, true) };
+              return { ...step, status, socketMsg: data.message };
             }
-            return { ...step, status: 'pending' as StepStatus };
+            return { ...step, status: 'pending' as StepStatus, socketMsg: undefined };
           });
 
           if (isFinished) {
@@ -351,9 +370,9 @@ export const ScanPage: React.FC = () => {
             </div>
           </div>
           <div className="space-y-1">
-            <h3 className="text-title-lg font-bold text-on-surface tracking-tight">Sənədi bura buraxın</h3>
+            <h3 className="text-title-lg font-bold text-on-surface tracking-tight">{t('dropDocumentHere')}</h3>
             <p className="text-body-md text-on-surface-variant">
-              Skan etmək üçün istənilən faylı bura sürükləyib buraxa bilərsiniz
+              {t('dropDocumentDesc')}
             </p>
           </div>
         </div>
@@ -373,10 +392,10 @@ export const ScanPage: React.FC = () => {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
              <div>
                <h1 className="text-headline-lg-mobile md:text-headline-lg font-bold text-on-surface mb-2">
-                 Sənəd Yoxlanış Sistemi
+                 {t('scanSystemTitle')}
                </h1>
                <p className="text-body-md text-on-surface-variant">
-                 Skan ediləcək sənədi seçin və 7 mərhələli təhlükəsizlik yoxlanış etabının fəaliyyətini izləyin
+                 {t('scanSystemSubtitle')}
                </p>
              </div>
           </div>
@@ -386,7 +405,7 @@ export const ScanPage: React.FC = () => {
         <div className="lg:col-span-5 flex flex-col gap-6">
           <Card padding="lg" className="shadow-l1 flex flex-col items-center text-center space-y-6">
             <div className="flex items-center justify-between w-full">
-              <h2 className="text-title-lg font-bold text-on-surface">Hədəf Sənəd</h2>
+              <h2 className="text-title-lg font-bold text-on-surface">{t('targetDocument')}</h2>
             </div>
 
             {/* Upload Zone Drop Target */}
@@ -406,13 +425,13 @@ export const ScanPage: React.FC = () => {
                 {isUploading ? <Loader2 className="w-8 h-8 text-brand-blue animate-spin" /> : <UploadCloud className="w-8 h-8 text-brand-blue" />}
               </div>
               <p className="text-title-md font-bold text-on-surface mb-1">
-                {isUploading ? 'Fayl serverə yüklənir...' : 'Hələ ki skan edilən sənəd yoxdur'}
+                {isUploading ? t('uploadingFile') : t('noDocumentScanned')}
               </p>
               <p className="text-body-sm text-on-surface-variant max-w-xs mb-4">
-                {isUploading ? 'Sənəd təhlükəsiz sandbox mühitinə göndərilir, backend cavabı gözlənilir...' : 'Skan etmək istədiyiniz PDF və ya DOCX faylını bura sürükləyin və ya seçin'}
+                {isUploading ? t('uploadingSandboxDesc') : t('dragOrSelectDesc')}
               </p>
               <Button variant="primary" size="md" className="pointer-events-none shadow-sm" disabled={isUploading}>
-                {isUploading ? 'Yüklənir...' : 'Sənəd Seçin'}
+                {isUploading ? t('uploading') : t('selectDocument')}
               </Button>
             </label>
           </Card>
@@ -424,10 +443,10 @@ export const ScanPage: React.FC = () => {
             <div>
               <div className="flex items-center justify-between mb-6 pb-3 border-b border-outline-variant/50">
                 <h2 className="text-title-lg font-bold text-on-surface">
-                  Skan etabı (7 Mərhələ)
+                  {t('pipelineTitle')}
                 </h2>
                 <div className="flex items-center gap-3">
-                  <span className="text-xs font-bold text-on-surface select-none">Məxfi Sənəd</span>
+                  <span className="text-xs font-bold text-on-surface select-none">{t('confidentialDocument')}</span>
                   <CustomSwitch checked={isConfidential} onChange={handleConfidentialChange} />
                 </div>
               </div>
@@ -437,8 +456,8 @@ export const ScanPage: React.FC = () => {
                   <ProgressStep
                     key={step.stepNumber}
                     stepNumber={step.stepNumber}
-                    title={step.title}
-                    description={step.description}
+                    title={t(step.titleKey as TranslationKey)}
+                    description={getStepDescription(idx, isUploading && idx === 0 ? 'processing' : 'pending', step.socketMsg, isUploading && idx === 0, t)}
                     status={isUploading && idx === 0 ? 'processing' : 'pending'}
                     isLast={idx === steps.length - 1}
                   />
@@ -458,8 +477,8 @@ export const ScanPage: React.FC = () => {
 
       <header className="lg:col-span-12 mb-2">
         <div>
-          <h1 className="text-headline-lg-mobile md:text-headline-lg font-bold text-on-surface mb-2">Sənəd Yoxlanış Sistemi</h1>
-          <p className="text-body-md text-on-surface-variant">Skan ediləcək sənədi seçin və 7 mərhələli təhlükəsizlik yoxlanış etabının fəaliyyətini izləyin</p>
+          <h1 className="text-headline-lg-mobile md:text-headline-lg font-bold text-on-surface mb-2">{t('scanSystemTitle')}</h1>
+          <p className="text-body-md text-on-surface-variant">{t('scanSystemSubtitle')}</p>
         </div>
       </header>
 
@@ -484,7 +503,7 @@ export const ScanPage: React.FC = () => {
                 {decodeFileName(activeFileName)}
               </span>
               <span className="text-label-sm text-brand-blue font-bold shrink-0">
-                {Math.round(((currentStepIndex + 1) / steps.length) * 100)}% Tamamlandı
+                {Math.round(((currentStepIndex + 1) / steps.length) * 100)} {t('percentCompleted')}
               </span>
             </div>
             <div className="w-full bg-surface-variant rounded-full h-2 overflow-hidden">
@@ -500,15 +519,15 @@ export const ScanPage: React.FC = () => {
       {/* Pipeline Status */}
       <div className="lg:col-span-7">
         <Card padding="lg" className="h-full shadow-l1">
-          <h2 className="text-title-lg font-medium text-on-surface mb-8">Skan etabı (7 Mərhələ)</h2>
+          <h2 className="text-title-lg font-medium text-on-surface mb-8">{t('pipelineTitle')}</h2>
           
           <div className="pl-2">
             {steps.map((step, idx) => (
               <ProgressStep
                 key={step.stepNumber}
                 stepNumber={step.stepNumber}
-                title={step.title}
-                description={step.description}
+                title={t(step.titleKey as TranslationKey)}
+                description={getStepDescription(idx, step.status, step.socketMsg, idx === currentStepIndex, t)}
                 status={step.status}
                 isLast={idx === steps.length - 1}
               />
@@ -517,7 +536,7 @@ export const ScanPage: React.FC = () => {
 
           <div className="mt-10 flex justify-end gap-4 border-t border-outline-variant pt-6">
             <Button variant="outline" size="md" onClick={clearGlobalState}>
-              {(isScanning || isUploading) ? 'Ləğv Et' : 'Təmizlə'}
+              {(isScanning || isUploading) ? t('cancel') : t('clear')}
             </Button>
             <Button 
               variant="primary" 
@@ -526,7 +545,7 @@ export const ScanPage: React.FC = () => {
               onClick={() => navigate(`/analysis/${activeDocId}`)}
               className={(isScanning || isUploading) ? '!bg-gray-200 !text-gray-400 !border-gray-200 opacity-70 cursor-not-allowed pointer-events-none shadow-none' : ''}
             >
-              Hesabata Bax
+              {t('viewReport')}
             </Button>
           </div>
         </Card>
@@ -536,3 +555,4 @@ export const ScanPage: React.FC = () => {
 };
 
 export default ScanPage;
+

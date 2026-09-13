@@ -20,8 +20,8 @@ const decodeFileName = (text: string) => {
   }
 };
 
-const highlightSnippet = (fullText: string, snippets?: string[]) => {
-  if (!fullText) return <span className="opacity-50 italic">Mətn tapılmadı</span>;
+const highlightSnippet = (fullText: string, snippets?: string[], fallbackText: string = 'Mətn tapılmadı') => {
+  if (!fullText) return <span className="opacity-50 italic">{fallbackText}</span>;
   if (!snippets || snippets.length === 0) return <span>{fullText}</span>;
   
   return snippets.reduce((acc: any, snippet) => {
@@ -203,7 +203,7 @@ export const AnalysisResultPage: React.FC = () => {
   };
 
   const highlightDiff = (ocrText: string, pdfText: string, snippets?: string[]) => {
-    if (!pdfText) return <span className="opacity-50 italic">PDF daxili mətn qatı mövcud deyil</span>;
+    if (!pdfText) return <span className="opacity-50 italic">{t('pdfLayerNotFound')}</span>;
 
     if (pdfText.includes('<ferqli>')) {
       return renderWithFerqliTags(pdfText);
@@ -287,7 +287,7 @@ export const AnalysisResultPage: React.FC = () => {
   }
 
   if (!analysis) {
-    return <div className="p-8 text-center text-error">Məlumat tapılmadı</div>;
+    return <div className="p-8 text-center text-error">{t('noDataFound')}</div>;
   }
 
   const riskColors = getRiskScoreColor(analysis.riskScore);
@@ -312,12 +312,12 @@ export const AnalysisResultPage: React.FC = () => {
             <div className="flex items-center gap-2 mt-1 text-xs text-on-surface-variant font-medium flex-wrap">
               <span>{formatFileSize(analysis.fileSizeBytes)}</span>
               <span>•</span>
-              <span>Yüklənmə tarixi: {formatUploadDate(analysis.uploadTime)}</span>
+              <span>{t('uploadDateLabel')} {formatUploadDate(analysis.uploadTime)}</span>
               {analysis.isConfidential && (
                 <>
                   <span>•</span>
                   <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-900 font-extrabold text-[10px] border border-indigo-200">
-                    <Lock className="w-3 h-3" /> MƏXFİ REJİM
+                    <Lock className="w-3 h-3" /> {t('confidentialModeTag')}
                   </span>
                 </>
               )}
@@ -348,7 +348,7 @@ export const AnalysisResultPage: React.FC = () => {
                 {analysis.riskScore}%
               </span>
             </div>
-            <span className={`text-[10px] font-bold uppercase tracking-wider ${riskColors.text} opacity-90 whitespace-nowrap`}>Risk Skoru</span>
+            <span className={`text-[10px] font-bold uppercase tracking-wider ${riskColors.text} opacity-90 whitespace-nowrap`}>{t('riskScore')}</span>
           </div>
         </div>
       </header>
@@ -361,7 +361,7 @@ export const AnalysisResultPage: React.FC = () => {
           <div className="flex items-center gap-2 relative z-10">
             <FileCode className={`w-5 h-5 shrink-0 ${analysis.ocrPdfMatch === 100 ? 'text-emerald-600' : analysis.ocrPdfMatch >= 98 ? 'text-amber-600' : 'text-red-600'}`} />
             <h3 className={`text-xs sm:text-sm font-semibold ${analysis.ocrPdfMatch === 100 ? 'text-emerald-700' : analysis.ocrPdfMatch >= 98 ? 'text-amber-700' : 'text-red-700'}`}>
-              OCR + PDF Uyğunluğu
+              {t('ocrPdfMatch')}
             </h3>
           </div>
           <div className="flex flex-col my-2 relative z-10">
@@ -383,12 +383,12 @@ export const AnalysisResultPage: React.FC = () => {
           <div className="flex items-center gap-2 relative z-10">
             <Eye className={`w-5 h-5 shrink-0 ${analysis.hiddenTextDetected ? 'text-red-500' : 'text-emerald-600'}`} />
             <h3 className={`text-xs sm:text-sm font-semibold ${analysis.hiddenTextDetected ? 'text-red-600' : 'text-emerald-700'}`}>
-              Gizli Mətn (Hidden Text)
+              {t('hiddenText')}
             </h3>
           </div>
           <div className="flex flex-col my-2 relative z-10">
             <span className={`text-xl sm:text-2xl font-extrabold ${analysis.hiddenTextDetected ? 'text-red-600' : 'text-emerald-700'}`}>
-              {analysis.hiddenTextDetected ? 'Aşkarlandı' : 'Aşkar Edilmədi'}
+              {analysis.hiddenTextDetected ? t('detected') : t('notDetected')}
             </span>
           </div>
           <div className="h-1.5 w-full"></div>
@@ -400,7 +400,7 @@ export const AnalysisResultPage: React.FC = () => {
           <div className="flex items-center gap-2 relative z-10">
             <AlertTriangle className={`w-5 h-5 shrink-0 ${analysis.promptInjectionProb >= 50 ? 'text-red-500' : analysis.promptInjectionProb > 10 ? 'text-amber-500' : 'text-emerald-600'}`} />
             <h3 className={`text-xs sm:text-sm font-semibold ${analysis.promptInjectionProb >= 50 ? 'text-red-600' : analysis.promptInjectionProb > 10 ? 'text-amber-700' : 'text-emerald-700'}`}>
-              Prompt Injection Ehtimalı
+              {t('promptInjectionProb')}
             </h3>
           </div>
           <div className="flex flex-col my-2 relative z-10">
@@ -430,12 +430,12 @@ export const AnalysisResultPage: React.FC = () => {
               <ShieldAlert className="w-5 h-5 shrink-0 text-red-500" />
             )}
             <h3 className={`text-xs sm:text-sm font-semibold ${analysis.riskScore < 30 ? 'text-emerald-700' : 'text-red-600'}`}>
-              Ümumi Status
+              {t('overallStatus')}
             </h3>
           </div>
           <div className="flex flex-col my-2 relative z-10">
             <span className={`text-xl sm:text-2xl font-extrabold ${analysis.riskScore < 30 ? 'text-emerald-700' : analysis.riskScore >= 70 ? 'text-red-600' : 'text-amber-600'}`}>
-              {analysis.riskScore < 30 ? 'Təhlükəsiz' : analysis.riskScore >= 70 ? 'Yüksək Risk' : 'Şübhəli'}
+              {analysis.riskScore < 30 ? t('safe') : analysis.riskScore >= 70 ? t('filterHighRisk') : t('suspicious')}
             </span>
           </div>
           <div className="h-1.5 w-full"></div>
@@ -451,11 +451,11 @@ export const AnalysisResultPage: React.FC = () => {
           <div className="flex items-center gap-2">
             {cleanDownloadUrl && (
               <a href={cleanDownloadUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 bg-brand-blue text-white text-xs px-3 py-1.5 rounded-lg font-bold">
-                <Download className="w-3.5 h-3.5" /> Endir
+                <Download className="w-3.5 h-3.5" /> {t('download')}
               </a>
             )}
             <button onClick={() => setActionNotice(null)} className="text-label-sm font-bold hover:underline cursor-pointer">
-              Bağla
+              {t('close')}
             </button>
           </div>
         </div>
@@ -469,10 +469,10 @@ export const AnalysisResultPage: React.FC = () => {
           </div>
           <div className="flex flex-col gap-2 w-full">
             <div className="flex items-center gap-2">
-              <h2 className="text-label-lg font-bold text-indigo-900 uppercase tracking-wider">Məxfi Rejim</h2>
+              <h2 className="text-label-lg font-bold text-indigo-900 uppercase tracking-wider">{t('confidentialModeTitle')}</h2>
             </div>
             <p className="text-body-md text-indigo-950 font-medium leading-relaxed">
-              Bu sənəd məxfi rejimdə yükləndiyi üçün xarici AI analizinə göndərilməyib. Yalnız yerli OCR və ML təhlükəsizlik təsnifatı aparılmışdır.
+              {t('confidentialModeDesc')}
             </p>
           </div>
         </section>
@@ -483,7 +483,7 @@ export const AnalysisResultPage: React.FC = () => {
           </div>
           <div className="flex flex-col gap-1.5 w-full min-w-0">
             <h2 className="text-base sm:text-lg font-bold text-on-surface font-sans">
-              Süni İntellekt İzahı
+              {t('explanationTitle')}
             </h2>
             <p className="text-body-md text-on-surface-variant leading-relaxed font-normal">
               {renderFormattedText(analysis.plainExplanation || 'Sənədin daxilində insan tərəfindən normal görünməyən və AI modelinin davranışını dəyişdirməyə yönəlmiş mətn aşkarlandı.')}
@@ -500,7 +500,7 @@ export const AnalysisResultPage: React.FC = () => {
               <ShieldAlert className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-title-md font-bold text-amber-900">Tövsiyə Olunan Təhlükəsizlik Tədbirləri</h3>
+              <h3 className="text-title-md font-bold text-amber-900">{t('recommendedSecurityActions')}</h3>
               {analysis.recommendedAction && (
                 <p className="text-body-sm font-semibold text-amber-800 mt-0.5">{renderFormattedText(analysis.recommendedAction)}</p>
               )}
@@ -539,7 +539,7 @@ export const AnalysisResultPage: React.FC = () => {
             <div className="flex flex-col gap-4">
               <h2 className="text-headline-md font-bold text-on-surface flex items-center gap-2">
                 <FileCode className="lucide lucide-file-code text-error w-6 h-6" />
-                Şübhəli Mətn Fraqmenti
+                {t('suspiciousSnippetTitle')}
               </h2>
             </div>
             
@@ -552,7 +552,7 @@ export const AnalysisResultPage: React.FC = () => {
                 icon={isCleaning ? <Sparkles className="w-4 h-4 animate-spin" /> : <Eraser className="w-4 h-4 text-brand-blue" />}
                 className="shadow-sm hover:shadow transition-all"
               >
-                {isCleaning ? 'Təmizlənir...' : 'Təmizlə'}
+                {isCleaning ? t('cleaning') : t('clean')}
               </Button>
               <Button
                 variant="outline"
@@ -562,7 +562,7 @@ export const AnalysisResultPage: React.FC = () => {
                 icon={<ShieldOff className="w-4 h-4 text-error" />}
                 className="shadow-sm hover:shadow transition-all text-error border-red-200 hover:bg-red-50"
               >
-                {isBlocked ? 'Bloklandı' : 'Blokla'}
+                {isBlocked ? t('blockedStatus') : t('blockBtn')}
               </Button>
               <button
                 type="button"
@@ -572,7 +572,7 @@ export const AnalysisResultPage: React.FC = () => {
                 <span className="shrink-0">
                   <FileCode className="w-4 h-4" />
                 </span>
-                <span>Mətn Müqayisəsinə Bax</span>
+                <span>{t('textComparisonBtn')}</span>
               </button>
             </div>
           </div>
@@ -588,7 +588,7 @@ export const AnalysisResultPage: React.FC = () => {
                 <div className="w-3 h-3 rounded-full bg-green-400"></div>
               </div>
               <div className="mx-auto bg-surface-container-low px-8 sm:px-24 py-1.5 rounded-md text-xs font-medium text-on-surface-variant flex items-center gap-2">
-                 Aşkarlandı: Səhifə {analysis.flaggedMetadata?.pageNumber || 2}
+                 {t('detectedOnPage')} {analysis.flaggedMetadata?.pageNumber || 2}
               </div>
             </div>
             

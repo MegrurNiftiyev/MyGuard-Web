@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, User, Fingerprint, Eye, EyeOff, Smartphone, Building2 } from 'lucide-react';
 import { Button } from '../ui/Button';
+import { useLanguage } from '../../context/LanguageContext';
 
 export const DEPARTMENTS = [
   'İnformasiya Texnologiyaları və Kibertəhlükəsizlik',
@@ -29,6 +30,7 @@ export interface AuthFormProps {
 
 export const AuthForm: React.FC<AuthFormProps> = ({ mode, onSubmitData, isSubmitting = false }) => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -59,7 +61,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ mode, onSubmitData, isSubmit
         <>
           <div>
             <label className="block text-xs font-bold text-on-surface-variant mb-1.5 uppercase tracking-wider">
-              Ad, Soyad
+              {t('fullNameLabel')}
             </label>
             <div className="relative">
               <User className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant/70" />
@@ -76,7 +78,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ mode, onSubmitData, isSubmit
 
           <div>
             <label className="block text-xs font-bold text-on-surface-variant mb-1.5 uppercase tracking-wider">
-              Departament Seçin
+              {t('selectDepartment')}
             </label>
             <div className="relative">
               <Building2 className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-purple" />
@@ -96,7 +98,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ mode, onSubmitData, isSubmit
 
           <div>
             <label className="block text-xs font-bold text-on-surface-variant mb-1.5 uppercase tracking-wider">
-              Mobil Nömrə
+              {t('mobileNumber')}
             </label>
             <div className="relative">
               <Smartphone className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant/70" />
@@ -116,7 +118,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ mode, onSubmitData, isSubmit
       {/* FIN Kod Field (Primary Login Field) */}
       <div>
         <label className="block text-xs font-bold text-on-surface-variant mb-1.5 uppercase tracking-wider">
-          FİN Kod (Şəxsiyyət Vəsiqəsi)
+          {t('finCodeLabel')}
         </label>
         <div className="relative">
           <Fingerprint className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-blue" />
@@ -135,7 +137,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ mode, onSubmitData, isSubmit
       {mode === 'register' && (
         <div>
           <label className="block text-xs font-bold text-on-surface-variant mb-1.5 uppercase tracking-wider">
-            E-poçt Adresi
+            {t('emailAddress')}
           </label>
           <div className="relative">
             <Mail className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant/70" />
@@ -154,7 +156,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ mode, onSubmitData, isSubmit
       {/* Password Field */}
       <div>
         <label className="block text-xs font-bold text-on-surface-variant mb-1.5 uppercase tracking-wider">
-          Şifrə
+          {t('passwordLabel')}
         </label>
         <div className="relative">
           <Lock className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant/70" />
@@ -185,14 +187,14 @@ export const AuthForm: React.FC<AuthFormProps> = ({ mode, onSubmitData, isSubmit
               onChange={(e) => setRememberMe(e.target.checked)}
               className="w-4 h-4 rounded text-brand-blue focus:ring-brand-blue/30 accent-brand-blue cursor-pointer"
             />
-            <span>Məni xatırla</span>
+            <span>{t('rememberMe')}</span>
           </label>
           <button
             type="button"
             onClick={() => navigate('/forgot-password')}
             className="font-bold text-brand-blue hover:underline cursor-pointer bg-transparent border-0 p-0"
           >
-            Şifrəni unutmusunuz?
+            {t('forgotPasswordQuestion')}
           </button>
         </div>
       )}
@@ -208,10 +210,10 @@ export const AuthForm: React.FC<AuthFormProps> = ({ mode, onSubmitData, isSubmit
         {isSubmitting ? (
           <span className="flex items-center justify-center gap-2">
             <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-            Yoxlanılır...
+            {t('verifying')}
           </span>
         ) : (
-          <span>{mode === 'login' ? 'Daxil ol' : 'Hesab Yarat'}</span>
+          <span>{mode === 'login' ? t('loginBtn') : t('registerBtn')}</span>
         )}
       </Button>
     </form>

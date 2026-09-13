@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Fingerprint, QrCode, X } from 'lucide-react';
 import { Button } from '../ui/Button';
+import { useLanguage } from '../../context/LanguageContext';
 
 export interface DigitalAuthModalProps {
   provider: 'sima' | 'mygov';
@@ -13,6 +14,7 @@ export const DigitalAuthModal: React.FC<DigitalAuthModalProps> = ({
   onClose,
   onSuccess
 }) => {
+  const { t } = useLanguage();
   const [isSimulating, setIsSimulating] = useState(false);
 
   const handleConfirm = () => {
@@ -40,7 +42,7 @@ export const DigitalAuthModal: React.FC<DigitalAuthModalProps> = ({
               <div className="w-9 h-9 rounded-xl bg-teal-600 text-white flex items-center justify-center shadow-sm">
                 <Fingerprint className="w-5 h-5" />
               </div>
-              <h3 className="text-title-lg font-bold text-on-surface">SİMA İmza QR Giriş</h3>
+              <h3 className="text-title-lg font-bold text-on-surface">{t('simaQrLoginTitle')}</h3>
             </div>
             <p className="text-xs text-on-surface-variant">
               SİMA mobil tətbiqi ilə aşağıdakı QR kodu skan edin və biometrik təsdiq verin.
@@ -55,7 +57,7 @@ export const DigitalAuthModal: React.FC<DigitalAuthModalProps> = ({
               disabled={isSimulating}
               className="w-full py-3 !bg-teal-600 hover:!bg-teal-700 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 cursor-pointer shadow-md"
             >
-              {isSimulating ? 'QR Təsdiqlənir...' : 'QR Skanını Təsdiqlə (Simulyasiya)'}
+              {isSimulating ? (t('verifying')) : (t('confirmCodeBtn'))}
             </Button>
           </div>
         )}
@@ -66,7 +68,7 @@ export const DigitalAuthModal: React.FC<DigitalAuthModalProps> = ({
               <div className="w-9 h-9 rounded-xl bg-brand-blue text-white flex items-center justify-center font-extrabold text-xs shadow-sm">
                 my
               </div>
-              <h3 className="text-title-lg font-bold text-on-surface">myGov QR Giriş</h3>
+              <h3 className="text-title-lg font-bold text-on-surface">{t('myGovQrLoginTitle')}</h3>
             </div>
             <p className="text-xs text-on-surface-variant">
               myGov mobil tətbiqi ilə aşağıdakı QR kodu skan edərək identifikasiyadan keçin.
@@ -81,7 +83,7 @@ export const DigitalAuthModal: React.FC<DigitalAuthModalProps> = ({
               disabled={isSimulating}
               className="w-full py-3 !bg-brand-blue text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 cursor-pointer shadow-md"
             >
-              {isSimulating ? 'myGov İdentifikasiyası...' : 'QR Skanını Təsdiqlə (Simulyasiya)'}
+              {isSimulating ? (t('verifying')) : (t('confirmCodeBtn'))}
             </Button>
           </div>
         )}

@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/lucide-icons/lucide/main/icons/shield-alert.svg" width="100" alt="MyGuard Logo"/>
+  <img src="public/MyGuard-Logo.svg" width="100" alt="MyGuard Logo"/>
 </p>
 
 <h1 align="center">🛡️ MyGuard — Enterprise AI Document Security & Indirect Prompt Injection Shield</h1>
@@ -35,6 +35,7 @@
 
 - [Overview](#overview)
 - [Core Features](#core-features)
+- [Application Screenshots & User Interface Showcase](#-application-screenshots--user-interface-showcase)
 - [Tech Stack & Architecture](#tech-stack--architecture)
 - [Project Ecosystem & Live Deployment Links](#-project-ecosystem--live-deployment-links)
 - [API Documentation & Live Endpoints](#api-documentation--live-endpoints)
@@ -75,6 +76,120 @@ Modern attackers embed 0% opacity (transparent) text, microscopic fonts, or hidd
 - 🚨 **Security Actions & DLP Gateway:** Automated audit logging and gateway intervention for blocked data exfiltration attempts (e.g., email gateways).
 - ⚙️ **Platform Settings & Admin Model Registry:** Provides admin tools to manage ML model versions, trigger re-training pipelines, and configure security confidence thresholds.
 - 🌍 **Multi-Language Support:** Native internationalization supporting English (EN), Azerbaijani (AZ), Russian (RU), and Turkish (TR).
+
+---
+
+## 🧠 Core Subsystems & Technical Architecture Overview
+
+### ⚙️ 1. Node.js Express Gateway Backend & Real-Time Pipeline
+The **Node.js Gateway Backend** acts as the enterprise control plane orchestrating authentication, document ingestion, real-time WebSocket communication, and audit logging:
+- **Layer 1 (Heuristic & OCR Diff):** Compares human-visible Optical OCR text (`tesseract.js`) against raw internal PDF text streams (`pdfjs-dist`) to catch zero-opacity fonts, microscopic text, and hidden steganographic layers.
+- **Layer 3 (Contextual LLM Security Audit):** Invokes OpenAI `gpt-4o-mini` for semantic threat review, attack vector classification, and mitigation step generation.
+- **Real-Time WebSocket Gateway:** Uses Socket.IO to stream live status events across the 7-stage document inspection lifecycle.
+
+> 📖 *For complete REST API endpoint schemas, authentication workflows, and database models, see [`backend/README.md`](file:///c:/Users/megru/Desktop/Programlar/Github/MyGurad-IDDA-Final_project/backend/README.md) or the [Node.js Gateway Backend Repository](https://github.com/MegrurNiftiyev/MyGuard-Backend).*
+
+---
+
+### 🐍 2. Python FastAPI ML Microservice & Deep Learning Model
+The **FastAPI ML Microservice** serves as the stateless **Layer 2 ML Classifier** for deterministic, zero-latency threat detection:
+- **RETVec + Conv1D Deep Neural Network:** Powered by Google's Resilient Equivariant Text Vectorizer (RETVec) character-level embeddings combined with a 1D Convolutional Neural Network (CNN).
+- **Adversarial Obfuscation Resilience:** Resistant to zero-width space insertions, leetspeak (`p r 0 m p t  i n j 3 c t 1 o n`), homoglyphs, and unicode typos.
+- **Dual-Head Classification Output:** Computes a primary severity label (`safe`, `suspicious`, `injection`) alongside a 6-category attack taxonomy head (*Instruction Override*, *Data Exfiltration*, *Ranking Manipulation*, etc.).
+
+> 📖 *For complete model architecture diagrams, dataset benchmarks, Hugging Face weights, and model registry specs, see [`ai-models/README.md`](file:///c:/Users/megru/Desktop/Programlar/Github/MyGurad-IDDA-Final_project/ai-models/README.md) or the [Python FastAPI ML Microservice Repository](https://github.com/MegrurNiftiyev/IDDA-Final-Project-Ai-Backend).*
+
+---
+
+### 💬 3. AI Security Assistant & 11 Dynamic Block Query System
+The **AI Security Assistant** is a contextual copilot engineered to answer security inquiries and explain detected document threats:
+- **Contextual Screen & Session Awareness:** Tailors responses based on the active user view (`HOME_SCREEN`, `DOCUMENTS_SCREEN`, `SCAN_SCREEN`).
+- **11 Rich UI Response Rendering Blocks:** Formats AI outputs dynamically into structured components (Headers, Callouts, Tables, Recharts Visualizations, Code Snippets, Lists, Quotes, Files).
+- **Document Threat Q&A:** Delivers instant threat breakdowns and remediation advice for attached corporate files.
+
+---
+
+## 📸 Application Screenshots & User Interface Showcase
+
+
+### 1. 📊 Security Dashboard
+<p align="center">
+  <img src="screenshots/dashboard_page.png" alt="Security Dashboard" width="100%" />
+</p>
+<p align="center"><b>Real-Time Threat Metric Analytics, Risk Scores & Distribution Breakdown</b></p>
+
+---
+
+### 2. ⚡ 7-Stage Live Scan Pipeline
+<p align="center">
+  <img src="screenshots/scan_pipeline.png" alt="7-Stage Scan Pipeline" width="100%" />
+</p>
+<p align="center"><b>Live Animated 7-Stage Document Deep Scanning Process Visualizer with WebSockets</b></p>
+
+---
+
+### 3. 🛡️ 3-Layer Security Analysis Report
+<p align="center">
+  <img src="screenshots/analysis_report.png" alt="3-Layer Security Analysis Report" width="100%" />
+</p>
+<p align="center"><b>Detailed Risk Score Breakdown (OCR Layer Diff, ML Score, LLM Security Audit Recommendation)</b></p>
+
+---
+
+### 4. 🔍 OCR vs PDF Text Layer Comparison
+<p align="center">
+  <img src="screenshots/text_comparison.png" alt="OCR vs PDF Text Layer Comparison" width="100%" />
+</p>
+<p align="center"><b>Side-by-Side Comparison of Visual OCR Text Against Internal PDF Raw Text Stream</b></p>
+
+---
+
+### 5. 💬 AI Security Assistant
+<p align="center">
+  <img src="screenshots/ai_assistant.png" alt="AI Security Assistant" width="100%" />
+</p>
+<p align="center"><b>Conversational AI Security Copilot Rendering 11 Dynamic Response Blocks</b></p>
+
+---
+
+### 6. 📄 AI Assistant Document Context Q&A
+<p align="center">
+  <img src="screenshots/ai_assistant_documents.png" alt="AI Assistant Document Context Q&A" width="100%" />
+</p>
+<p align="center"><b>Deep Contextual Document Threat Explanation & RAG Analysis</b></p>
+
+---
+
+### 7. 📁 Document Management Hub
+<p align="center">
+  <img src="screenshots/documents_management.png" alt="Document Management Hub" width="100%" />
+</p>
+<p align="center"><b>Enterprise Document Repository with Threat Filtering, User Labeling & Sanitized PDF Export</b></p>
+
+---
+
+### 8. ⚙️ Express Backend API Swagger Docs
+<p align="center">
+  <img src="screenshots/backend_swagger_api_docs.png" alt="Express Backend API Swagger Docs" width="100%" />
+</p>
+<p align="center"><b>Node.js Express REST API Interactive OpenAPI 3.0 Swagger UI Documentation (<code>/api-docs</code>)</b></p>
+
+---
+
+### 9. 🐍 FastAPI ML Microservice Swagger Docs
+<p align="center">
+  <img src="screenshots/fastapi_ml_swagger_docs.png" alt="FastAPI ML Microservice Swagger Docs" width="100%" />
+</p>
+<p align="center"><b>Python FastAPI ML Microservice Interactive OpenAPI Documentation (<code>/docs</code>)</b></p>
+
+---
+
+### 10. 🏗️ 3-Layer Security AI Model Architecture Diagram
+<p align="center">
+  <img src="screenshots/ai_model_architecture.png" alt="3-Layer Security AI Model Architecture" width="100%" />
+</p>
+<p align="center"><b>High-Level Multi-Stage Threat Detection System Architecture Model Diagram</b></p>
+
 
 ---
 
